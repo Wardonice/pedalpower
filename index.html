@@ -162,7 +162,7 @@
     min-width:86px; height:36px; padding:0 11px; border-radius:9px;
     border:1px solid rgba(52,211,153,.35); background:rgba(52,211,153,.14);
     color:#34d399; font-family:'Barlow Condensed',sans-serif;
-    font-size:24px; font-weight:600; letter-spacing:.03em;
+    font-size:24px; font-weight:600; letter-spacing:.03em; white-space:nowrap;
     font-variant-numeric:tabular-nums; transition:color .3s,background .3s,border-color .3s;
     text-shadow:0 1px 8px rgba(0,0,0,.45);
   }
@@ -279,6 +279,7 @@
   .profile-empty-copy{ display:flex; align-items:center; gap:10px; color:rgba(255,255,255,.65); font-size:11px; text-shadow:0 1px 6px rgba(0,0,0,.5); }
   .profile-empty-copy svg{ width:26px; height:26px; opacity:.7; }
   .btn-accent{
+    position:relative;
     display:inline-flex; align-items:center; gap:7px; height:30px; padding:0 12px;
     border-radius:9px; cursor:pointer; border:1px solid rgba(198,244,50,.4);
     background:rgba(198,244,50,.14); color:#dcff79; font-size:10px; font-weight:700;
@@ -798,6 +799,7 @@
     .tool-btn-weight{ width:auto; padding:0 10px; }
     .tool-btn-weight svg{ display:none; }
     .tool-label{ display:none !important; }
+    .grade-bar{ display:none; }
     .mapy-logo{ top:auto; bottom:calc(var(--profile-h) + 10px); left:10px; height:32px; padding:2px 5px; }
     .mapy-logo img{ height:24px; }
     .route-name{ max-width:38vw; }
@@ -834,6 +836,28 @@
     .stat-val{ font-size:36px; }
   }
   .profile-empty.hidden{ display:none !important; }
+
+  /* ---------- ZAMKNUTÉ FUNKCIE PRE NEPRIHLÁSENÝCH ---------- */
+  .is-locked{ position:relative; opacity:.65; }
+  .is-locked:hover{ opacity:.85; }
+  .is-locked::after{
+    content:"";
+    position:absolute; top:-4px; right:-4px; width:15px; height:15px;
+    border-radius:50%;
+    background:rgba(11,15,21,.94) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23dcff79' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='10' width='16' height='11' rx='2'/%3E%3Cpath d='M8 10V7a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E") center/9px 9px no-repeat;
+    border:1px solid rgba(255,255,255,.28);
+    box-shadow:0 2px 8px rgba(0,0,0,.45);
+    pointer-events:none;
+  }
+  .hud-val.locked-value, .stat-val.locked-value{
+    font-size:22px; line-height:1.1; letter-spacing:0; cursor:pointer;
+  }
+  .stat-sub.locked-value{ cursor:pointer; }
+  .hud-val.locked-value, .stat-val.locked-value, .stat-sub.locked-value{
+    filter:grayscale(1); opacity:.7;
+  }
+  .locked-value + .metric-unit,
+  .locked-value + .stat-unit{ display:none; }
 </style>
 </head>
 
@@ -5556,6 +5580,10 @@ function applyRoute(route, gpxText = '', fileName = '') {
 
 async function loadGPXFile(file) {
   if (!file) return;
+  if (!requireLogin('Nahranie vlastnej GPX')) {
+    el.gpxInput.value = '';
+    return;
+  }
   try {
     el.btnGpx.disabled = true;
     const text = await file.text();
@@ -5573,6 +5601,11 @@ async function loadGPXFile(file) {
     el.btnGpx.disabled = false;
     el.gpxInput.value = '';
   }
+}
+
+function openGpxPicker() {
+  if (!requireLogin('Nahranie vlastnej GPX')) return;
+  el.gpxInput.click();
 }
 
 /* Ukážková trasa vložená priamo v HTML – načíta sa tlačidlom „Nahrať ukážkové GPX“. */
@@ -5703,6 +5736,72 @@ async function syncRiderWeightWithAccount(user) {
     // Prvé prihlásenie: ulož do účtu hmotnosť, ktorú má používateľ nastavenú lokálne.
     applyRiderWeight(local.weight);
     await saveRiderWeightToAccount(local.weight, local.updatedAt || Date.now());
+  }
+}
+
+function setLockableValue(node, value, locked, lockedText, lockedLabel) {
+  if (!node) return;
+  node.classList.toggle('locked-value', locked);
+  if (locked) {
+    node.textContent = lockedText || '🔒';
+    node.title = lockedLabel || 'Dostupné po prihlásení';
+    node.setAttribute('aria-label', lockedLabel || 'Dostupné po prihlásení');
+  } else {
+    node.textContent = value;
+    node.removeAttribute('title');
+    node.removeAttribute('aria-label');
+  }
+}
+
+function requireLogin(featureLabel) {
+  if (accountUser) return true;
+  showToast(`${featureLabel} je dostupné po prihlásení.`, 'info', 4500);
+  openAccountModal();
+  if (el.accountSignedOut && !el.accountSignedOut.hidden) {
+    el.btnGoogleLogin.focus({ preventScroll: true });
+  }
+  return false;
+}
+
+function setAuthLockedButton(button, locked, normalTitle, lockedTitle) {
+  if (!button) return;
+  button.classList.toggle('is-locked', locked);
+  if (locked) {
+    button.setAttribute('aria-disabled', 'true');
+    button.title = lockedTitle;
+  } else {
+    button.removeAttribute('aria-disabled');
+    if (normalTitle) button.title = normalTitle;
+    else button.removeAttribute('title');
+  }
+}
+
+function updateAuthLocks() {
+  const locked = !accountUser;
+
+  if (locked && heartRateSensor) {
+    const sensor = heartRateSensor;
+    heartRateSensor = null;
+    state.hr = null;
+    state.lastHrAt = 0;
+    setHrUI('disconnected');
+    try { sensor.device.gatt.disconnect(); } catch (_) {}
+  }
+
+  setAuthLockedButton(el.btnHr, locked,
+    'Pripojiť hrudný pás (Heart Rate Service)',
+    'Tep – dostupné po prihlásení');
+  setAuthLockedButton(el.btnGpx, locked,
+    'Nahrať GPX súbor',
+    'GPX – dostupné po prihlásení');
+  setAuthLockedButton(el.btnLoadGpxEmpty, locked,
+    '',
+    'Nahratie GPX – dostupné po prihlásení');
+
+  renderHUD();
+
+  if (el.finishModal.classList.contains('open') && !viewingActivityId) {
+    fillStatsView(currentRideSummary());
   }
 }
 
@@ -5952,8 +6051,12 @@ function renderAccount() {
 
 function setAccountUser(user) {
   const previousId = accountUser ? accountUser.id : null;
+  const wasViewingActivity = Boolean(viewingActivityId);
   accountUser = user || null;
   if (!accountUser) {
+    if (wasViewingActivity && el.finishModal.classList.contains('open')) {
+      closeFinishModal();
+    }
     savedRoutes = [];
     savedRoutesError = '';
     savedRoutesLoading = false;
@@ -5966,6 +6069,7 @@ function setAccountUser(user) {
   }
   updateAccountButton();
   renderAccount();
+  updateAuthLocks();
   if (accountUser && accountUser.id !== previousId) {
     syncRiderWeightWithAccount(accountUser);
   }
@@ -6847,6 +6951,7 @@ async function connectHeartRate() {
     try { heartRateSensor.device.gatt.disconnect(); } catch (_) {}
     return;
   }
+  if (!requireLogin('Tep')) return;
   if (state.connectingHr) return;
 
   if (!navigator.bluetooth) {
@@ -6976,18 +7081,32 @@ function currentRideSummary() {
 
 function fillStatsView(summary) {
   const weight = Math.max(1, summary.weightKg || 75);
+  const locked = !accountUser;
   el.statRouteName.textContent = summary.routeLabel;
   el.statTime.textContent = formatTime(summary.durationS || 0);
   el.statDist.textContent = formatKm((summary.distanceM || 0) / 1000, 2);
   el.statAscent.textContent = String(Math.round(summary.ascentM || 0));
   el.statAvgPower.textContent = String(Math.round(summary.avgPowerW || 0));
-  el.statAvgWkg.textContent = `${((summary.avgPowerW || 0) / weight).toFixed(2)} W/kg`;
+  setLockableValue(
+    el.statAvgWkg,
+    `${((summary.avgPowerW || 0) / weight).toFixed(2)} W/kg`,
+    locked,
+    '🔒 Po prihlásení',
+    'W/kg je dostupné po prihlásení'
+  );
   el.statNp.textContent = String(Math.round(summary.npW || 0));
   el.statCalories.textContent = String(Math.round(summary.calories || 0));
-  el.statAvgHr.textContent = summary.avgHr === null || summary.avgHr === undefined ||
+  const avgHrText = summary.avgHr === null || summary.avgHr === undefined ||
     !Number.isFinite(summary.avgHr)
     ? '--'
     : String(Math.round(summary.avgHr));
+  setLockableValue(
+    el.statAvgHr,
+    avgHrText,
+    locked,
+    '🔒',
+    'Priemerný tep je dostupný po prihlásení'
+  );
 }
 
 /* =========================================================================
@@ -7315,13 +7434,24 @@ function updateGradeChip(grade) {
 function renderHUD(now = performance.now()) {
   const bikeAlive = Boolean(trainer) && (now - state.lastBikeAt < 6000);
   const power = bikeAlive ? Math.max(0, Math.round(state.power)) : 0;
+  const locked = !accountUser;
 
   el.rideTime.textContent = formatTime(state.rideSeconds);
   el.powerValue.textContent = String(power);
-  el.hrValue.textContent = state.hr !== null && Number.isFinite(state.hr)
-    ? String(Math.round(state.hr))
-    : '--';
-  el.wkgValue.textContent = (power / Math.max(1, state.weight)).toFixed(2);
+  setLockableValue(
+    el.hrValue,
+    state.hr !== null && Number.isFinite(state.hr) ? String(Math.round(state.hr)) : '--',
+    locked,
+    '🔒',
+    'Tep je dostupný po prihlásení'
+  );
+  setLockableValue(
+    el.wkgValue,
+    (power / Math.max(1, state.weight)).toFixed(2),
+    locked,
+    '🔒',
+    'W/kg je dostupné po prihlásení'
+  );
   el.weightValue.textContent = String(Math.round(state.weight));
 
   if (state.route) {
@@ -7494,9 +7624,14 @@ function editWeight() {
 el.btnTrainer.addEventListener('click', connectTrainer);
 el.btnHr.addEventListener('click', connectHeartRate);
 
-el.btnGpx.addEventListener('click', () => el.gpxInput.click());
-el.btnLoadGpxEmpty.addEventListener('click', () => el.gpxInput.click());
+el.btnGpx.addEventListener('click', openGpxPicker);
+el.btnLoadGpxEmpty.addEventListener('click', openGpxPicker);
 el.btnLoadDemoGpx.addEventListener('click', loadDemoRoute);
+
+el.hrValue.addEventListener('click', () => { if (!accountUser) requireLogin('Tep'); });
+el.wkgValue.addEventListener('click', () => { if (!accountUser) requireLogin('W/kg'); });
+el.statAvgWkg.addEventListener('click', () => { if (!accountUser) requireLogin('W/kg'); });
+el.statAvgHr.addEventListener('click', () => { if (!accountUser) requireLogin('Priemerný tep'); });
 
 el.gpxInput.addEventListener('change', () => {
   const file = el.gpxInput.files && el.gpxInput.files[0];
@@ -7599,6 +7734,7 @@ setTrainerUI('disconnected');
 setHrUI('disconnected');
 renderHUD();
 updateGradeChip(0);
+updateAuthLocks();
 initAccount();
 
 setTimeout(() => {
