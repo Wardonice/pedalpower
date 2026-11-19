@@ -1204,6 +1204,7 @@
         <div class="help-section-head"><span class="help-step">10</span><h3>Konto, trasy a jazdy</h3></div>
         <p>Tlačidlom <strong>Konto</strong> vpravo dole sa prihlásiš cez Google. Po prihlásení môžeš aktuálnu trasu uložiť do účtu, neskôr ju kedykoľvek načítať alebo vymazať. Trasy sú súkromné – vidíš ich iba ty.</p>
         <p>Každú ukončenú jazdu uložíš tlačidlom <strong>Uložiť aktivitu</strong> v okne štatistiky. V okne <strong>Konto</strong> v časti <strong>Moje jazdy</strong> potom nájdeš čas, kilometre, nastúpané metre, kalórie, priemerný výkon, Normalized Power a priemerný tep. Tlačidlom <strong>Štatistika</strong> si ich kedykoľvek zobrazíš znova.</p>
+        <p>Hmotnosť jazdca (tlačidlo s hodnotou v kg vľavo hore) sa po prihlásení uloží do účtu, takže si ju aplikácia zapamätá aj na inom zariadení.</p>
         <p>Prihlásenie vyžaduje stránku bežiacu cez <strong>https://</strong> alebo <strong>http://localhost</strong>. Ak účet ešte nie je nastavený, okno Konto zobrazí potrebné údaje a celý postup nájdeš v súbore <span class="help-key">SETUP_SUPABASE.md</span>.</p>
       </section>
     </div>
@@ -1241,7 +1242,7 @@
 
       <div id="accountSignedOut" class="account-panel">
         <p class="account-note">
-          Prihlásením cez Google získaš prístup k svojim uloženým GPX trasám a jazdám na všetkých zariadeniach.
+          Prihlásením cez Google získaš prístup k svojim uloženým GPX trasám, jazdám a hmotnosti jazdca na všetkých zariadeniach.
           Každý používateľ vidí iba svoje trasy a jazdy.
         </p>
         <button id="btnGoogleLogin" class="account-google" type="button">
@@ -5052,6 +5053,13 @@ const ROUTES_TABLE = 'routes';
 const ACTIVITIES_TABLE = 'activities';
 const MAX_GPX_BYTES = 2 * 1024 * 1024;
 
+const RIDER_WEIGHT_KEY = 'vct.riderWeight';
+const RIDER_WEIGHT_UPDATED_KEY = 'vct.riderWeightUpdatedAt';
+const RIDER_WEIGHT_MIN = 30;
+const RIDER_WEIGHT_MAX = 250;
+const RIDER_WEIGHT_META_KEY = 'rider_weight_kg';
+const RIDER_WEIGHT_META_UPDATED_KEY = 'rider_weight_updated_at';
+
 const GRADE_COLORS = {
   descent: '#38bdf8',
   flat: '#34d399',
@@ -5219,8 +5227,8 @@ const state = {
 };
 
 try {
-  const storedWeight = parseFloat(localStorage.getItem('vct.riderWeight'));
-  if (Number.isFinite(storedWeight) && storedWeight >= 30 && storedWeight <= 250) {
+  const storedWeight = parseFloat(localStorage.getItem(RIDER_WEIGHT_KEY));
+  if (Number.isFinite(storedWeight) && storedWeight >= RIDER_WEIGHT_MIN && storedWeight <= RIDER_WEIGHT_MAX) {
     state.weight = storedWeight;
   }
 } catch (_) {}
@@ -6179,6 +6187,99 @@ let activityBusy = false;
 let viewingActivityId = null;
 let accountBusy = false;
 
+function normalizeRiderWeight(value) {
+  const weight = typeof value === 'number' ? value : parseFloat(String(value).replace(',', '.'));
+  if (!Number.isFinite(weight) || weight < RIDER_WEIGHT_MIN || weight > RIDER_WEIGHT_MAX) return null;
+  return Math.round(weight * 10) / 10;
+}
+
+function readLocalRiderWeight() {
+  try {
+    return {
+      weight: normalizeRiderWeight(localStorage.getItem(RIDER_WEIGHT_KEY)),
+      updatedAt: Number(localStorage.getItem(RIDER_WEIGHT_UPDATED_KEY)) || 0
+    };
+  } catch (_) {
+    return { weight: null, updatedAt: 0 };
+  }
+}
+
+function storeRiderWeightLocally(weight, updatedAt = Date.now()) {
+  try {
+    localStorage.setItem(RIDER_WEIGHT_KEY, String(weight));
+    localStorage.setItem(RIDER_WEIGHT_UPDATED_KEY, String(updatedAt));
+  } catch (_) {}
+}
+
+function applyRiderWeight(weight) {
+  const normalized = normalizeRiderWeight(weight);
+  if (normalized === null) return;
+  state.weight = normalized;
+  renderHUD();
+}
+
+function readAccountRiderWeight(user) {
+  const meta = user && user.user_metadata ? user.user_metadata : null;
+  if (!meta) return { weight: null, updatedAt: 0 };
+  const rawUpdatedAt = meta[RIDER_WEIGHT_META_UPDATED_KEY];
+  return {
+    weight: normalizeRiderWeight(meta[RIDER_WEIGHT_META_KEY]),
+    updatedAt: typeof rawUpdatedAt === 'string' ? (Date.parse(rawUpdatedAt) || 0) : 0
+  };
+}
+
+async function saveRiderWeightToAccount(weight, updatedAt = Date.now()) {
+  if (!supa || !accountUser) return false;
+  const normalized = normalizeRiderWeight(weight);
+  if (normalized === null) return false;
+
+  try {
+    const meta = accountUser && accountUser.user_metadata ? accountUser.user_metadata : {};
+    const { data, error } = await supa.auth.updateUser({
+      data: {
+        ...meta,
+        [RIDER_WEIGHT_META_KEY]: normalized,
+        [RIDER_WEIGHT_META_UPDATED_KEY]: new Date(updatedAt).toISOString()
+      }
+    });
+    if (error) throw error;
+    if (data && data.user) accountUser = data.user;
+    return true;
+  } catch (error) {
+    console.error('Uloženie hmotnosti do účtu:', error);
+    showToast(`Hmotnosť sa nepodarilo uložiť do účtu: ${accountErrorMessage(error)}`, 'error', 6500);
+    return false;
+  }
+}
+
+async function syncRiderWeightWithAccount(user) {
+  if (!user) return;
+
+  const local = readLocalRiderWeight();
+  const remote = readAccountRiderWeight(user);
+
+  if (remote.weight !== null) {
+    const localIsNewer = local.weight !== null && local.weight !== remote.weight &&
+      local.updatedAt > remote.updatedAt;
+    if (localIsNewer) {
+      // Hmotnosť zmenená na tomto zariadení bez prihlásenia má prednosť.
+      applyRiderWeight(local.weight);
+      await saveRiderWeightToAccount(local.weight, local.updatedAt);
+      return;
+    }
+    // Účet je zdroj pravdy – hmotnosť sa tak zapamätá aj na iných zariadeniach.
+    applyRiderWeight(remote.weight);
+    storeRiderWeightLocally(remote.weight, remote.updatedAt || Date.now());
+    return;
+  }
+
+  if (local.weight !== null) {
+    // Prvé prihlásenie: ulož do účtu hmotnosť, ktorú má používateľ nastavenú lokálne.
+    applyRiderWeight(local.weight);
+    await saveRiderWeightToAccount(local.weight, local.updatedAt || Date.now());
+  }
+}
+
 const ACCOUNT_SETUP_NOTE = 'Doplň do súboru <code>index2.html</code> adresu Supabase projektu a verejný anon kľúč. Potom spusti SQL a povoľ Google prihlásenie podľa návodu v súbore <code>SETUP_SUPABASE.md</code>.';
 const ACCOUNT_EMPTY_TEXT = 'Zatiaľ nemáš uložené žiadne trasy. Načítaj GPX a klikni na <strong>Uložiť trasu</strong>.';
 
@@ -6424,6 +6525,7 @@ function renderAccount() {
 }
 
 function setAccountUser(user) {
+  const previousId = accountUser ? accountUser.id : null;
   accountUser = user || null;
   if (!accountUser) {
     savedRoutes = [];
@@ -6438,6 +6540,9 @@ function setAccountUser(user) {
   }
   updateAccountButton();
   renderAccount();
+  if (accountUser && accountUser.id !== previousId) {
+    syncRiderWeightWithAccount(accountUser);
+  }
 }
 
 function openAccountModal() {
@@ -7946,16 +8051,18 @@ function editWeight() {
   const answer = window.prompt('Hmotnosť jazdca v kg (30 – 250):', String(current));
   if (answer === null) return;
 
-  const value = parseFloat(String(answer).replace(',', '.'));
-  if (!Number.isFinite(value) || value < 30 || value > 250) {
+  const value = normalizeRiderWeight(String(answer).replace(',', '.'));
+  if (value === null) {
     showToast('Zadaj hmotnosť v rozsahu 30 – 250 kg.', 'error', 4200);
     return;
   }
 
+  const now = Date.now();
   state.weight = value;
-  try { localStorage.setItem('vct.riderWeight', String(value)); } catch (_) {}
+  storeRiderWeightLocally(value, now);
   renderHUD();
   showToast(`Hmotnosť jazdca: ${value} kg`, 'info', 2000);
+  if (supa && accountUser) saveRiderWeightToAccount(value, now);
 }
 
 el.btnTrainer.addEventListener('click', connectTrainer);
