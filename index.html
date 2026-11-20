@@ -31,6 +31,9 @@
     --accent:#c6f432;
     --profile-h:168px;
   }
+  /* Počas tréningu je spodný panel vyšší – pravidlo musí byť pred responzívnymi
+     media queries, aby ich hodnoty (282 px / 258 px) mali prednosť. */
+  body.workout-active{ --profile-h:300px; }
   *{ box-sizing:border-box; }
   html,body{ height:100%; margin:0; }
   body{
@@ -294,6 +297,183 @@
   .btn-accent-secondary:hover{ background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.38); }
   .profile-empty-actions{ display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; }
 
+  /* ---------- WORKOUT ---------- */
+  .workout-card{
+    width:min(640px, 100%);
+    max-height:min(88vh, 780px);
+    display:flex; flex-direction:column;
+    padding-bottom:18px;
+    overflow:hidden;
+  }
+  .workout-body{
+    margin:14px -4px 0; padding:0 4px 4px;
+    flex:1 1 auto; min-height:0;
+    overflow-y:auto; overscroll-behavior:contain;
+    display:flex; flex-direction:column; gap:12px;
+    scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.22) transparent;
+  }
+  .workout-body::-webkit-scrollbar{ width:7px; }
+  .workout-body::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.2); border-radius:99px; }
+  .workout-body::-webkit-scrollbar-track{ background:transparent; }
+
+  .workout-list{ display:flex; flex-direction:column; gap:8px; }
+  .workout-item{
+    width:100%; text-align:left; cursor:pointer;
+    padding:11px 13px; border-radius:13px;
+    border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.035); color:#fff;
+    transition:background .2s, border-color .2s, transform .12s;
+  }
+  .workout-item:hover{ background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.22); }
+  .workout-item:active{ transform:translateY(1px); }
+  .workout-item.active{
+    background:linear-gradient(180deg, rgba(198,244,50,.14), rgba(198,244,50,.04));
+    border-color:rgba(198,244,50,.42);
+  }
+  .workout-item-top{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+  .workout-item-name{ font-size:12.5px; font-weight:700; letter-spacing:.005em; }
+  .workout-item-time{
+    font-family:'Barlow Condensed',sans-serif; font-size:16px; font-weight:600;
+    color:#dcff79; font-variant-numeric:tabular-nums; flex:0 0 auto;
+  }
+  .workout-item-sub{ margin-top:2px; font-size:10.5px; line-height:1.45; color:rgba(255,255,255,.56); }
+  .workout-item-meta{
+    margin-top:5px; font-size:9px; font-weight:600; letter-spacing:.06em;
+    text-transform:uppercase; color:rgba(255,255,255,.42);
+  }
+
+  .workout-settings{ display:grid; grid-template-columns:1fr 1.45fr; gap:10px; align-items:stretch; }
+  .workout-field{ display:flex; flex-direction:column; gap:5px; min-width:0; }
+  .workout-field span{
+    font-size:9px; font-weight:700; letter-spacing:.13em;
+    text-transform:uppercase; color:rgba(255,255,255,.52);
+  }
+  .workout-field input{
+    width:100%; height:42px; padding:0 12px; border-radius:11px;
+    border:1px solid rgba(255,255,255,.16); background:rgba(0,0,0,.24);
+    color:#fff; font-family:'Barlow Condensed',sans-serif; font-size:21px; font-weight:600;
+    font-variant-numeric:tabular-nums; outline:none;
+    transition:border-color .2s, background .2s;
+  }
+  .workout-field input:focus{ border-color:rgba(198,244,50,.55); background:rgba(0,0,0,.32); }
+  .workout-toggle{
+    display:flex; align-items:center; gap:10px; cursor:pointer;
+    padding:8px 12px; border-radius:11px;
+    border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.035);
+    transition:background .2s, border-color .2s;
+  }
+  .workout-toggle:hover{ background:rgba(255,255,255,.06); }
+  .workout-toggle input{ position:absolute; opacity:0; pointer-events:none; }
+  .workout-toggle-track{
+    position:relative; width:34px; height:20px; flex:0 0 auto;
+    border-radius:99px; background:rgba(255,255,255,.16); transition:background .2s;
+  }
+  .workout-toggle-thumb{
+    position:absolute; top:3px; left:3px; width:14px; height:14px;
+    border-radius:50%; background:#fff; transition:transform .2s;
+  }
+  .workout-toggle input:checked + .workout-toggle-track{ background:rgba(198,244,50,.78); }
+  .workout-toggle input:checked + .workout-toggle-track .workout-toggle-thumb{ transform:translateX(14px); }
+  .workout-toggle input:disabled + .workout-toggle-track{ opacity:.4; }
+  .workout-toggle-text{ min-width:0; }
+  .workout-toggle-text b{ display:block; font-size:11px; font-weight:700; color:#fff; }
+  .workout-toggle-text small{ display:block; margin-top:1px; font-size:9.5px; line-height:1.35; color:rgba(255,255,255,.5); }
+
+  .workout-route-note{
+    padding:9px 11px; border-radius:10px; font-size:10.5px; line-height:1.5;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.10);
+    color:rgba(255,255,255,.68);
+  }
+  .workout-route-note.warn{
+    background:rgba(251,191,36,.08); border-color:rgba(251,191,36,.28); color:#fcd34d;
+  }
+  .workout-route-actions{ display:flex; gap:7px; margin-top:7px; }
+  .workout-route-actions[hidden]{ display:none !important; }
+  .workout-mini-btn{
+    height:27px; padding:0 10px; border-radius:8px; cursor:pointer;
+    border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.07);
+    color:rgba(255,255,255,.86); font-size:9px; font-weight:700;
+    letter-spacing:.07em; text-transform:uppercase;
+    transition:background .2s, color .2s;
+  }
+  .workout-mini-btn:hover{ background:rgba(255,255,255,.15); color:#fff; }
+
+  .workout-preview{ display:flex; flex-direction:column; gap:5px; }
+  .workout-preview svg{
+    display:block; width:100%; height:72px; border-radius:10px;
+    background:rgba(0,0,0,.20); border:1px solid rgba(255,255,255,.08);
+  }
+  .workout-preview-meta{
+    display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+    font-size:9.5px; color:rgba(255,255,255,.5); font-variant-numeric:tabular-nums;
+  }
+
+  /* ---------- PANEL POČAS WORKOUTU ---------- */
+  .workout-panel{
+    flex:0 0 auto; display:flex; flex-direction:column; gap:5px;
+    margin:-1px -10px 6px; padding:7px 10px 8px; border-radius:14px;
+    background:linear-gradient(180deg, rgba(198,244,50,.13), rgba(198,244,50,.035));
+    border:1px solid rgba(198,244,50,.28);
+    box-shadow:0 8px 24px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  .workout-panel[hidden]{ display:none !important; }
+  .wp-top{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+  .wp-phase{ display:flex; align-items:baseline; gap:8px; min-width:0; }
+  .wp-phase-label{
+    font-size:12px; font-weight:700; color:#fff; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis; text-shadow:0 1px 6px rgba(0,0,0,.45);
+  }
+  .wp-phase-meta{
+    font-size:9.5px; color:rgba(255,255,255,.55); white-space:nowrap;
+    font-variant-numeric:tabular-nums;
+  }
+  .wp-remaining{ display:flex; align-items:baseline; gap:5px; flex:0 0 auto; }
+  .wp-remaining span{
+    font-size:8px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(255,255,255,.5);
+  }
+  .wp-remaining b{
+    font-family:'Barlow Condensed',sans-serif; font-size:17px; font-weight:600;
+    color:#dcff79; font-variant-numeric:tabular-nums;
+  }
+  .wp-metrics{ display:flex; align-items:flex-end; gap:16px; }
+  .wp-metric{ display:flex; flex-direction:column; gap:1px; min-width:0; }
+  .wp-kicker{
+    font-size:8px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+    color:rgba(255,255,255,.48);
+  }
+  .wp-val{
+    font-family:'Barlow Condensed',sans-serif; font-size:20px; line-height:1;
+    font-weight:600; color:#fff; font-variant-numeric:tabular-nums;
+  }
+  .wp-target{ color:#dcff79; }
+  .wp-small{ font-size:15px; color:rgba(255,255,255,.8); }
+  .wp-bar{ height:4px; border-radius:99px; background:rgba(255,255,255,.1); overflow:hidden; }
+  .wp-bar-fill{
+    display:block; height:100%; width:0%; border-radius:99px;
+    background:linear-gradient(90deg,#c6f432,#84cc16);
+    transition:width .25s linear;
+  }
+  .wp-bottom{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .wp-next{
+    font-size:9.5px; color:rgba(255,255,255,.52); min-width:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .wp-actions{ display:flex; align-items:center; gap:6px; flex:0 0 auto; }
+  .wp-btn{
+    height:26px; padding:0 9px; border-radius:8px; cursor:pointer;
+    border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.07);
+    color:rgba(255,255,255,.85); font-size:9px; font-weight:700;
+    letter-spacing:.05em; text-transform:uppercase; white-space:nowrap;
+    transition:background .2s, color .2s, border-color .2s;
+  }
+  .wp-btn:hover{ background:rgba(255,255,255,.14); color:#fff; }
+  .wp-btn-icon{ width:28px; padding:0; font-size:12px; letter-spacing:0; text-transform:none; }
+  .wp-btn-stop{
+    border-color:rgba(248,113,113,.3); background:rgba(248,113,113,.1); color:#fca5a5;
+  }
+  .wp-btn-stop:hover{ background:rgba(248,113,113,.2); color:#fecaca; }
+
   /* ---------- NÁPOVEDA (TLAČIDLO + MODAL) ---------- */
   .help-btn{
     position:fixed; right:14px; bottom:calc(var(--profile-h) + 30px); z-index:950;
@@ -311,6 +491,15 @@
   .help-btn:hover{ background:rgba(22,28,36,.50); border-color:rgba(255,255,255,.26); color:#fff; }
   .help-btn:active{ transform:translateY(1px); }
   .help-btn svg{ width:16px; height:16px; flex:0 0 auto; filter:drop-shadow(0 1px 4px rgba(0,0,0,.4)); }
+  /* Modifikátor musí byť až za základným .help-btn – inak ho prepíše
+     rovnakou špecificitou (jedna trieda) a tlačidlá sa prekryjú. */
+  .workout-btn{
+    bottom:calc(var(--profile-h) + 126px);
+    border-color:rgba(198,244,50,.28); color:#dcff79;
+  }
+  .workout-btn:hover{
+    background:rgba(24,32,18,.55); border-color:rgba(198,244,50,.5); color:#eaffb0;
+  }
   .help-card{
     width:min(700px, 100%);
     max-height:min(84vh, 780px);
@@ -541,6 +730,8 @@
   .modal-backdrop.open{
     opacity:1; pointer-events:auto;
   }
+  /* Konto sa otvára aj z workout modalu – musí byť navrchu. */
+  #accountModal{ z-index:2050; }
   .modal-card{
     width:min(560px, 100%);
     border-radius:24px;
@@ -658,6 +849,7 @@
     display:inline-flex; align-items:center; gap:8px;
     transition:background .2s, border-color .2s, color .2s;
   }
+  .modal-btn:disabled{ opacity:.55; cursor:default; }
   .modal-btn-ghost{
     background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.15);
     color:rgba(255,255,255,.88);
@@ -792,6 +984,7 @@
   }
   @media (max-width:980px){
     :root{ --profile-h:156px; }
+    body.workout-active{ --profile-h:282px; }
     #hud{ top:60px; width:calc(100vw - 24px); }
     .map-switch{ top:12px; left:12px; }
     .toolbar{ top:12px; right:12px; flex-direction:row; gap:7px; }
@@ -808,13 +1001,18 @@
     #toasts{ left:12px; right:12px; }
     .help-btn{ width:40px; padding:0; justify-content:center; }
     .help-btn .help-label{ display:none; }
+    .workout-settings{ grid-template-columns:1fr; }
   }
   @media (max-width:640px){
     :root{ --profile-h:146px; }
+    body.workout-active{ --profile-h:258px; }
     .help-btn{ right:10px; bottom:calc(var(--profile-h) + 28px); width:38px; height:38px; }
     .account-btn{ bottom:calc(var(--profile-h) + 72px); }
+    .workout-btn{ bottom:calc(var(--profile-h) + 116px); }
     .help-card{ max-height:calc(100vh - 24px); padding:18px 18px 15px; }
     .account-card{ max-height:calc(100vh - 24px); padding:18px 18px 15px; }
+    .workout-card{ max-height:calc(100vh - 24px); padding:18px 18px 15px; }
+    .workout-preview svg{ height:56px; }
     .account-current{ max-width:42vw; }
     .help-section{ padding:10px 12px; }
     .help-section p, .help-list{ font-size:11px; }
@@ -834,8 +1032,18 @@
     .profile-empty-copy{ display:none; }
     .stats-row-2{ grid-template-columns:1fr; }
     .stat-val{ font-size:36px; }
+    .wp-metrics{ gap:11px; }
+    .wp-metric-ftp{ display:none; }
+    .wp-val{ font-size:18px; }
+    .wp-small{ font-size:13px; }
+    .wp-next{ display:none; }
+    .wp-btn{ padding:0 7px; font-size:8.5px; }
+    .wp-btn-icon{ width:26px; padding:0; }
   }
   .profile-empty.hidden{ display:none !important; }
+
+  /* ---------- WORKOUT – ROZŠÍRENIE SPODNÉHO PANELU ---------- */
+  body.workout-active #btnHelp{ display:none; }
 
   /* ---------- ZAMKNUTÉ FUNKCIE PRE NEPRIHLÁSENÝCH ---------- */
   .is-locked{ position:relative; opacity:.65; }
@@ -995,6 +1203,16 @@
   <span class="help-label">Nápoveda</span>
 </button>
 
+<button id="btnWorkout" class="help-btn workout-btn" type="button" title="Workout – intervalový tréning" aria-haspopup="dialog">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="13" r="7.5"/>
+    <path d="M12 9v4l2.6 2.6"/>
+    <path d="M9 2h6"/>
+    <path d="M12 2v2.5"/>
+  </svg>
+  <span class="help-label">Workout</span>
+</button>
+
 <button id="btnAccount" class="help-btn account-btn" type="button" title="Konto – prihlásenie a uložené trasy" aria-haspopup="dialog">
   <span id="accountDot" class="device-dot"></span>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1008,6 +1226,47 @@
 
 <!-- ================= ELEVATION PROFILE ================= -->
 <section id="profilePanel" class="profile-panel">
+  <div id="workoutPanel" class="workout-panel" hidden>
+    <div class="wp-top">
+      <div class="wp-phase">
+        <span id="wpPhaseLabel" class="wp-phase-label">Rozcvička</span>
+        <span id="wpPhaseMeta" class="wp-phase-meta">5:00 · 50 % FTP</span>
+      </div>
+      <div class="wp-remaining">
+        <span>Zostáva</span>
+        <b id="wpRemaining" class="tabular">29:00</b>
+      </div>
+    </div>
+    <div class="wp-metrics">
+      <div class="wp-metric">
+        <span class="wp-kicker">Cieľ</span>
+        <b id="wpTarget" class="wp-val wp-target tabular">-- W</b>
+      </div>
+      <div class="wp-metric">
+        <span class="wp-kicker">Teraz</span>
+        <b id="wpCurrent" class="wp-val tabular">-- W</b>
+      </div>
+      <div class="wp-metric wp-metric-ftp">
+        <span class="wp-kicker">FTP</span>
+        <b id="wpFtp" class="wp-val wp-small tabular">200 W</b>
+      </div>
+      <div class="wp-metric">
+        <span class="wp-kicker">Kadencia</span>
+        <b id="wpCadence" class="wp-val wp-small tabular">--</b>
+      </div>
+    </div>
+    <div class="wp-bar" aria-hidden="true"><span id="wpBarFill" class="wp-bar-fill"></span></div>
+    <div class="wp-bottom">
+      <div id="wpNext" class="wp-next">Ďalej: --</div>
+      <div class="wp-actions">
+        <button id="wpPause" class="wp-btn" type="button">Pauza</button>
+        <button id="wpSkip" class="wp-btn" type="button">Preskočiť</button>
+        <button id="wpMute" class="wp-btn wp-btn-icon" type="button" title="Stlmiť pípnutia" aria-pressed="false">🔔</button>
+        <button id="wpStop" class="wp-btn wp-btn-stop" type="button">Ukončiť</button>
+      </div>
+    </div>
+  </div>
+
   <div class="profile-head">
     <div class="route-block">
       <span class="route-dot"></span>
@@ -1212,7 +1471,19 @@
       </section>
 
       <section class="help-section">
-        <div class="help-section-head"><span class="help-step">8</span><h3>Ukončenie jazdy a štatistiky</h3></div>
+        <div class="help-section-head"><span class="help-step">8</span><h3>Workout – intervalový tréning</h3></div>
+        <p>Tlačidlom <strong>Workout</strong> vpravo dole otvoríš ponuku intervalových tréningov. Vyber tréning, zadaj svoje <strong>FTP</strong> a zapni <strong>ERG režim</strong>. Tréning potrebuje načítanú GPX trasu – mapa aj výškový profil fungujú ako pri voľnej jazde, ale sklon trasy odpor neovláda.</p>
+        <ul class="help-list">
+          <li><strong>ERG</strong> – trenažér drží cieľový výkon v každej fáze tréningu.</li>
+          <li><strong>Guide</strong> – bez ERG alebo bez trenažéra sa cieľový výkon iba zobrazuje.</li>
+          <li>Panel nad profilom ukazuje fázu, cieľový a aktuálny výkon, zostávajúci čas a ďalšiu fázu.</li>
+          <li>Tlačidlá <strong>Pauza</strong>, <strong>Preskočiť</strong> a <strong>Ukončiť</strong> riadia tréning; zvonček stlmí pípnutia.</li>
+          <li>Ak je trasa kratšia než tréning, opakuje sa dookola. Po skončení tréningu sa otvorí <strong>Finish</strong>.</li>
+        </ul>
+      </section>
+
+      <section class="help-section">
+        <div class="help-section-head"><span class="help-step">9</span><h3>Ukončenie jazdy a štatistiky</h3></div>
         <p><strong>Finish</strong> zobrazí čas, prejdené kilometre, nastúpané metre, spálené kalórie, priemerný výkon, Normalized Power a priemerný tep.</p>
         <p>Kalórie sa odhadujú z mechanického výkonu pri uvažovanej efektivite bicyklovania 24 %.</p>
         <ul class="help-list">
@@ -1224,7 +1495,7 @@
       </section>
 
       <section class="help-section">
-        <div class="help-section-head"><span class="help-step">9</span><h3>Užitočné tipy</h3></div>
+        <div class="help-section-head"><span class="help-step">10</span><h3>Užitočné tipy</h3></div>
         <ul class="help-list">
           <li>Klávesa <span class="help-key">F2</span> zapne alebo vypne diagnostický panel.</li>
           <li>Klávesa <span class="help-key">Esc</span> zavrie otvorené okno.</li>
@@ -1234,7 +1505,7 @@
       </section>
 
       <section class="help-section">
-        <div class="help-section-head"><span class="help-step">10</span><h3>Konto, trasy a jazdy</h3></div>
+        <div class="help-section-head"><span class="help-step">11</span><h3>Konto, trasy a jazdy</h3></div>
         <p>Tlačidlom <strong>Konto</strong> vpravo dole sa prihlásiš cez Google. Po prihlásení môžeš aktuálnu trasu uložiť do účtu, neskôr ju kedykoľvek načítať alebo vymazať. Trasy sú súkromné – vidíš ich iba ty.</p>
         <p>Každú ukončenú jazdu uložíš tlačidlom <strong>Uložiť aktivitu</strong> v okne štatistiky. V okne <strong>Konto</strong> v časti <strong>Moje jazdy</strong> potom nájdeš čas, kilometre, nastúpané metre, kalórie, priemerný výkon, Normalized Power a priemerný tep. Tlačidlom <strong>Štatistika</strong> si ich kedykoľvek zobrazíš znova.</p>
         <p>Hmotnosť jazdca (tlačidlo s hodnotou v kg vľavo hore) sa po prihlásení uloží do účtu, takže si ju aplikácia zapamätá aj na inom zariadení.</p>
@@ -1334,6 +1605,54 @@
   </div>
 </div>
 
+<!-- ================= WORKOUT (INTERVALOVÝ TRÉNING) ================= -->
+<div id="workoutModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="workoutModalTitle">
+  <div class="modal-card workout-card">
+    <div class="modal-head">
+      <div>
+        <div class="modal-badge"><span class="modal-badge-dot"></span>Workout</div>
+        <h2 id="workoutModalTitle" class="modal-title">Intervalový tréning</h2>
+        <div class="modal-route">Vyber tréning, nastav FTP a spusti ERG</div>
+      </div>
+      <button id="btnCloseWorkout" class="modal-close" type="button" aria-label="Zavrieť">×</button>
+    </div>
+
+    <div class="workout-body">
+      <div id="workoutList" class="workout-list"></div>
+
+      <div class="workout-settings">
+        <label class="workout-field">
+          <span>FTP (W)</span>
+          <input id="workoutFtp" type="number" min="50" max="600" step="1" value="200" inputmode="numeric">
+        </label>
+        <label class="workout-toggle">
+          <input id="workoutErg" type="checkbox" checked>
+          <span class="workout-toggle-track"><span class="workout-toggle-thumb"></span></span>
+          <span class="workout-toggle-text">
+            <b>ERG režim</b>
+            <small id="workoutErgHint">Trenažér drží cieľový výkon</small>
+          </span>
+        </label>
+      </div>
+
+      <div id="workoutRouteNote" class="workout-route-note">
+        <span id="workoutRouteText">Tréning potrebuje GPX trasu.</span>
+        <div id="workoutRouteActions" class="workout-route-actions" hidden>
+          <button id="wpRouteLoad" class="workout-mini-btn" type="button">Načítať GPX</button>
+          <button id="wpRouteDemo" class="workout-mini-btn" type="button">Ukážkové GPX</button>
+        </div>
+      </div>
+
+      <div id="workoutPreview" class="workout-preview"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button id="btnCloseWorkoutAction" class="modal-btn modal-btn-ghost" type="button">Zavrieť</button>
+      <button id="btnStartWorkout" class="modal-btn modal-btn-primary" type="button">Štart tréningu</button>
+    </div>
+  </div>
+</div>
+
 <div id="debugPanel" class="debug-panel" hidden>
   <div class="debug-head">Diagnostika · F2</div>
   <pre id="debugText"></pre>
@@ -1341,3122 +1660,6 @@
 
 <div id="toasts" aria-live="polite"></div>
 
-<!-- ================= UKÁŽKOVÁ TRASA (GPX VLOŽENÉ PRIAMO V HTML) ================= -->
-<script type="application/gpx+xml" id="demoGpx">
-<?xml version="1.0" encoding="utf-8"?>
-<gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1" creator="https://mapy.com/">
-	<trk>
-		<name>Route from Kostiviarska cesta to 48.833762N, 19.168329E</name>
-		<trkseg>
-			<trkpt lat="48.757690" lon="19.143468">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.757678" lon="19.143422">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.757660" lon="19.143386">
-				<ele>379.000000</ele>
-			</trkpt>
-			<trkpt lat="48.758063" lon="19.143036">
-				<ele>379.000000</ele>
-			</trkpt>
-			<trkpt lat="48.758110" lon="19.143009">
-				<ele>379.000000</ele>
-			</trkpt>
-			<trkpt lat="48.758164" lon="19.143000">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.758229" lon="19.142991">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.758294" lon="19.142955">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.758886" lon="19.142434">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.759413" lon="19.142011">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.759567" lon="19.141904">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.759774" lon="19.141823">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.760005" lon="19.141770">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.760242" lon="19.141760">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.760692" lon="19.141797">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.761225" lon="19.141797">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.761841" lon="19.141805">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.761889" lon="19.141814">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.761924" lon="19.141833">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.762048" lon="19.141940">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.762107" lon="19.141957">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.762155" lon="19.141957">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.762167" lon="19.141949">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.762209" lon="19.141931">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.762249" lon="19.141860">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.762280" lon="19.141833">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.762339" lon="19.141787">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.762404" lon="19.141778">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.762990" lon="19.141743">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.763257" lon="19.141670">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.763446" lon="19.141590">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.763866" lon="19.141311">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.764316" lon="19.141149">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.764411" lon="19.141122">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.764594" lon="19.141032">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.765495" lon="19.140466">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.765684" lon="19.140341">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.766300" lon="19.139927">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.766406" lon="19.139793">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.766460" lon="19.139739">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.766542" lon="19.139640">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.766631" lon="19.139523">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.766720" lon="19.139397">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.766809" lon="19.139271">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.766898" lon="19.139173">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.767081" lon="19.138948">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.767188" lon="19.138805">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.767241" lon="19.138724">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.767626" lon="19.138248">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.767899" lon="19.137906">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.768147" lon="19.137592">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.768283" lon="19.137439">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.768420" lon="19.137277">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.768550" lon="19.137116">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.768828" lon="19.136793">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.769017" lon="19.136577">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.769278" lon="19.136290">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.769426" lon="19.136137">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.769515" lon="19.136047">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.769663" lon="19.135921">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.769864" lon="19.135751">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.770190" lon="19.135499">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.770640" lon="19.135158">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.771078" lon="19.134816">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.771451" lon="19.134537">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.771729" lon="19.134304">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.772043" lon="19.134017">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.772428" lon="19.133703">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.772522" lon="19.133621">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.772587" lon="19.133594">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.772712" lon="19.133541">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.772760" lon="19.133523">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.772825" lon="19.133468">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.772884" lon="19.133415">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.772919" lon="19.133361">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.773014" lon="19.133217">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.773073" lon="19.133128">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.773132" lon="19.133055">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.773204" lon="19.132992">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.773280" lon="19.132921">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.773346" lon="19.132867">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.773446" lon="19.132804">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.773517" lon="19.132751">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.773564" lon="19.132705">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.773694" lon="19.132598">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.773837" lon="19.132508">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.773926" lon="19.132445">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.774133" lon="19.132319">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.774234" lon="19.132265">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.774423" lon="19.132166">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.774488" lon="19.132139">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.774541" lon="19.132095">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.774630" lon="19.132005">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.775642" lon="19.130881">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.775732" lon="19.130810">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.775767" lon="19.130791">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.775820" lon="19.130774">
-				<ele>380.000000</ele>
-			</trkpt>
-			<trkpt lat="48.775927" lon="19.130801">
-				<ele>381.000000</ele>
-			</trkpt>
-			<trkpt lat="48.775980" lon="19.130818">
-				<ele>381.000000</ele>
-			</trkpt>
-			<trkpt lat="48.776134" lon="19.130845">
-				<ele>381.000000</ele>
-			</trkpt>
-			<trkpt lat="48.776228" lon="19.130837">
-				<ele>381.000000</ele>
-			</trkpt>
-			<trkpt lat="48.776347" lon="19.130801">
-				<ele>382.000000</ele>
-			</trkpt>
-			<trkpt lat="48.776471" lon="19.130738">
-				<ele>382.000000</ele>
-			</trkpt>
-			<trkpt lat="48.776542" lon="19.130684">
-				<ele>382.000000</ele>
-			</trkpt>
-			<trkpt lat="48.776755" lon="19.130468">
-				<ele>382.000000</ele>
-			</trkpt>
-			<trkpt lat="48.776992" lon="19.130225">
-				<ele>383.000000</ele>
-			</trkpt>
-			<trkpt lat="48.777187" lon="19.130011">
-				<ele>384.000000</ele>
-			</trkpt>
-			<trkpt lat="48.777649" lon="19.129445">
-				<ele>385.000000</ele>
-			</trkpt>
-			<trkpt lat="48.777999" lon="19.128977">
-				<ele>386.000000</ele>
-			</trkpt>
-			<trkpt lat="48.778146" lon="19.128797">
-				<ele>386.000000</ele>
-			</trkpt>
-			<trkpt lat="48.778336" lon="19.128581">
-				<ele>387.000000</ele>
-			</trkpt>
-			<trkpt lat="48.778514" lon="19.128330">
-				<ele>387.000000</ele>
-			</trkpt>
-			<trkpt lat="48.778691" lon="19.128061">
-				<ele>388.000000</ele>
-			</trkpt>
-			<trkpt lat="48.778834" lon="19.127891">
-				<ele>388.000000</ele>
-			</trkpt>
-			<trkpt lat="48.778857" lon="19.127864">
-				<ele>388.000000</ele>
-			</trkpt>
-			<trkpt lat="48.778899" lon="19.127621">
-				<ele>388.000000</ele>
-			</trkpt>
-			<trkpt lat="48.778904" lon="19.127468">
-				<ele>389.000000</ele>
-			</trkpt>
-			<trkpt lat="48.778975" lon="19.127415">
-				<ele>389.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779035" lon="19.127351">
-				<ele>389.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779342" lon="19.126759">
-				<ele>390.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779479" lon="19.126336">
-				<ele>392.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779798" lon="19.125591">
-				<ele>396.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779887" lon="19.125393">
-				<ele>397.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779910" lon="19.125304">
-				<ele>397.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779923" lon="19.125241">
-				<ele>397.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779958" lon="19.124755">
-				<ele>399.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779982" lon="19.124531">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780076" lon="19.123946">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780094" lon="19.123623">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780094" lon="19.123461">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780100" lon="19.123273">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780100" lon="19.123147">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780071" lon="19.123040">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780029" lon="19.122878">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779982" lon="19.122680">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779585" lon="19.120883">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779454" lon="19.120480">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779295" lon="19.119814">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779253" lon="19.119589">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779242" lon="19.119428">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779236" lon="19.119096">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779224" lon="19.119023">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779165" lon="19.118943">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779147" lon="19.118880">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779165" lon="19.118646">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779165" lon="19.118547">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779141" lon="19.118224">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779064" lon="19.117874">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.778987" lon="19.117425">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779064" lon="19.117048">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779106" lon="19.116877">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779177" lon="19.116679">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779253" lon="19.116509">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779313" lon="19.116409">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779372" lon="19.116320">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779502" lon="19.116212">
-				<ele>398.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779674" lon="19.116050">
-				<ele>396.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779763" lon="19.115925">
-				<ele>395.000000</ele>
-			</trkpt>
-			<trkpt lat="48.779952" lon="19.115826">
-				<ele>395.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780053" lon="19.115772">
-				<ele>396.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780100" lon="19.115754">
-				<ele>396.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780183" lon="19.115727">
-				<ele>396.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780313" lon="19.115691">
-				<ele>397.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780431" lon="19.115673">
-				<ele>397.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780544" lon="19.115664">
-				<ele>398.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780757" lon="19.115656">
-				<ele>399.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780834" lon="19.115637">
-				<ele>399.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780852" lon="19.115772">
-				<ele>399.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780923" lon="19.116275">
-				<ele>410.000000</ele>
-			</trkpt>
-			<trkpt lat="48.780976" lon="19.116499">
-				<ele>410.000000</ele>
-			</trkpt>
-			<trkpt lat="48.781018" lon="19.116671">
-				<ele>400.000000</ele>
-			</trkpt>
-			<trkpt lat="48.781112" lon="19.116958">
-				<ele>401.000000</ele>
-			</trkpt>
-			<trkpt lat="48.781219" lon="19.117182">
-				<ele>402.000000</ele>
-			</trkpt>
-			<trkpt lat="48.781302" lon="19.117308">
-				<ele>402.000000</ele>
-			</trkpt>
-			<trkpt lat="48.781449" lon="19.117461">
-				<ele>403.000000</ele>
-			</trkpt>
-			<trkpt lat="48.781598" lon="19.117541">
-				<ele>404.000000</ele>
-			</trkpt>
-			<trkpt lat="48.781787" lon="19.117578">
-				<ele>405.000000</ele>
-			</trkpt>
-			<trkpt lat="48.782041" lon="19.117658">
-				<ele>407.000000</ele>
-			</trkpt>
-			<trkpt lat="48.782225" lon="19.117730">
-				<ele>408.000000</ele>
-			</trkpt>
-			<trkpt lat="48.782468" lon="19.117856">
-				<ele>409.000000</ele>
-			</trkpt>
-			<trkpt lat="48.782621" lon="19.117973">
-				<ele>410.000000</ele>
-			</trkpt>
-			<trkpt lat="48.782912" lon="19.118260">
-				<ele>410.000000</ele>
-			</trkpt>
-			<trkpt lat="48.783681" lon="19.119051">
-				<ele>418.000000</ele>
-			</trkpt>
-			<trkpt lat="48.783983" lon="19.119383">
-				<ele>421.000000</ele>
-			</trkpt>
-			<trkpt lat="48.784131" lon="19.119554">
-				<ele>422.000000</ele>
-			</trkpt>
-			<trkpt lat="48.784338" lon="19.119725">
-				<ele>424.000000</ele>
-			</trkpt>
-			<trkpt lat="48.785315" lon="19.120281">
-				<ele>431.000000</ele>
-			</trkpt>
-			<trkpt lat="48.785960" lon="19.120578">
-				<ele>438.000000</ele>
-			</trkpt>
-			<trkpt lat="48.786137" lon="19.120694">
-				<ele>440.000000</ele>
-			</trkpt>
-			<trkpt lat="48.787221" lon="19.121512">
-				<ele>451.000000</ele>
-			</trkpt>
-			<trkpt lat="48.787303" lon="19.121575">
-				<ele>452.000000</ele>
-			</trkpt>
-			<trkpt lat="48.787422" lon="19.121646">
-				<ele>454.000000</ele>
-			</trkpt>
-			<trkpt lat="48.787611" lon="19.121736">
-				<ele>456.000000</ele>
-			</trkpt>
-			<trkpt lat="48.787712" lon="19.121772">
-				<ele>457.000000</ele>
-			</trkpt>
-			<trkpt lat="48.787848" lon="19.121799">
-				<ele>458.000000</ele>
-			</trkpt>
-			<trkpt lat="48.788002" lon="19.121772">
-				<ele>460.000000</ele>
-			</trkpt>
-			<trkpt lat="48.788381" lon="19.121673">
-				<ele>464.000000</ele>
-			</trkpt>
-			<trkpt lat="48.788576" lon="19.121620">
-				<ele>465.000000</ele>
-			</trkpt>
-			<trkpt lat="48.788694" lon="19.121566">
-				<ele>467.000000</ele>
-			</trkpt>
-			<trkpt lat="48.788819" lon="19.121467">
-				<ele>468.000000</ele>
-			</trkpt>
-			<trkpt lat="48.789061" lon="19.121342">
-				<ele>471.000000</ele>
-			</trkpt>
-			<trkpt lat="48.789458" lon="19.121197">
-				<ele>475.000000</ele>
-			</trkpt>
-			<trkpt lat="48.789789" lon="19.121099">
-				<ele>478.000000</ele>
-			</trkpt>
-			<trkpt lat="48.789931" lon="19.121054">
-				<ele>480.000000</ele>
-			</trkpt>
-			<trkpt lat="48.790061" lon="19.121036">
-				<ele>481.000000</ele>
-			</trkpt>
-			<trkpt lat="48.790209" lon="19.121054">
-				<ele>482.000000</ele>
-			</trkpt>
-			<trkpt lat="48.790298" lon="19.121072">
-				<ele>483.000000</ele>
-			</trkpt>
-			<trkpt lat="48.790411" lon="19.121126">
-				<ele>484.000000</ele>
-			</trkpt>
-			<trkpt lat="48.790511" lon="19.121197">
-				<ele>486.000000</ele>
-			</trkpt>
-			<trkpt lat="48.790647" lon="19.121333">
-				<ele>487.000000</ele>
-			</trkpt>
-			<trkpt lat="48.790700" lon="19.121359">
-				<ele>488.000000</ele>
-			</trkpt>
-			<trkpt lat="48.790748" lon="19.121386">
-				<ele>488.000000</ele>
-			</trkpt>
-			<trkpt lat="48.790802" lon="19.121386">
-				<ele>489.000000</ele>
-			</trkpt>
-			<trkpt lat="48.790890" lon="19.121377">
-				<ele>490.000000</ele>
-			</trkpt>
-			<trkpt lat="48.791014" lon="19.121350">
-				<ele>491.000000</ele>
-			</trkpt>
-			<trkpt lat="48.791144" lon="19.121342">
-				<ele>492.000000</ele>
-			</trkpt>
-			<trkpt lat="48.791280" lon="19.121359">
-				<ele>493.000000</ele>
-			</trkpt>
-			<trkpt lat="48.791435" lon="19.121413">
-				<ele>495.000000</ele>
-			</trkpt>
-			<trkpt lat="48.791713" lon="19.121503">
-				<ele>498.000000</ele>
-			</trkpt>
-			<trkpt lat="48.791896" lon="19.121549">
-				<ele>499.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792056" lon="19.121583">
-				<ele>501.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792198" lon="19.121656">
-				<ele>503.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792352" lon="19.121719">
-				<ele>504.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792446" lon="19.121746">
-				<ele>505.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792530" lon="19.121791">
-				<ele>506.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792601" lon="19.121862">
-				<ele>507.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792654" lon="19.121962">
-				<ele>508.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792695" lon="19.122096">
-				<ele>509.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792713" lon="19.122275">
-				<ele>510.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792713" lon="19.122482">
-				<ele>512.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792701" lon="19.123201">
-				<ele>517.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792695" lon="19.123317">
-				<ele>518.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792701" lon="19.123426">
-				<ele>518.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792725" lon="19.123516">
-				<ele>519.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792766" lon="19.123570">
-				<ele>520.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792807" lon="19.123606">
-				<ele>520.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792861" lon="19.123614">
-				<ele>521.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792926" lon="19.123579">
-				<ele>521.000000</ele>
-			</trkpt>
-			<trkpt lat="48.792973" lon="19.123507">
-				<ele>522.000000</ele>
-			</trkpt>
-			<trkpt lat="48.793050" lon="19.123354">
-				<ele>523.000000</ele>
-			</trkpt>
-			<trkpt lat="48.793139" lon="19.123157">
-				<ele>525.000000</ele>
-			</trkpt>
-			<trkpt lat="48.793299" lon="19.122824">
-				<ele>527.000000</ele>
-			</trkpt>
-			<trkpt lat="48.793358" lon="19.122725">
-				<ele>528.000000</ele>
-			</trkpt>
-			<trkpt lat="48.793411" lon="19.122680">
-				<ele>529.000000</ele>
-			</trkpt>
-			<trkpt lat="48.793470" lon="19.122654">
-				<ele>529.000000</ele>
-			</trkpt>
-			<trkpt lat="48.793529" lon="19.122644">
-				<ele>530.000000</ele>
-			</trkpt>
-			<trkpt lat="48.793624" lon="19.122680">
-				<ele>531.000000</ele>
-			</trkpt>
-			<trkpt lat="48.793778" lon="19.122725">
-				<ele>532.000000</ele>
-			</trkpt>
-			<trkpt lat="48.793908" lon="19.122752">
-				<ele>534.000000</ele>
-			</trkpt>
-			<trkpt lat="48.794092" lon="19.122761">
-				<ele>536.000000</ele>
-			</trkpt>
-			<trkpt lat="48.794210" lon="19.122788">
-				<ele>537.000000</ele>
-			</trkpt>
-			<trkpt lat="48.794298" lon="19.122833">
-				<ele>538.000000</ele>
-			</trkpt>
-			<trkpt lat="48.794376" lon="19.122895">
-				<ele>539.000000</ele>
-			</trkpt>
-			<trkpt lat="48.794441" lon="19.122967">
-				<ele>539.000000</ele>
-			</trkpt>
-			<trkpt lat="48.794500" lon="19.123084">
-				<ele>540.000000</ele>
-			</trkpt>
-			<trkpt lat="48.794541" lon="19.123264">
-				<ele>542.000000</ele>
-			</trkpt>
-			<trkpt lat="48.794577" lon="19.123390">
-				<ele>542.000000</ele>
-			</trkpt>
-			<trkpt lat="48.794636" lon="19.123524">
-				<ele>543.000000</ele>
-			</trkpt>
-			<trkpt lat="48.794689" lon="19.123614">
-				<ele>544.000000</ele>
-			</trkpt>
-			<trkpt lat="48.794843" lon="19.123749">
-				<ele>546.000000</ele>
-			</trkpt>
-			<trkpt lat="48.794944" lon="19.123857">
-				<ele>547.000000</ele>
-			</trkpt>
-			<trkpt lat="48.795033" lon="19.123983">
-				<ele>548.000000</ele>
-			</trkpt>
-			<trkpt lat="48.795121" lon="19.124117">
-				<ele>550.000000</ele>
-			</trkpt>
-			<trkpt lat="48.795210" lon="19.124207">
-				<ele>551.000000</ele>
-			</trkpt>
-			<trkpt lat="48.795305" lon="19.124279">
-				<ele>552.000000</ele>
-			</trkpt>
-			<trkpt lat="48.795406" lon="19.124306">
-				<ele>553.000000</ele>
-			</trkpt>
-			<trkpt lat="48.795506" lon="19.124296">
-				<ele>555.000000</ele>
-			</trkpt>
-			<trkpt lat="48.795577" lon="19.124252">
-				<ele>556.000000</ele>
-			</trkpt>
-			<trkpt lat="48.795630" lon="19.124172">
-				<ele>556.000000</ele>
-			</trkpt>
-			<trkpt lat="48.795660" lon="19.124063">
-				<ele>557.000000</ele>
-			</trkpt>
-			<trkpt lat="48.795701" lon="19.123820">
-				<ele>559.000000</ele>
-			</trkpt>
-			<trkpt lat="48.795731" lon="19.123677">
-				<ele>560.000000</ele>
-			</trkpt>
-			<trkpt lat="48.795772" lon="19.123570">
-				<ele>561.000000</ele>
-			</trkpt>
-			<trkpt lat="48.795819" lon="19.123507">
-				<ele>562.000000</ele>
-			</trkpt>
-			<trkpt lat="48.795896" lon="19.123453">
-				<ele>562.000000</ele>
-			</trkpt>
-			<trkpt lat="48.796145" lon="19.123363">
-				<ele>565.000000</ele>
-			</trkpt>
-			<trkpt lat="48.796293" lon="19.123344">
-				<ele>566.000000</ele>
-			</trkpt>
-			<trkpt lat="48.796423" lon="19.123336">
-				<ele>567.000000</ele>
-			</trkpt>
-			<trkpt lat="48.796577" lon="19.123380">
-				<ele>569.000000</ele>
-			</trkpt>
-			<trkpt lat="48.796837" lon="19.123407">
-				<ele>571.000000</ele>
-			</trkpt>
-			<trkpt lat="48.797062" lon="19.123426">
-				<ele>573.000000</ele>
-			</trkpt>
-			<trkpt lat="48.797299" lon="19.123470">
-				<ele>576.000000</ele>
-			</trkpt>
-			<trkpt lat="48.797388" lon="19.123470">
-				<ele>577.000000</ele>
-			</trkpt>
-			<trkpt lat="48.797512" lon="19.123516">
-				<ele>578.000000</ele>
-			</trkpt>
-			<trkpt lat="48.797607" lon="19.123570">
-				<ele>579.000000</ele>
-			</trkpt>
-			<trkpt lat="48.797748" lon="19.123677">
-				<ele>581.000000</ele>
-			</trkpt>
-			<trkpt lat="48.797920" lon="19.123830">
-				<ele>583.000000</ele>
-			</trkpt>
-			<trkpt lat="48.798068" lon="19.123910">
-				<ele>584.000000</ele>
-			</trkpt>
-			<trkpt lat="48.798186" lon="19.123946">
-				<ele>586.000000</ele>
-			</trkpt>
-			<trkpt lat="48.798305" lon="19.123946">
-				<ele>587.000000</ele>
-			</trkpt>
-			<trkpt lat="48.798418" lon="19.123910">
-				<ele>588.000000</ele>
-			</trkpt>
-			<trkpt lat="48.798506" lon="19.123866">
-				<ele>589.000000</ele>
-			</trkpt>
-			<trkpt lat="48.798619" lon="19.123866">
-				<ele>590.000000</ele>
-			</trkpt>
-			<trkpt lat="48.798695" lon="19.123910">
-				<ele>591.000000</ele>
-			</trkpt>
-			<trkpt lat="48.798760" lon="19.123973">
-				<ele>591.000000</ele>
-			</trkpt>
-			<trkpt lat="48.798820" lon="19.124072">
-				<ele>592.000000</ele>
-			</trkpt>
-			<trkpt lat="48.798890" lon="19.124216">
-				<ele>593.000000</ele>
-			</trkpt>
-			<trkpt lat="48.798997" lon="19.124369">
-				<ele>595.000000</ele>
-			</trkpt>
-			<trkpt lat="48.799098" lon="19.124468">
-				<ele>596.000000</ele>
-			</trkpt>
-			<trkpt lat="48.799246" lon="19.124593">
-				<ele>598.000000</ele>
-			</trkpt>
-			<trkpt lat="48.799399" lon="19.124728">
-				<ele>599.000000</ele>
-			</trkpt>
-			<trkpt lat="48.799506" lon="19.124854">
-				<ele>601.000000</ele>
-			</trkpt>
-			<trkpt lat="48.799601" lon="19.125025">
-				<ele>602.000000</ele>
-			</trkpt>
-			<trkpt lat="48.799707" lon="19.125231">
-				<ele>604.000000</ele>
-			</trkpt>
-			<trkpt lat="48.799902" lon="19.125573">
-				<ele>607.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800027" lon="19.125797">
-				<ele>609.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800151" lon="19.126021">
-				<ele>610.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800222" lon="19.126220">
-				<ele>612.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800317" lon="19.126497">
-				<ele>614.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800376" lon="19.126669">
-				<ele>615.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800482" lon="19.126893">
-				<ele>616.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800553" lon="19.127091">
-				<ele>618.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800577" lon="19.127199">
-				<ele>618.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800595" lon="19.127333">
-				<ele>619.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800583" lon="19.127486">
-				<ele>620.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800547" lon="19.127917">
-				<ele>623.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800553" lon="19.128052">
-				<ele>624.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800565" lon="19.128168">
-				<ele>625.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800595" lon="19.128294">
-				<ele>626.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800642" lon="19.128384">
-				<ele>626.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800690" lon="19.128438">
-				<ele>627.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800749" lon="19.128474">
-				<ele>628.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800802" lon="19.128483">
-				<ele>628.000000</ele>
-			</trkpt>
-			<trkpt lat="48.800873" lon="19.128465">
-				<ele>629.000000</ele>
-			</trkpt>
-			<trkpt lat="48.801068" lon="19.128340">
-				<ele>631.000000</ele>
-			</trkpt>
-			<trkpt lat="48.801151" lon="19.128304">
-				<ele>632.000000</ele>
-			</trkpt>
-			<trkpt lat="48.801216" lon="19.128294">
-				<ele>633.000000</ele>
-			</trkpt>
-			<trkpt lat="48.801293" lon="19.128313">
-				<ele>634.000000</ele>
-			</trkpt>
-			<trkpt lat="48.801364" lon="19.128367">
-				<ele>635.000000</ele>
-			</trkpt>
-			<trkpt lat="48.801459" lon="19.128457">
-				<ele>636.000000</ele>
-			</trkpt>
-			<trkpt lat="48.801577" lon="19.128573">
-				<ele>637.000000</ele>
-			</trkpt>
-			<trkpt lat="48.801713" lon="19.128761">
-				<ele>639.000000</ele>
-			</trkpt>
-			<trkpt lat="48.801890" lon="19.128933">
-				<ele>641.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802110" lon="19.129183">
-				<ele>644.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802187" lon="19.129273">
-				<ele>645.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802246" lon="19.129310">
-				<ele>645.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802334" lon="19.129319">
-				<ele>646.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802477" lon="19.129283">
-				<ele>647.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802565" lon="19.129265">
-				<ele>648.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802636" lon="19.129273">
-				<ele>649.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802666" lon="19.129283">
-				<ele>649.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802690" lon="19.129300">
-				<ele>649.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802749" lon="19.129346">
-				<ele>650.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803145" lon="19.129875">
-				<ele>655.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803252" lon="19.130002">
-				<ele>657.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803352" lon="19.130109">
-				<ele>658.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803441" lon="19.130181">
-				<ele>659.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803512" lon="19.130244">
-				<ele>660.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803595" lon="19.130298">
-				<ele>661.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803701" lon="19.130352">
-				<ele>662.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803879" lon="19.130432">
-				<ele>664.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804133" lon="19.130541">
-				<ele>667.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804204" lon="19.130577">
-				<ele>667.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804435" lon="19.130665">
-				<ele>670.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804624" lon="19.130702">
-				<ele>672.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804884" lon="19.130711">
-				<ele>675.000000</ele>
-			</trkpt>
-			<trkpt lat="48.805033" lon="19.130738">
-				<ele>676.000000</ele>
-			</trkpt>
-			<trkpt lat="48.805169" lon="19.130755">
-				<ele>678.000000</ele>
-			</trkpt>
-			<trkpt lat="48.805180" lon="19.130549">
-				<ele>679.000000</ele>
-			</trkpt>
-			<trkpt lat="48.805163" lon="19.130415">
-				<ele>679.000000</ele>
-			</trkpt>
-			<trkpt lat="48.805139" lon="19.130315">
-				<ele>679.000000</ele>
-			</trkpt>
-			<trkpt lat="48.805127" lon="19.130289">
-				<ele>679.000000</ele>
-			</trkpt>
-			<trkpt lat="48.805080" lon="19.130199">
-				<ele>680.000000</ele>
-			</trkpt>
-			<trkpt lat="48.805003" lon="19.130136">
-				<ele>680.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804891" lon="19.130055">
-				<ele>680.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804731" lon="19.129975">
-				<ele>680.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804683" lon="19.129921">
-				<ele>680.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804624" lon="19.129822">
-				<ele>681.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804553" lon="19.129660">
-				<ele>681.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804500" lon="19.129516">
-				<ele>681.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804287" lon="19.128617">
-				<ele>682.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804199" lon="19.128304">
-				<ele>682.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804133" lon="19.128124">
-				<ele>682.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804062" lon="19.127980">
-				<ele>682.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803991" lon="19.127809">
-				<ele>682.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803885" lon="19.127567">
-				<ele>683.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803861" lon="19.127512">
-				<ele>683.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803814" lon="19.127423">
-				<ele>683.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803772" lon="19.127351">
-				<ele>683.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803719" lon="19.127288">
-				<ele>683.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803654" lon="19.127235">
-				<ele>683.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803500" lon="19.127091">
-				<ele>683.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803453" lon="19.127046">
-				<ele>683.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803423" lon="19.127019">
-				<ele>683.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803358" lon="19.126965">
-				<ele>683.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803204" lon="19.126795">
-				<ele>684.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803032" lon="19.126516">
-				<ele>684.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802896" lon="19.126291">
-				<ele>684.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802796" lon="19.126094">
-				<ele>684.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802719" lon="19.125914">
-				<ele>685.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802695" lon="19.125734">
-				<ele>686.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802678" lon="19.125564">
-				<ele>687.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802666" lon="19.125375">
-				<ele>688.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802666" lon="19.125285">
-				<ele>688.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802690" lon="19.125178">
-				<ele>689.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802719" lon="19.125061">
-				<ele>689.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802772" lon="19.124899">
-				<ele>691.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802814" lon="19.124728">
-				<ele>692.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802826" lon="19.124621">
-				<ele>693.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802831" lon="19.124566">
-				<ele>693.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802843" lon="19.124449">
-				<ele>694.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802849" lon="19.124306">
-				<ele>695.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802855" lon="19.124136">
-				<ele>696.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802861" lon="19.124046">
-				<ele>696.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802867" lon="19.123946">
-				<ele>697.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802867" lon="19.123883">
-				<ele>698.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802861" lon="19.123847">
-				<ele>698.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802861" lon="19.123803">
-				<ele>698.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802867" lon="19.123776">
-				<ele>698.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802879" lon="19.123749">
-				<ele>699.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802896" lon="19.123731">
-				<ele>699.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802920" lon="19.123731">
-				<ele>699.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802950" lon="19.123740">
-				<ele>699.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802979" lon="19.123776">
-				<ele>700.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802992" lon="19.123820">
-				<ele>700.000000</ele>
-			</trkpt>
-			<trkpt lat="48.802997" lon="19.123875">
-				<ele>701.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803003" lon="19.123973">
-				<ele>702.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803003" lon="19.124145">
-				<ele>703.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803027" lon="19.124323">
-				<ele>705.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803062" lon="19.124503">
-				<ele>707.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803103" lon="19.124665">
-				<ele>708.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803169" lon="19.124809">
-				<ele>710.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803340" lon="19.125097">
-				<ele>713.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803399" lon="19.125214">
-				<ele>714.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803470" lon="19.125312">
-				<ele>715.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803559" lon="19.125411">
-				<ele>716.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803595" lon="19.125447">
-				<ele>717.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803654" lon="19.125501">
-				<ele>717.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803701" lon="19.125518">
-				<ele>718.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803743" lon="19.125537">
-				<ele>719.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803784" lon="19.125554">
-				<ele>719.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803897" lon="19.125581">
-				<ele>720.000000</ele>
-			</trkpt>
-			<trkpt lat="48.803973" lon="19.125591">
-				<ele>721.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804015" lon="19.125591">
-				<ele>722.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804015" lon="19.125591">
-				<ele>722.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804015" lon="19.125591">
-				<ele>722.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804080" lon="19.125573">
-				<ele>722.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804139" lon="19.125537">
-				<ele>723.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804098" lon="19.125438">
-				<ele>724.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804103" lon="19.125384">
-				<ele>725.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804098" lon="19.125285">
-				<ele>726.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804074" lon="19.125204">
-				<ele>727.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804145" lon="19.125178">
-				<ele>728.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804204" lon="19.125168">
-				<ele>729.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804275" lon="19.125178">
-				<ele>730.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804317" lon="19.125187">
-				<ele>730.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804518" lon="19.125258">
-				<ele>734.000000</ele>
-			</trkpt>
-			<trkpt lat="48.804843" lon="19.125365">
-				<ele>739.000000</ele>
-			</trkpt>
-			<trkpt lat="48.805127" lon="19.125545">
-				<ele>743.000000</ele>
-			</trkpt>
-			<trkpt lat="48.805305" lon="19.125671">
-				<ele>746.000000</ele>
-			</trkpt>
-			<trkpt lat="48.805399" lon="19.125753">
-				<ele>748.000000</ele>
-			</trkpt>
-			<trkpt lat="48.805458" lon="19.125797">
-				<ele>749.000000</ele>
-			</trkpt>
-			<trkpt lat="48.805748" lon="19.125994">
-				<ele>752.000000</ele>
-			</trkpt>
-			<trkpt lat="48.805979" lon="19.126147">
-				<ele>755.000000</ele>
-			</trkpt>
-			<trkpt lat="48.806175" lon="19.126220">
-				<ele>757.000000</ele>
-			</trkpt>
-			<trkpt lat="48.806387" lon="19.126220">
-				<ele>759.000000</ele>
-			</trkpt>
-			<trkpt lat="48.806731" lon="19.126354">
-				<ele>763.000000</ele>
-			</trkpt>
-			<trkpt lat="48.807032" lon="19.126489">
-				<ele>767.000000</ele>
-			</trkpt>
-			<trkpt lat="48.807215" lon="19.126525">
-				<ele>769.000000</ele>
-			</trkpt>
-			<trkpt lat="48.807316" lon="19.126533">
-				<ele>770.000000</ele>
-			</trkpt>
-			<trkpt lat="48.807600" lon="19.126516">
-				<ele>772.000000</ele>
-			</trkpt>
-			<trkpt lat="48.807730" lon="19.126497">
-				<ele>773.000000</ele>
-			</trkpt>
-			<trkpt lat="48.807837" lon="19.126507">
-				<ele>774.000000</ele>
-			</trkpt>
-			<trkpt lat="48.807925" lon="19.126533">
-				<ele>775.000000</ele>
-			</trkpt>
-			<trkpt lat="48.808003" lon="19.126623">
-				<ele>776.000000</ele>
-			</trkpt>
-			<trkpt lat="48.808156" lon="19.126740">
-				<ele>778.000000</ele>
-			</trkpt>
-			<trkpt lat="48.808145" lon="19.126659">
-				<ele>778.000000</ele>
-			</trkpt>
-			<trkpt lat="48.807997" lon="19.126399">
-				<ele>780.000000</ele>
-			</trkpt>
-			<trkpt lat="48.807783" lon="19.126183">
-				<ele>780.000000</ele>
-			</trkpt>
-			<trkpt lat="48.807447" lon="19.126147">
-				<ele>782.000000</ele>
-			</trkpt>
-			<trkpt lat="48.807180" lon="19.125870">
-				<ele>785.000000</ele>
-			</trkpt>
-			<trkpt lat="48.806955" lon="19.125393">
-				<ele>788.000000</ele>
-			</trkpt>
-			<trkpt lat="48.806672" lon="19.124405">
-				<ele>796.000000</ele>
-			</trkpt>
-			<trkpt lat="48.806565" lon="19.123883">
-				<ele>801.000000</ele>
-			</trkpt>
-			<trkpt lat="48.806547" lon="19.123273">
-				<ele>807.000000</ele>
-			</trkpt>
-			<trkpt lat="48.806630" lon="19.122985">
-				<ele>810.000000</ele>
-			</trkpt>
-			<trkpt lat="48.806665" lon="19.122625">
-				<ele>812.000000</ele>
-			</trkpt>
-			<trkpt lat="48.806541" lon="19.122239">
-				<ele>814.000000</ele>
-			</trkpt>
-			<trkpt lat="48.806429" lon="19.120910">
-				<ele>823.000000</ele>
-			</trkpt>
-			<trkpt lat="48.806340" lon="19.120470">
-				<ele>827.000000</ele>
-			</trkpt>
-			<trkpt lat="48.806311" lon="19.120237">
-				<ele>829.000000</ele>
-			</trkpt>
-			<trkpt lat="48.806358" lon="19.120165">
-				<ele>830.000000</ele>
-			</trkpt>
-			<trkpt lat="48.806387" lon="19.120120">
-				<ele>831.000000</ele>
-			</trkpt>
-			<trkpt lat="48.806529" lon="19.120128">
-				<ele>832.000000</ele>
-			</trkpt>
-			<trkpt lat="48.806796" lon="19.120488">
-				<ele>837.000000</ele>
-			</trkpt>
-			<trkpt lat="48.807500" lon="19.121422">
-				<ele>846.000000</ele>
-			</trkpt>
-			<trkpt lat="48.807813" lon="19.121575">
-				<ele>849.000000</ele>
-			</trkpt>
-			<trkpt lat="48.808257" lon="19.121557">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.808736" lon="19.121575">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.808801" lon="19.121566">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.808801" lon="19.121566">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809002" lon="19.121549">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.808908" lon="19.121845">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.808849" lon="19.122042">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.808825" lon="19.122186">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.808819" lon="19.122384">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.808843" lon="19.122545">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.808896" lon="19.122770">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.808967" lon="19.123013">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809032" lon="19.123246">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809085" lon="19.123543">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809115" lon="19.123776">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809174" lon="19.123956">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809269" lon="19.124189">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809340" lon="19.124306">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809405" lon="19.124386">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809558" lon="19.124459">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809759" lon="19.124503">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809830" lon="19.124531">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809872" lon="19.124575">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809914" lon="19.124629">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809967" lon="19.124746">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810008" lon="19.124854">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810061" lon="19.124935">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810180" lon="19.125051">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810227" lon="19.125115">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810280" lon="19.125222">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810351" lon="19.125411">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810386" lon="19.125474">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810428" lon="19.125528">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810451" lon="19.125564">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810529" lon="19.125608">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810612" lon="19.125680">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810724" lon="19.125780">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810836" lon="19.125914">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810937" lon="19.126076">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810990" lon="19.126139">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811049" lon="19.126183">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811084" lon="19.126229">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811126" lon="19.126300">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811180" lon="19.126390">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811250" lon="19.126489">
-				<ele>849.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811292" lon="19.126533">
-				<ele>848.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811351" lon="19.126579">
-				<ele>848.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811451" lon="19.126623">
-				<ele>847.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811552" lon="19.126659">
-				<ele>845.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811599" lon="19.126686">
-				<ele>845.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811635" lon="19.126732">
-				<ele>844.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811700" lon="19.126875">
-				<ele>843.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811765" lon="19.127055">
-				<ele>842.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811830" lon="19.127145">
-				<ele>841.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811872" lon="19.127199">
-				<ele>840.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811925" lon="19.127279">
-				<ele>839.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811996" lon="19.127325">
-				<ele>838.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812055" lon="19.127342">
-				<ele>838.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812096" lon="19.127325">
-				<ele>837.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812214" lon="19.127306">
-				<ele>836.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812280" lon="19.127306">
-				<ele>835.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812310" lon="19.127315">
-				<ele>835.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812339" lon="19.127342">
-				<ele>835.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812362" lon="19.127388">
-				<ele>834.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812375" lon="19.127459">
-				<ele>834.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812398" lon="19.127602">
-				<ele>833.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812404" lon="19.127665">
-				<ele>832.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812398" lon="19.127702">
-				<ele>832.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812167" lon="19.127854">
-				<ele>827.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812090" lon="19.127891">
-				<ele>824.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812014" lon="19.127944">
-				<ele>821.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811907" lon="19.128034">
-				<ele>820.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811782" lon="19.128025">
-				<ele>819.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811712" lon="19.128025">
-				<ele>819.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811677" lon="19.128061">
-				<ele>818.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811629" lon="19.128115">
-				<ele>818.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811581" lon="19.128151">
-				<ele>818.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811516" lon="19.128178">
-				<ele>817.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811333" lon="19.128258">
-				<ele>816.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811227" lon="19.128403">
-				<ele>816.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811149" lon="19.128520">
-				<ele>815.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811049" lon="19.128671">
-				<ele>814.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810996" lon="19.128797">
-				<ele>814.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810901" lon="19.129057">
-				<ele>813.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810813" lon="19.129229">
-				<ele>812.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810617" lon="19.129445">
-				<ele>811.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810482" lon="19.129579">
-				<ele>810.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810262" lon="19.129839">
-				<ele>807.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810132" lon="19.130019">
-				<ele>806.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809973" lon="19.130289">
-				<ele>803.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809925" lon="19.130388">
-				<ele>803.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809902" lon="19.130478">
-				<ele>802.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809860" lon="19.130621">
-				<ele>801.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809813" lon="19.130971">
-				<ele>799.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809837" lon="19.131196">
-				<ele>798.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809860" lon="19.131357">
-				<ele>797.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809889" lon="19.131537">
-				<ele>796.000000</ele>
-			</trkpt>
-			<trkpt lat="48.809925" lon="19.131681">
-				<ele>795.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810008" lon="19.131906">
-				<ele>794.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810115" lon="19.132067">
-				<ele>793.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810185" lon="19.132166">
-				<ele>792.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810239" lon="19.132220">
-				<ele>792.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810304" lon="19.132273">
-				<ele>791.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810482" lon="19.132418">
-				<ele>789.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810629" lon="19.132516">
-				<ele>787.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810842" lon="19.132571">
-				<ele>784.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810925" lon="19.132579">
-				<ele>783.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810949" lon="19.132589">
-				<ele>783.000000</ele>
-			</trkpt>
-			<trkpt lat="48.810966" lon="19.132598">
-				<ele>782.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811002" lon="19.132625">
-				<ele>782.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811049" lon="19.132678">
-				<ele>781.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811067" lon="19.132715">
-				<ele>781.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811079" lon="19.132751">
-				<ele>780.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811079" lon="19.132786">
-				<ele>780.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811149" lon="19.132831">
-				<ele>780.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811203" lon="19.132876">
-				<ele>781.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811239" lon="19.132921">
-				<ele>781.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811268" lon="19.132984">
-				<ele>782.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811280" lon="19.133038">
-				<ele>782.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811304" lon="19.133154">
-				<ele>783.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811327" lon="19.133244">
-				<ele>783.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811357" lon="19.133344">
-				<ele>784.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811375" lon="19.133415">
-				<ele>784.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811386" lon="19.133585">
-				<ele>785.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811398" lon="19.133675">
-				<ele>785.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811410" lon="19.133757">
-				<ele>786.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811410" lon="19.133828">
-				<ele>786.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811398" lon="19.133881">
-				<ele>786.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811363" lon="19.134017">
-				<ele>787.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811345" lon="19.134116">
-				<ele>788.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811339" lon="19.134214">
-				<ele>788.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811304" lon="19.134403">
-				<ele>789.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811298" lon="19.134502">
-				<ele>789.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811321" lon="19.134682">
-				<ele>791.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811428" lon="19.134906">
-				<ele>794.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811469" lon="19.134986">
-				<ele>795.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811540" lon="19.135059">
-				<ele>797.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811581" lon="19.135149">
-				<ele>798.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811587" lon="19.135212">
-				<ele>799.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811570" lon="19.135275">
-				<ele>800.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811540" lon="19.135365">
-				<ele>802.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811493" lon="19.135454">
-				<ele>804.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811410" lon="19.135759">
-				<ele>812.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811369" lon="19.136002">
-				<ele>818.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811315" lon="19.136200">
-				<ele>822.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811274" lon="19.136334">
-				<ele>825.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811191" lon="19.136739">
-				<ele>831.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811174" lon="19.136946">
-				<ele>833.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811174" lon="19.137116">
-				<ele>834.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811120" lon="19.137286">
-				<ele>836.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811096" lon="19.137466">
-				<ele>837.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811096" lon="19.137583">
-				<ele>838.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811138" lon="19.137789">
-				<ele>840.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811191" lon="19.137816">
-				<ele>840.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811239" lon="19.137826">
-				<ele>840.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811298" lon="19.137835">
-				<ele>841.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811386" lon="19.137799">
-				<ele>841.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811493" lon="19.137691">
-				<ele>842.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811540" lon="19.137655">
-				<ele>842.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811629" lon="19.137646">
-				<ele>842.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811664" lon="19.137663">
-				<ele>842.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811723" lon="19.137726">
-				<ele>843.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811677" lon="19.137852">
-				<ele>843.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811664" lon="19.138005">
-				<ele>843.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811664" lon="19.138212">
-				<ele>844.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811658" lon="19.138491">
-				<ele>845.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811677" lon="19.138705">
-				<ele>846.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811706" lon="19.138904">
-				<ele>846.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811777" lon="19.139083">
-				<ele>847.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812179" lon="19.139793">
-				<ele>849.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812428" lon="19.140170">
-				<ele>850.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812540" lon="19.140286">
-				<ele>851.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812605" lon="19.140349">
-				<ele>852.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812800" lon="19.140431">
-				<ele>853.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812978" lon="19.140449">
-				<ele>854.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813043" lon="19.140493">
-				<ele>854.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813078" lon="19.140565">
-				<ele>855.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813096" lon="19.140728">
-				<ele>855.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813149" lon="19.141877">
-				<ele>856.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813179" lon="19.142183">
-				<ele>856.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813226" lon="19.142353">
-				<ele>856.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813321" lon="19.142560">
-				<ele>857.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813457" lon="19.142865">
-				<ele>857.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813551" lon="19.143099">
-				<ele>857.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813694" lon="19.143548">
-				<ele>857.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813741" lon="19.143835">
-				<ele>858.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813746" lon="19.143952">
-				<ele>858.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813717" lon="19.144015">
-				<ele>858.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813687" lon="19.144042">
-				<ele>858.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813646" lon="19.144042">
-				<ele>858.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813528" lon="19.143979">
-				<ele>858.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813374" lon="19.143854">
-				<ele>858.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813214" lon="19.143835">
-				<ele>858.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812930" lon="19.143854">
-				<ele>859.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812238" lon="19.143889">
-				<ele>859.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811990" lon="19.143917">
-				<ele>860.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811842" lon="19.143970">
-				<ele>860.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811753" lon="19.144068">
-				<ele>860.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811694" lon="19.144177">
-				<ele>862.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811652" lon="19.144303">
-				<ele>864.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811623" lon="19.144544">
-				<ele>868.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811641" lon="19.144734">
-				<ele>873.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811688" lon="19.144797">
-				<ele>873.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811736" lon="19.144823">
-				<ele>874.000000</ele>
-			</trkpt>
-			<trkpt lat="48.811818" lon="19.144797">
-				<ele>874.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812155" lon="19.144707">
-				<ele>878.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812333" lon="19.144697">
-				<ele>880.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812487" lon="19.144707">
-				<ele>881.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812741" lon="19.144787">
-				<ele>884.000000</ele>
-			</trkpt>
-			<trkpt lat="48.812895" lon="19.144850">
-				<ele>886.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813090" lon="19.144986">
-				<ele>888.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813498" lon="19.145336">
-				<ele>893.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813610" lon="19.145470">
-				<ele>895.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813694" lon="19.145623">
-				<ele>897.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813871" lon="19.146001">
-				<ele>900.000000</ele>
-			</trkpt>
-			<trkpt lat="48.813966" lon="19.146135">
-				<ele>902.000000</ele>
-			</trkpt>
-			<trkpt lat="48.814308" lon="19.146468">
-				<ele>908.000000</ele>
-			</trkpt>
-			<trkpt lat="48.814392" lon="19.146575">
-				<ele>910.000000</ele>
-			</trkpt>
-			<trkpt lat="48.814492" lon="19.146710">
-				<ele>911.000000</ele>
-			</trkpt>
-			<trkpt lat="48.814575" lon="19.146871">
-				<ele>913.000000</ele>
-			</trkpt>
-			<trkpt lat="48.814616" lon="19.147007">
-				<ele>914.000000</ele>
-			</trkpt>
-			<trkpt lat="48.814675" lon="19.147105">
-				<ele>915.000000</ele>
-			</trkpt>
-			<trkpt lat="48.814735" lon="19.147141">
-				<ele>916.000000</ele>
-			</trkpt>
-			<trkpt lat="48.814794" lon="19.147150">
-				<ele>917.000000</ele>
-			</trkpt>
-			<trkpt lat="48.815042" lon="19.147087">
-				<ele>920.000000</ele>
-			</trkpt>
-			<trkpt lat="48.815308" lon="19.147043">
-				<ele>921.000000</ele>
-			</trkpt>
-			<trkpt lat="48.815450" lon="19.147034">
-				<ele>922.000000</ele>
-			</trkpt>
-			<trkpt lat="48.815545" lon="19.146997">
-				<ele>922.000000</ele>
-			</trkpt>
-			<trkpt lat="48.815593" lon="19.146961">
-				<ele>922.000000</ele>
-			</trkpt>
-			<trkpt lat="48.815639" lon="19.146890">
-				<ele>923.000000</ele>
-			</trkpt>
-			<trkpt lat="48.815705" lon="19.146728">
-				<ele>923.000000</ele>
-			</trkpt>
-			<trkpt lat="48.815811" lon="19.146494">
-				<ele>924.000000</ele>
-			</trkpt>
-			<trkpt lat="48.815882" lon="19.146395">
-				<ele>925.000000</ele>
-			</trkpt>
-			<trkpt lat="48.815912" lon="19.146324">
-				<ele>924.000000</ele>
-			</trkpt>
-			<trkpt lat="48.816036" lon="19.146028">
-				<ele>920.000000</ele>
-			</trkpt>
-			<trkpt lat="48.816101" lon="19.145973">
-				<ele>920.000000</ele>
-			</trkpt>
-			<trkpt lat="48.816166" lon="19.145928">
-				<ele>920.000000</ele>
-			</trkpt>
-			<trkpt lat="48.816261" lon="19.145928">
-				<ele>920.000000</ele>
-			</trkpt>
-			<trkpt lat="48.816468" lon="19.145928">
-				<ele>920.000000</ele>
-			</trkpt>
-			<trkpt lat="48.816716" lon="19.145875">
-				<ele>921.000000</ele>
-			</trkpt>
-			<trkpt lat="48.816852" lon="19.145829">
-				<ele>921.000000</ele>
-			</trkpt>
-			<trkpt lat="48.816958" lon="19.145821">
-				<ele>921.000000</ele>
-			</trkpt>
-			<trkpt lat="48.817030" lon="19.145865">
-				<ele>921.000000</ele>
-			</trkpt>
-			<trkpt lat="48.817077" lon="19.145965">
-				<ele>921.000000</ele>
-			</trkpt>
-			<trkpt lat="48.817113" lon="19.146118">
-				<ele>921.000000</ele>
-			</trkpt>
-			<trkpt lat="48.817142" lon="19.146279">
-				<ele>921.000000</ele>
-			</trkpt>
-			<trkpt lat="48.817195" lon="19.146458">
-				<ele>921.000000</ele>
-			</trkpt>
-			<trkpt lat="48.817302" lon="19.146665">
-				<ele>921.000000</ele>
-			</trkpt>
-			<trkpt lat="48.817390" lon="19.146764">
-				<ele>921.000000</ele>
-			</trkpt>
-			<trkpt lat="48.817473" lon="19.146791">
-				<ele>921.000000</ele>
-			</trkpt>
-			<trkpt lat="48.817568" lon="19.146791">
-				<ele>921.000000</ele>
-			</trkpt>
-			<trkpt lat="48.817686" lon="19.146773">
-				<ele>922.000000</ele>
-			</trkpt>
-			<trkpt lat="48.817805" lon="19.146728">
-				<ele>922.000000</ele>
-			</trkpt>
-			<trkpt lat="48.817970" lon="19.146665">
-				<ele>922.000000</ele>
-			</trkpt>
-			<trkpt lat="48.818124" lon="19.146674">
-				<ele>922.000000</ele>
-			</trkpt>
-			<trkpt lat="48.818213" lon="19.146728">
-				<ele>922.000000</ele>
-			</trkpt>
-			<trkpt lat="48.818283" lon="19.146808">
-				<ele>922.000000</ele>
-			</trkpt>
-			<trkpt lat="48.818373" lon="19.146953">
-				<ele>922.000000</ele>
-			</trkpt>
-			<trkpt lat="48.818438" lon="19.147015">
-				<ele>922.000000</ele>
-			</trkpt>
-			<trkpt lat="48.818444" lon="19.147015">
-				<ele>922.000000</ele>
-			</trkpt>
-			<trkpt lat="48.818503" lon="19.147034">
-				<ele>922.000000</ele>
-			</trkpt>
-			<trkpt lat="48.818591" lon="19.147015">
-				<ele>922.000000</ele>
-			</trkpt>
-			<trkpt lat="48.818686" lon="19.146980">
-				<ele>922.000000</ele>
-			</trkpt>
-			<trkpt lat="48.819325" lon="19.146431">
-				<ele>923.000000</ele>
-			</trkpt>
-			<trkpt lat="48.819419" lon="19.146305">
-				<ele>923.000000</ele>
-			</trkpt>
-			<trkpt lat="48.819537" lon="19.146081">
-				<ele>923.000000</ele>
-			</trkpt>
-			<trkpt lat="48.819656" lon="19.145812">
-				<ele>923.000000</ele>
-			</trkpt>
-			<trkpt lat="48.819763" lon="19.145749">
-				<ele>923.000000</ele>
-			</trkpt>
-			<trkpt lat="48.819857" lon="19.145731">
-				<ele>923.000000</ele>
-			</trkpt>
-			<trkpt lat="48.819946" lon="19.145758">
-				<ele>924.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820029" lon="19.145802">
-				<ele>924.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820088" lon="19.145875">
-				<ele>924.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820289" lon="19.146315">
-				<ele>924.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820401" lon="19.146665">
-				<ele>924.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820478" lon="19.146971">
-				<ele>924.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820502" lon="19.147240">
-				<ele>924.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820508" lon="19.147716">
-				<ele>925.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820496" lon="19.148345">
-				<ele>925.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820449" lon="19.148884">
-				<ele>925.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820466" lon="19.149279">
-				<ele>925.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820472" lon="19.149728">
-				<ele>926.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820455" lon="19.149836">
-				<ele>926.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820437" lon="19.149989">
-				<ele>926.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820289" lon="19.150617">
-				<ele>926.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820265" lon="19.150842">
-				<ele>926.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820283" lon="19.151139">
-				<ele>926.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820289" lon="19.151372">
-				<ele>926.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820265" lon="19.151714">
-				<ele>927.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820277" lon="19.151867">
-				<ele>927.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820401" lon="19.152234">
-				<ele>927.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820437" lon="19.152433">
-				<ele>927.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820449" lon="19.152567">
-				<ele>927.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820443" lon="19.152693">
-				<ele>927.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820413" lon="19.152944">
-				<ele>927.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820336" lon="19.153213">
-				<ele>927.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820241" lon="19.153385">
-				<ele>928.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820182" lon="19.153502">
-				<ele>928.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820170" lon="19.153618">
-				<ele>928.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820188" lon="19.153779">
-				<ele>928.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820218" lon="19.153879">
-				<ele>928.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820271" lon="19.153951">
-				<ele>928.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820384" lon="19.153986">
-				<ele>928.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820590" lon="19.154013">
-				<ele>928.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820738" lon="19.154058">
-				<ele>928.000000</ele>
-			</trkpt>
-			<trkpt lat="48.820874" lon="19.154139">
-				<ele>928.000000</ele>
-			</trkpt>
-			<trkpt lat="48.821005" lon="19.154219">
-				<ele>928.000000</ele>
-			</trkpt>
-			<trkpt lat="48.821111" lon="19.154337">
-				<ele>928.000000</ele>
-			</trkpt>
-			<trkpt lat="48.821176" lon="19.154525">
-				<ele>929.000000</ele>
-			</trkpt>
-			<trkpt lat="48.821229" lon="19.154597">
-				<ele>929.000000</ele>
-			</trkpt>
-			<trkpt lat="48.821312" lon="19.154660">
-				<ele>929.000000</ele>
-			</trkpt>
-			<trkpt lat="48.821478" lon="19.154705">
-				<ele>929.000000</ele>
-			</trkpt>
-			<trkpt lat="48.821573" lon="19.154758">
-				<ele>929.000000</ele>
-			</trkpt>
-			<trkpt lat="48.821815" lon="19.155064">
-				<ele>929.000000</ele>
-			</trkpt>
-			<trkpt lat="48.821974" lon="19.155351">
-				<ele>929.000000</ele>
-			</trkpt>
-			<trkpt lat="48.822063" lon="19.155576">
-				<ele>929.000000</ele>
-			</trkpt>
-			<trkpt lat="48.822140" lon="19.155693">
-				<ele>930.000000</ele>
-			</trkpt>
-			<trkpt lat="48.822240" lon="19.155729">
-				<ele>930.000000</ele>
-			</trkpt>
-			<trkpt lat="48.822311" lon="19.155710">
-				<ele>930.000000</ele>
-			</trkpt>
-			<trkpt lat="48.822430" lon="19.155657">
-				<ele>930.000000</ele>
-			</trkpt>
-			<trkpt lat="48.822566" lon="19.155469">
-				<ele>930.000000</ele>
-			</trkpt>
-			<trkpt lat="48.822684" lon="19.155244">
-				<ele>930.000000</ele>
-			</trkpt>
-			<trkpt lat="48.822767" lon="19.155010">
-				<ele>932.000000</ele>
-			</trkpt>
-			<trkpt lat="48.822856" lon="19.154714">
-				<ele>934.000000</ele>
-			</trkpt>
-			<trkpt lat="48.822962" lon="19.154444">
-				<ele>935.000000</ele>
-			</trkpt>
-			<trkpt lat="48.823140" lon="19.154148">
-				<ele>937.000000</ele>
-			</trkpt>
-			<trkpt lat="48.823205" lon="19.153978">
-				<ele>938.000000</ele>
-			</trkpt>
-			<trkpt lat="48.823240" lon="19.153842">
-				<ele>939.000000</ele>
-			</trkpt>
-			<trkpt lat="48.823276" lon="19.153655">
-				<ele>940.000000</ele>
-			</trkpt>
-			<trkpt lat="48.823317" lon="19.153529">
-				<ele>941.000000</ele>
-			</trkpt>
-			<trkpt lat="48.823388" lon="19.153412">
-				<ele>941.000000</ele>
-			</trkpt>
-			<trkpt lat="48.823429" lon="19.153339">
-				<ele>942.000000</ele>
-			</trkpt>
-			<trkpt lat="48.823506" lon="19.153286">
-				<ele>942.000000</ele>
-			</trkpt>
-			<trkpt lat="48.823624" lon="19.153259">
-				<ele>943.000000</ele>
-			</trkpt>
-			<trkpt lat="48.823909" lon="19.153267">
-				<ele>945.000000</ele>
-			</trkpt>
-			<trkpt lat="48.823962" lon="19.153232">
-				<ele>945.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824009" lon="19.153187">
-				<ele>946.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824068" lon="19.153089">
-				<ele>946.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824121" lon="19.152980">
-				<ele>947.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824192" lon="19.152764">
-				<ele>948.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824251" lon="19.152674">
-				<ele>949.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824281" lon="19.152657">
-				<ele>949.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824358" lon="19.152666">
-				<ele>949.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824394" lon="19.152737">
-				<ele>950.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824423" lon="19.152900">
-				<ele>950.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824465" lon="19.153177">
-				<ele>950.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824553" lon="19.154041">
-				<ele>951.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824565" lon="19.154247">
-				<ele>952.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824541" lon="19.154444">
-				<ele>952.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824530" lon="19.154668">
-				<ele>952.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824553" lon="19.154795">
-				<ele>952.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824660" lon="19.155028">
-				<ele>952.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824736" lon="19.155190">
-				<ele>953.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824819" lon="19.155253">
-				<ele>953.000000</ele>
-			</trkpt>
-			<trkpt lat="48.824914" lon="19.155263">
-				<ele>953.000000</ele>
-			</trkpt>
-			<trkpt lat="48.825002" lon="19.155217">
-				<ele>953.000000</ele>
-			</trkpt>
-			<trkpt lat="48.825103" lon="19.155145">
-				<ele>953.000000</ele>
-			</trkpt>
-			<trkpt lat="48.825192" lon="19.155145">
-				<ele>953.000000</ele>
-			</trkpt>
-			<trkpt lat="48.825310" lon="19.155181">
-				<ele>953.000000</ele>
-			</trkpt>
-			<trkpt lat="48.825411" lon="19.155244">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.825511" lon="19.155324">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.825582" lon="19.155387">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.825671" lon="19.155397">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.825759" lon="19.155360">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.825854" lon="19.155253">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.826014" lon="19.155020">
-				<ele>955.000000</ele>
-			</trkpt>
-			<trkpt lat="48.826126" lon="19.154848">
-				<ele>955.000000</ele>
-			</trkpt>
-			<trkpt lat="48.826327" lon="19.154651">
-				<ele>955.000000</ele>
-			</trkpt>
-			<trkpt lat="48.826434" lon="19.154579">
-				<ele>956.000000</ele>
-			</trkpt>
-			<trkpt lat="48.826505" lon="19.154588">
-				<ele>956.000000</ele>
-			</trkpt>
-			<trkpt lat="48.826576" lon="19.154634">
-				<ele>956.000000</ele>
-			</trkpt>
-			<trkpt lat="48.826641" lon="19.154731">
-				<ele>956.000000</ele>
-			</trkpt>
-			<trkpt lat="48.826706" lon="19.154813">
-				<ele>956.000000</ele>
-			</trkpt>
-			<trkpt lat="48.826818" lon="19.154894">
-				<ele>956.000000</ele>
-			</trkpt>
-			<trkpt lat="48.826919" lon="19.154875">
-				<ele>956.000000</ele>
-			</trkpt>
-			<trkpt lat="48.827102" lon="19.154750">
-				<ele>957.000000</ele>
-			</trkpt>
-			<trkpt lat="48.827173" lon="19.154723">
-				<ele>957.000000</ele>
-			</trkpt>
-			<trkpt lat="48.827244" lon="19.154723">
-				<ele>957.000000</ele>
-			</trkpt>
-			<trkpt lat="48.827321" lon="19.154758">
-				<ele>957.000000</ele>
-			</trkpt>
-			<trkpt lat="48.827398" lon="19.154875">
-				<ele>957.000000</ele>
-			</trkpt>
-			<trkpt lat="48.827457" lon="19.154993">
-				<ele>957.000000</ele>
-			</trkpt>
-			<trkpt lat="48.827475" lon="19.155047">
-				<ele>957.000000</ele>
-			</trkpt>
-			<trkpt lat="48.827475" lon="19.155047">
-				<ele>957.000000</ele>
-			</trkpt>
-			<trkpt lat="48.827546" lon="19.155217">
-				<ele>958.000000</ele>
-			</trkpt>
-			<trkpt lat="48.827611" lon="19.155324">
-				<ele>958.000000</ele>
-			</trkpt>
-			<trkpt lat="48.827717" lon="19.155433">
-				<ele>958.000000</ele>
-			</trkpt>
-			<trkpt lat="48.827800" lon="19.155469">
-				<ele>958.000000</ele>
-			</trkpt>
-			<trkpt lat="48.827865" lon="19.155469">
-				<ele>958.000000</ele>
-			</trkpt>
-			<trkpt lat="48.827948" lon="19.155423">
-				<ele>958.000000</ele>
-			</trkpt>
-			<trkpt lat="48.828113" lon="19.155316">
-				<ele>959.000000</ele>
-			</trkpt>
-			<trkpt lat="48.828261" lon="19.155145">
-				<ele>959.000000</ele>
-			</trkpt>
-			<trkpt lat="48.828374" lon="19.155037">
-				<ele>959.000000</ele>
-			</trkpt>
-			<trkpt lat="48.828433" lon="19.155010">
-				<ele>959.000000</ele>
-			</trkpt>
-			<trkpt lat="48.828545" lon="19.155028">
-				<ele>959.000000</ele>
-			</trkpt>
-			<trkpt lat="48.828658" lon="19.155010">
-				<ele>960.000000</ele>
-			</trkpt>
-			<trkpt lat="48.828746" lon="19.154938">
-				<ele>960.000000</ele>
-			</trkpt>
-			<trkpt lat="48.828811" lon="19.154831">
-				<ele>960.000000</ele>
-			</trkpt>
-			<trkpt lat="48.828918" lon="19.154462">
-				<ele>960.000000</ele>
-			</trkpt>
-			<trkpt lat="48.829107" lon="19.153923">
-				<ele>959.000000</ele>
-			</trkpt>
-			<trkpt lat="48.829125" lon="19.153879">
-				<ele>959.000000</ele>
-			</trkpt>
-			<trkpt lat="48.829184" lon="19.153861">
-				<ele>959.000000</ele>
-			</trkpt>
-			<trkpt lat="48.829237" lon="19.153879">
-				<ele>959.000000</ele>
-			</trkpt>
-			<trkpt lat="48.829296" lon="19.153959">
-				<ele>959.000000</ele>
-			</trkpt>
-			<trkpt lat="48.829344" lon="19.154041">
-				<ele>959.000000</ele>
-			</trkpt>
-			<trkpt lat="48.829480" lon="19.154372">
-				<ele>959.000000</ele>
-			</trkpt>
-			<trkpt lat="48.829604" lon="19.154471">
-				<ele>958.000000</ele>
-			</trkpt>
-			<trkpt lat="48.829675" lon="19.154544">
-				<ele>958.000000</ele>
-			</trkpt>
-			<trkpt lat="48.829763" lon="19.154642">
-				<ele>958.000000</ele>
-			</trkpt>
-			<trkpt lat="48.829852" lon="19.154697">
-				<ele>958.000000</ele>
-			</trkpt>
-			<trkpt lat="48.829935" lon="19.154741">
-				<ele>958.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830017" lon="19.154741">
-				<ele>958.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830112" lon="19.154714">
-				<ele>958.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830284" lon="19.154544">
-				<ele>957.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830378" lon="19.154471">
-				<ele>957.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830443" lon="19.154471">
-				<ele>957.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830544" lon="19.154508">
-				<ele>957.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830668" lon="19.154634">
-				<ele>957.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830722" lon="19.154651">
-				<ele>957.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830804" lon="19.154651">
-				<ele>957.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830857" lon="19.154597">
-				<ele>956.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830881" lon="19.154517">
-				<ele>956.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830899" lon="19.154337">
-				<ele>956.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830881" lon="19.154085">
-				<ele>956.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830834" lon="19.153762">
-				<ele>956.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830834" lon="19.153565">
-				<ele>956.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830863" lon="19.153439">
-				<ele>955.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830911" lon="19.153295">
-				<ele>955.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831005" lon="19.153043">
-				<ele>955.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831058" lon="19.152926">
-				<ele>955.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831141" lon="19.152810">
-				<ele>955.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831360" lon="19.152523">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831378" lon="19.152450">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831383" lon="19.152370">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831360" lon="19.152208">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831366" lon="19.152135">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831378" lon="19.152047">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831425" lon="19.151921">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831644" lon="19.151435">
-				<ele>953.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831721" lon="19.151309">
-				<ele>953.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831792" lon="19.151265">
-				<ele>953.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831863" lon="19.151282">
-				<ele>953.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831975" lon="19.151355">
-				<ele>953.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832176" lon="19.151785">
-				<ele>953.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832218" lon="19.151894">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832312" lon="19.152378">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832318" lon="19.152486">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832289" lon="19.152827">
-				<ele>955.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832194" lon="19.153322">
-				<ele>955.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832194" lon="19.153510">
-				<ele>955.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832182" lon="19.153689">
-				<ele>956.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832205" lon="19.153743">
-				<ele>956.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832224" lon="19.153779">
-				<ele>961.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832631" lon="19.153896">
-				<ele>961.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832667" lon="19.153888">
-				<ele>961.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833258" lon="19.153592">
-				<ele>962.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833435" lon="19.153636">
-				<ele>962.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833542" lon="19.153806">
-				<ele>962.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833489" lon="19.154157">
-				<ele>963.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833276" lon="19.154993">
-				<ele>963.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833347" lon="19.155586">
-				<ele>964.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833571" lon="19.155594">
-				<ele>964.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833690" lon="19.155792">
-				<ele>964.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833785" lon="19.155827">
-				<ele>964.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833956" lon="19.155702">
-				<ele>964.000000</ele>
-			</trkpt>
-			<trkpt lat="48.834293" lon="19.155729">
-				<ele>965.000000</ele>
-			</trkpt>
-			<trkpt lat="48.834660" lon="19.155477">
-				<ele>965.000000</ele>
-			</trkpt>
-			<trkpt lat="48.834742" lon="19.155370">
-				<ele>965.000000</ele>
-			</trkpt>
-			<trkpt lat="48.835132" lon="19.155307">
-				<ele>966.000000</ele>
-			</trkpt>
-			<trkpt lat="48.835363" lon="19.155334">
-				<ele>966.000000</ele>
-			</trkpt>
-			<trkpt lat="48.835452" lon="19.155523">
-				<ele>966.000000</ele>
-			</trkpt>
-			<trkpt lat="48.835570" lon="19.156070">
-				<ele>967.000000</ele>
-			</trkpt>
-			<trkpt lat="48.835523" lon="19.156663">
-				<ele>967.000000</ele>
-			</trkpt>
-			<trkpt lat="48.835351" lon="19.157167">
-				<ele>968.000000</ele>
-			</trkpt>
-			<trkpt lat="48.835251" lon="19.157418">
-				<ele>968.000000</ele>
-			</trkpt>
-			<trkpt lat="48.835263" lon="19.157723">
-				<ele>968.000000</ele>
-			</trkpt>
-			<trkpt lat="48.835316" lon="19.157939">
-				<ele>968.000000</ele>
-			</trkpt>
-			<trkpt lat="48.835239" lon="19.158190">
-				<ele>968.000000</ele>
-			</trkpt>
-			<trkpt lat="48.835079" lon="19.158595">
-				<ele>969.000000</ele>
-			</trkpt>
-			<trkpt lat="48.834866" lon="19.158963">
-				<ele>969.000000</ele>
-			</trkpt>
-			<trkpt lat="48.834311" lon="19.159655">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.834251" lon="19.159852">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.834322" lon="19.159934">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.834530" lon="19.160391">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.834547" lon="19.160921">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.834269" lon="19.161425">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833909" lon="19.161811">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833542" lon="19.162089">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833341" lon="19.162368">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833110" lon="19.162655">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832850" lon="19.162853">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832525" lon="19.162951">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832224" lon="19.162817">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832093" lon="19.162798">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831987" lon="19.162943">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831827" lon="19.163383">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831768" lon="19.163500">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831715" lon="19.163563">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831638" lon="19.163616">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831555" lon="19.163643">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831188" lon="19.163670">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831029" lon="19.163697">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830946" lon="19.163724">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830887" lon="19.163769">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830852" lon="19.163813">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830827" lon="19.163895">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830810" lon="19.164039">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830775" lon="19.164236">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830733" lon="19.164353">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830692" lon="19.164425">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830680" lon="19.164488">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830692" lon="19.164568">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830709" lon="19.164622">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830781" lon="19.164712">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.830934" lon="19.164910">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831047" lon="19.165098">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831112" lon="19.165234">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831153" lon="19.165377">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831171" lon="19.165494">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831177" lon="19.165584">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831206" lon="19.165664">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831242" lon="19.165710">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831283" lon="19.165745">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831366" lon="19.165745">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831443" lon="19.165745">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831532" lon="19.165754">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831638" lon="19.165790">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.831786" lon="19.165871">
-				<ele>970.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832010" lon="19.165987">
-				<ele>969.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832111" lon="19.166060">
-				<ele>968.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832229" lon="19.166194">
-				<ele>966.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832377" lon="19.166419">
-				<ele>964.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832543" lon="19.166679">
-				<ele>961.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832631" lon="19.166760">
-				<ele>960.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832761" lon="19.166832">
-				<ele>959.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832850" lon="19.166850">
-				<ele>958.000000</ele>
-			</trkpt>
-			<trkpt lat="48.832933" lon="19.166850">
-				<ele>958.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833022" lon="19.166842">
-				<ele>957.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833146" lon="19.166823">
-				<ele>956.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833246" lon="19.166832">
-				<ele>955.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833323" lon="19.166868">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833424" lon="19.166949">
-				<ele>953.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833560" lon="19.167083">
-				<ele>952.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833630" lon="19.167335">
-				<ele>954.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833779" lon="19.167794">
-				<ele>959.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833814" lon="19.167964">
-				<ele>962.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833820" lon="19.168117">
-				<ele>965.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833802" lon="19.168198">
-				<ele>966.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833773" lon="19.168251">
-				<ele>968.000000</ele>
-			</trkpt>
-			<trkpt lat="48.833737" lon="19.168287">
-				<ele>969.000000</ele>
-			</trkpt>
-		</trkseg>
-	</trk>
-</gpx>
-</script>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
@@ -4535,6 +1738,123 @@ const COLORS = {
 };
 
 /* =========================================================================
+   WORKOUT – DEFINÍCIE A NASTAVENIA
+   ========================================================================= */
+const FTP_KEY = 'vct.ftp';
+const FTP_UPDATED_KEY = 'vct.ftpUpdatedAt';
+const FTP_MIN = 50;
+const FTP_MAX = 600;
+const FTP_DEFAULT = 200;
+const FTP_META_KEY = 'ftp_w';
+const FTP_META_UPDATED_KEY = 'ftp_updated_at';
+
+const ERG_INTERVAL_MS = 1500;
+const ERG_MIN_W = 0;
+const ERG_MAX_W = 1500;
+const ERG_MIN_DIFF_W = 3;
+
+const WORKOUT_DEFS = [
+  {
+    id: 'threshold-vo2',
+    name: '30/15 Threshold + VO2max',
+    subtitle: '6× 30/15 na 85 % a 6× 30/15 na 115 %',
+    phases: [
+      { label: 'Rozcvička', kind: 'ramp', duration: 300, from: 50, to: 70 },
+      { label: 'Threshold', kind: 'interval', repeat: 6, onDuration: 30, onPower: 85, offDuration: 15, offPower: 60 },
+      { label: 'Z2', kind: 'z2', duration: 600, from: 65, to: 65 },
+      { label: 'VO2max', kind: 'interval', repeat: 6, onDuration: 30, onPower: 115, offDuration: 15, offPower: 60 },
+      { label: 'Upokojenie', kind: 'ramp', duration: 300, from: 60, to: 40 }
+    ]
+  },
+  {
+    id: 'threshold-2x20',
+    name: '2× 20 min threshold',
+    subtitle: 'Dva dlhé bloky na 95 % FTP s 5 min pauzou',
+    phases: [
+      { label: 'Rozcvička', kind: 'ramp', duration: 600, from: 50, to: 70 },
+      { label: 'Threshold 1/2', kind: 'interval', duration: 1200, from: 95, to: 95 },
+      { label: 'Pauza', kind: 'recover', duration: 300, from: 55, to: 55 },
+      { label: 'Threshold 2/2', kind: 'interval', duration: 1200, from: 95, to: 95 },
+      { label: 'Upokojenie', kind: 'ramp', duration: 300, from: 60, to: 40 }
+    ]
+  },
+  {
+    id: 'vo2max-4x4',
+    name: '4× 4 min VO2max',
+    subtitle: '4× 4 min na 115 % s 4 min výklusom',
+    phases: [
+      { label: 'Rozcvička', kind: 'ramp', duration: 600, from: 50, to: 70 },
+      { label: 'VO2max', kind: 'interval', repeat: 4, onDuration: 240, onPower: 115, offDuration: 240, offPower: 50 },
+      { label: 'Upokojenie', kind: 'ramp', duration: 300, from: 60, to: 40 }
+    ]
+  }
+];
+
+function workoutIntensity(phases, total) {
+  if (!total) return 0;
+  let sum = 0;
+  for (const phase of phases) {
+    const avg = ((phase.from + phase.to) / 2) / 100;
+    sum += avg * avg * phase.duration;
+  }
+  return Math.sqrt(sum / total);
+}
+
+function expandWorkout(def) {
+  const phases = [];
+
+  for (const item of def.phases) {
+    if (item.repeat) {
+      for (let i = 0; i < item.repeat; i++) {
+        phases.push({
+          label: `${item.label} ${i + 1}/${item.repeat}`,
+          kind: item.kind || 'interval',
+          duration: item.onDuration,
+          from: item.onPower,
+          to: item.onPower
+        });
+        phases.push({
+          label: `Pauza ${i + 1}/${item.repeat}`,
+          kind: 'recover',
+          duration: item.offDuration,
+          from: item.offPower,
+          to: item.offPower
+        });
+      }
+    } else {
+      phases.push({
+        label: item.label,
+        kind: item.kind || 'steady',
+        duration: item.duration,
+        from: item.from,
+        to: item.to === undefined ? item.from : item.to
+      });
+    }
+  }
+
+  let start = 0;
+  for (const phase of phases) {
+    phase.start = start;
+    start += phase.duration;
+  }
+
+  return {
+    ...def,
+    phases,
+    totalDuration: start,
+    intervalCount: phases.filter((phase) => phase.kind === 'interval').length,
+    intensity: workoutIntensity(phases, start)
+  };
+}
+
+const WORKOUTS = WORKOUT_DEFS.map(expandWorkout);
+let selectedWorkoutId = WORKOUTS[0].id;
+
+function workoutById(id) {
+  return WORKOUTS.find((workout) => workout.id === id) || WORKOUTS[0];
+}
+
+/* =========================================================================
    DOM
    ========================================================================= */
 const $ = (id) => document.getElementById(id);
@@ -4560,6 +1880,37 @@ const el = {
   helpModal: $('helpModal'),
   btnCloseHelp: $('btnCloseHelp'),
   btnCloseHelpAction: $('btnCloseHelpAction'),
+
+  btnWorkout: $('btnWorkout'),
+  workoutModal: $('workoutModal'),
+  btnCloseWorkout: $('btnCloseWorkout'),
+  btnCloseWorkoutAction: $('btnCloseWorkoutAction'),
+  workoutList: $('workoutList'),
+  workoutFtp: $('workoutFtp'),
+  workoutErg: $('workoutErg'),
+  workoutErgHint: $('workoutErgHint'),
+  workoutRouteNote: $('workoutRouteNote'),
+  workoutRouteText: $('workoutRouteText'),
+  workoutRouteActions: $('workoutRouteActions'),
+  wpRouteLoad: $('wpRouteLoad'),
+  wpRouteDemo: $('wpRouteDemo'),
+  workoutPreview: $('workoutPreview'),
+  btnStartWorkout: $('btnStartWorkout'),
+
+  workoutPanel: $('workoutPanel'),
+  wpPhaseLabel: $('wpPhaseLabel'),
+  wpPhaseMeta: $('wpPhaseMeta'),
+  wpRemaining: $('wpRemaining'),
+  wpTarget: $('wpTarget'),
+  wpCurrent: $('wpCurrent'),
+  wpFtp: $('wpFtp'),
+  wpCadence: $('wpCadence'),
+  wpBarFill: $('wpBarFill'),
+  wpNext: $('wpNext'),
+  wpPause: $('wpPause'),
+  wpSkip: $('wpSkip'),
+  wpMute: $('wpMute'),
+  wpStop: $('wpStop'),
 
   btnAccount: $('btnAccount'),
   accountDot: $('accountDot'),
@@ -4633,6 +1984,7 @@ const state = {
   routeFileName: '',
   rideM: 0,
   startM: 0,
+  routeTravelBaseM: 0,
   rideSeconds: 0,
   power: 0,
   cadence: 0,
@@ -4673,7 +2025,22 @@ const state = {
   connectingTrainer: false,
   connectingHr: false,
 
-  simErrorShown: false
+  simErrorShown: false,
+
+  ftp: FTP_DEFAULT,
+  workout: null,
+  workoutActive: false,
+  workoutPaused: false,
+  workoutPhaseIndex: 0,
+  workoutPhaseElapsed: 0,
+  workoutElapsed: 0,
+  workoutTargetPower: 0,
+  workoutLoopIndex: 0,
+  workoutErg: false,
+  workoutErgPreferred: true,
+  workoutBeepMuted: false,
+  workoutLastBeepSecond: null,
+  workoutSummaryName: ''
 };
 
 try {
@@ -4681,6 +2048,11 @@ try {
   if (Number.isFinite(storedWeight) && storedWeight >= RIDER_WEIGHT_MIN && storedWeight <= RIDER_WEIGHT_MAX) {
     state.weight = storedWeight;
   }
+} catch (_) {}
+
+try {
+  const storedFtp = normalizeFtp(localStorage.getItem(FTP_KEY));
+  if (storedFtp !== null) state.ftp = storedFtp;
 } catch (_) {}
 
 /* =========================================================================
@@ -4899,6 +2271,19 @@ function trainerInMotion() {
   return state.speed > 0.8 || state.power > 10;
 }
 
+function mapVisibleCenterPoint() {
+  const panelH = parseFloat(getComputedStyle(document.body).getPropertyValue('--profile-h')) || 168;
+  const size = map.getSize();
+  return L.point(size.x / 2, Math.max(60, (size.y - panelH) / 2));
+}
+
+function flyToRider(latlng, zoom) {
+  // Vycentruj mapu tak, aby jazdec sedel v strede viditeľnej časti nad panelom.
+  const panelH = parseFloat(getComputedStyle(document.body).getPropertyValue('--profile-h')) || 168;
+  const center = map.unproject(map.project(latlng, zoom).add([0, panelH / 2]), zoom);
+  map.flyTo(center, zoom, { animate: true, duration: 1.1, easeLinearity: 0.2 });
+}
+
 function updateMapPosition(sample, force = false) {
   if (!sample) return;
   const latlng = [sample.lat, sample.lon];
@@ -4911,7 +2296,7 @@ function updateMapPosition(sample, force = false) {
   if (!state.mapRideStarted) {
     if (state.rideM > 20) {
       state.mapRideStarted = true;
-      map.flyTo(latlng, 15, { animate: true, duration: 1.5, easeLinearity: 0.2 });
+      flyToRider(latlng, 15);
       lastFollowAt = Date.now();
     }
     return;
@@ -4919,21 +2304,27 @@ function updateMapPosition(sample, force = false) {
 
   const now = Date.now();
   if (!force && now - lastFollowAt < 1200) return;
-  if (map.getCenter().distanceTo(L.latLng(latlng)) > 12) {
-    map.panTo(latlng, {
-      animate: true,
-      duration: 0.8,
-      easeLinearity: 0.2,
-      noMoveStart: true
-    });
-    lastFollowAt = now;
-  }
+
+  // Jazdec má zostať v strede viditeľnej časti mapy, nie pod výškovým panelom.
+  const target = mapVisibleCenterPoint();
+  const riderPoint = map.latLngToContainerPoint(latlng);
+  if (riderPoint.distanceTo(target) <= 10) return;
+
+  const size = map.getSize();
+  const centerPoint = L.point(size.x / 2, size.y / 2).add(riderPoint).subtract(target);
+  map.panTo(map.containerPointToLatLng(centerPoint), {
+    animate: true,
+    duration: 0.8,
+    easeLinearity: 0.2,
+    noMoveStart: true
+  });
+  lastFollowAt = now;
 }
 
 function fitRouteOnMap() {
   if (!routeBounds || !routeBounds.isValid()) return;
   const isNarrow = window.innerWidth <= 980;
-  const panelH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--profile-h')) || 168;
+  const panelH = parseFloat(getComputedStyle(document.body).getPropertyValue('--profile-h')) || 168;
   map.fitBounds(routeBounds, {
     paddingTopLeft: [isNarrow ? 24 : 60, isNarrow ? 185 : 150],
     paddingBottomRight: [isNarrow ? 24 : 60, panelH + 45],
@@ -5482,6 +2873,7 @@ function resetRideStats(fitMap = true) {
   state.hrAllSum = 0;
   state.hrAllTime = 0;
   state.routeFinished = false;
+  state.routeTravelBaseM = 0;
   state.mapRideStarted = false;
   state.profileKm = state.startM / 1000;
   state.trainerBaseM = null;
@@ -5492,6 +2884,8 @@ function resetRideStats(fitMap = true) {
   state.lastDistChangeAt = 0;
   state.distanceFallback = false;
   state.ridePaused = false;
+  state.workoutLoopIndex = 0;
+  state.workoutSummaryName = '';
 
   if (state.route) {
     const startSample = sampleRoute(state.startM);
@@ -5513,6 +2907,10 @@ function resetRideStats(fitMap = true) {
 
 function setRouteStart(distanceM) {
   if (!state.route) return;
+  if (state.workoutActive) {
+    showToast('Počas tréningu sa štart nedá meniť.', 'info', 3500);
+    return;
+  }
 
   const maxStart = Math.max(0, state.route.totalM - 50);
   const startM = clamp(distanceM, 0, maxStart);
@@ -5531,11 +2929,7 @@ function setRouteStart(distanceM) {
   const sample = sampleRoute(startM);
   if (sample) {
     riderMarker.setLatLng([sample.lat, sample.lon]);
-    map.flyTo([sample.lat, sample.lon], Math.max(map.getZoom(), 13), {
-      animate: true,
-      duration: 1.1,
-      easeLinearity: 0.2
-    });
+    flyToRider([sample.lat, sample.lon], Math.max(map.getZoom(), 13));
   }
 
   if (trainer) {
@@ -5580,7 +2974,7 @@ function applyRoute(route, gpxText = '', fileName = '') {
   if (trainer) {
     lastSimGrade = null;
     lastSimSentAt = 0;
-    queueSimulation();
+    if (!state.workoutActive) queueSimulation();
   }
 
   if (!route.hasElevation) {
@@ -5588,10 +2982,19 @@ function applyRoute(route, gpxText = '', fileName = '') {
   }
 
   refreshAccountCurrentRoute();
+  if (el.workoutModal && el.workoutModal.classList.contains('open')) {
+    refreshWorkoutRouteNote();
+    renderWorkoutPreview();
+  }
 }
 
 async function loadGPXFile(file) {
   if (!file) return;
+  if (state.workoutActive) {
+    showToast('Počas tréningu sa trasa nedá meniť. Najprv tréning ukonči.', 'info', 4000);
+    el.gpxInput.value = '';
+    return;
+  }
   if (!requireLogin('Nahranie vlastnej GPX')) {
     el.gpxInput.value = '';
     return;
@@ -5616,21 +3019,40 @@ async function loadGPXFile(file) {
 }
 
 function openGpxPicker() {
+  if (state.workoutActive) {
+    showToast('Počas tréningu sa trasa nedá meniť. Najprv tréning ukonči.', 'info', 4000);
+    return;
+  }
   if (!requireLogin('Nahranie vlastnej GPX')) return;
   el.gpxInput.click();
 }
 
-/* Ukážková trasa vložená priamo v HTML – načíta sa tlačidlom „Nahrať ukážkové GPX“. */
-function loadDemoRoute() {
-  const node = $('demoGpx');
-  if (!node) return false;
+/* Ukážková trasa uložená v externom súbore demo.gpx – načíta sa tlačidlom „Nahrať ukážkové GPX“. */
+let demoRouteCache = '';
+async function loadDemoRoute() {
+  if (state.workoutActive) {
+    showToast('Počas tréningu sa trasa nedá meniť. Najprv tréning ukonči.', 'info', 4000);
+    return false;
+  }
 
   try {
-    const gpxText = node.textContent.trim();
-    const route = parseGPX(gpxText, 'ukazka.gpx');
+    if (el.btnLoadDemoGpx) el.btnLoadDemoGpx.disabled = true;
+    if (el.wpRouteDemo) el.wpRouteDemo.disabled = true;
+
+    let gpxText = demoRouteCache;
+    if (!gpxText) {
+      const response = await fetch('demo.gpx');
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status} pri načítaní demo.gpx`);
+      }
+      gpxText = (await response.text()).trim();
+      demoRouteCache = gpxText;
+    }
+
+    const route = parseGPX(gpxText, 'demo.gpx');
     route.name = 'Ukážková trasa';
     route.isDemo = true;
-    applyRoute(route, gpxText, 'ukazka.gpx');
+    applyRoute(route, gpxText, 'demo.gpx');
     showToast(
       `Ukážková trasa načítaná · ${formatKm(route.totalM / 1000, 1)} km · +${Math.round(route.ascentM)} m. Kliknutím na profil zvolíš iný štart.`,
       'success',
@@ -5639,7 +3061,11 @@ function loadDemoRoute() {
     return true;
   } catch (error) {
     console.error('Demo GPX:', error);
+    showToast('Ukážkovú trasu (demo.gpx) sa nepodarilo načítať. Skontroluj, či je súbor demo.gpx v rovnakom priečinku a stránka beží cez webový server.', 'error', 7500);
     return false;
+  } finally {
+    if (el.btnLoadDemoGpx) el.btnLoadDemoGpx.disabled = false;
+    if (el.wpRouteDemo) el.wpRouteDemo.disabled = false;
   }
 }
 
@@ -5749,6 +3175,119 @@ async function syncRiderWeightWithAccount(user) {
     applyRiderWeight(local.weight);
     await saveRiderWeightToAccount(local.weight, local.updatedAt || Date.now());
   }
+}
+
+/* ---------------------------- FTP ---------------------------- */
+function normalizeFtp(value) {
+  const ftp = typeof value === 'number' ? value : parseFloat(String(value).replace(',', '.'));
+  if (!Number.isFinite(ftp) || ftp < FTP_MIN || ftp > FTP_MAX) return null;
+  return Math.round(ftp);
+}
+
+function readLocalFtp() {
+  try {
+    return {
+      ftp: normalizeFtp(localStorage.getItem(FTP_KEY)),
+      updatedAt: Number(localStorage.getItem(FTP_UPDATED_KEY)) || 0
+    };
+  } catch (_) {
+    return { ftp: null, updatedAt: 0 };
+  }
+}
+
+function storeFtpLocally(ftp, updatedAt = Date.now()) {
+  try {
+    localStorage.setItem(FTP_KEY, String(ftp));
+    localStorage.setItem(FTP_UPDATED_KEY, String(updatedAt));
+  } catch (_) {}
+}
+
+function applyFtp(ftp) {
+  const normalized = normalizeFtp(ftp);
+  if (normalized === null) return;
+  state.ftp = normalized;
+  if (el.workoutFtp) el.workoutFtp.value = String(normalized);
+}
+
+function setFtp(value, save = true) {
+  const normalized = normalizeFtp(value);
+  if (normalized === null) return false;
+
+  state.ftp = normalized;
+  if (el.workoutFtp) el.workoutFtp.value = String(normalized);
+
+  if (save) {
+    const now = Date.now();
+    storeFtpLocally(normalized, now);
+    if (supa && accountUser) saveFtpToAccount(normalized, now);
+  }
+  return true;
+}
+
+function readAccountFtp(user) {
+  if (!user || !user.user_metadata) return { ftp: null, updatedAt: 0 };
+  const meta = user.user_metadata;
+  const rawUpdatedAt = meta[FTP_META_UPDATED_KEY];
+  return {
+    ftp: normalizeFtp(meta[FTP_META_KEY]),
+    updatedAt: typeof rawUpdatedAt === 'string' ? (Date.parse(rawUpdatedAt) || 0) : 0
+  };
+}
+
+async function saveFtpToAccount(ftp, updatedAt = Date.now()) {
+  if (!supa || !accountUser) return false;
+  const normalized = normalizeFtp(ftp);
+  if (normalized === null) return false;
+
+  try {
+    const meta = accountUser && accountUser.user_metadata ? accountUser.user_metadata : {};
+    const { data, error } = await supa.auth.updateUser({
+      data: {
+        ...meta,
+        [FTP_META_KEY]: normalized,
+        [FTP_META_UPDATED_KEY]: new Date(updatedAt).toISOString()
+      }
+    });
+    if (error) throw error;
+    if (data && data.user) accountUser = data.user;
+    return true;
+  } catch (error) {
+    console.error('Uloženie FTP do účtu:', error);
+    showToast(`FTP sa nepodarilo uložiť do účtu: ${accountErrorMessage(error)}`, 'error', 6500);
+    return false;
+  }
+}
+
+async function syncFtpWithAccount(user) {
+  if (!user) return;
+
+  const local = readLocalFtp();
+  const remote = readAccountFtp(user);
+
+  if (remote.ftp !== null) {
+    const localIsNewer = local.ftp !== null && local.ftp !== remote.ftp &&
+      local.updatedAt > remote.updatedAt;
+    if (localIsNewer) {
+      applyFtp(local.ftp);
+      await saveFtpToAccount(local.ftp, local.updatedAt);
+      return;
+    }
+    applyFtp(remote.ftp);
+    storeFtpLocally(remote.ftp, remote.updatedAt || Date.now());
+    return;
+  }
+
+  if (local.ftp !== null) {
+    applyFtp(local.ftp);
+    await saveFtpToAccount(local.ftp, local.updatedAt || Date.now());
+  }
+}
+
+async function syncAccountProfile() {
+  if (!accountUser) return;
+  await syncRiderWeightWithAccount(accountUser);
+  if (!accountUser) return;
+  await syncFtpWithAccount(accountUser);
 }
 
 function setLockableValue(node, value, locked, lockedText, lockedLabel) {
@@ -6083,7 +3622,7 @@ function setAccountUser(user) {
   renderAccount();
   updateAuthLocks();
   if (accountUser && accountUser.id !== previousId) {
-    syncRiderWeightWithAccount(accountUser);
+    syncAccountProfile();
   }
 }
 
@@ -6460,6 +3999,11 @@ let simNoAck = false;
 let lastCpResult = null;
 let lastCpAt = 0;
 
+let ergBusy = false;
+let lastErgPower = null;
+let lastErgSentAt = 0;
+let ergNoAck = false;
+
 function setTrainerUI(mode) {
   const connected = mode === 'connected';
   const connecting = mode === 'connecting';
@@ -6476,6 +4020,10 @@ function setTrainerUI(mode) {
     el.btnTrainer.title = 'Pripájam trenažér…';
   } else {
     el.btnTrainer.title = 'Pripojiť trenažér (FTMS)';
+  }
+
+  if (el.workoutModal && el.workoutModal.classList.contains('open')) {
+    updateWorkoutModalState();
   }
 }
 
@@ -6618,7 +4166,14 @@ async function connectTrainer() {
     setTrainerUI('connected');
     showToast(`Trenažér pripojený: ${name}`, 'success', 4200);
 
-    queueSimulation();
+    if (state.workoutActive && state.workoutErg && !state.workoutPaused) {
+      lastErgPower = null;
+      lastErgSentAt = 0;
+      ergNoAck = false;
+      queueTargetPower(true);
+    } else if (!state.workoutActive) {
+      queueSimulation();
+    }
   } catch (error) {
     console.error('Trenažér:', error);
     if (device && device.gatt && device.gatt.connected) {
@@ -6644,6 +4199,10 @@ function onTrainerDisconnected() {
   lastSimSentAt = 0;
   simBusy = false;
   simNoAck = false;
+  lastErgPower = null;
+  lastErgSentAt = 0;
+  ergBusy = false;
+  ergNoAck = false;
 
   state.power = 0;
   state.cadence = 0;
@@ -6653,7 +4212,10 @@ function onTrainerDisconnected() {
   setTrainerUI('disconnected');
   renderHUD();
 
-  if (wasConnected) {
+  if (state.workoutActive && state.workoutErg && !state.workoutPaused) {
+    pauseWorkout(true);
+    showToast('Tréning pozastavený – trenažér sa odpojil.', 'warning', 6000);
+  } else if (wasConnected) {
     showToast(`${name} bol odpojený.`, 'info', 4500);
   }
 }
@@ -6908,24 +4470,25 @@ function simulationParameters(grade) {
 }
 
 function queueSimulation() {
-  if (!trainer || simBusy) return;
+  if (!trainer || simBusy || state.workoutActive) return;
 
   simBusy = true;
   (async () => {
     try {
-      while (trainer) {
+      while (trainer && !state.workoutActive) {
         const target = clamp(state.currentGrade || 0, GRADE_MIN, GRADE_MAX);
 
         if (lastSimGrade !== null && Math.abs(target - lastSimGrade) < 0.25) break;
 
         const waitFor = SIM_INTERVAL_MS - (performance.now() - lastSimSentAt);
         if (waitFor > 0) await delay(waitFor);
-        if (!trainer) break;
+        if (!trainer || state.workoutActive) break;
 
         const latest = clamp(state.currentGrade || 0, GRADE_MIN, GRADE_MAX);
         if (lastSimGrade !== null && Math.abs(latest - lastSimGrade) < 0.25) break;
 
         if (!await ensureControl()) break;
+        if (!trainer || state.workoutActive) break;
 
         const result = await cpCommand(0x11, simulationParameters(latest), simNoAck ? 250 : 1500);
         lastCpResult = result;
@@ -6956,6 +4519,588 @@ function queueSimulation() {
       simBusy = false;
     }
   })();
+}
+
+/* -------------------- ERG – cieľový výkon (FTMS 0x05) -------------------- */
+function targetPowerParameters(watts) {
+  const payload = new Uint8Array(2);
+  const view = new DataView(payload.buffer);
+  view.setUint16(0, Math.round(clamp(watts, ERG_MIN_W, ERG_MAX_W)), true);
+  return payload;
+}
+
+function queueTargetPower(force = false) {
+  if (!trainer || ergBusy) return;
+  if (!state.workoutActive || !state.workoutErg || state.workoutPaused) return;
+
+  ergBusy = true;
+  (async () => {
+    try {
+      while (trainer && state.workoutActive && state.workoutErg && !state.workoutPaused) {
+        const target = Math.round(clamp(state.workoutTargetPower || 0, ERG_MIN_W, ERG_MAX_W));
+
+        if (!force && lastErgPower !== null && Math.abs(target - lastErgPower) < ERG_MIN_DIFF_W) break;
+
+        const waitFor = ERG_INTERVAL_MS - (performance.now() - lastErgSentAt);
+        if (waitFor > 0) await delay(waitFor);
+        if (!trainer || !state.workoutActive || !state.workoutErg || state.workoutPaused) break;
+
+        const latest = Math.round(clamp(state.workoutTargetPower || 0, ERG_MIN_W, ERG_MAX_W));
+        if (!force && lastErgPower !== null && Math.abs(latest - lastErgPower) < ERG_MIN_DIFF_W) break;
+
+        if (!await ensureControl()) break;
+        if (!trainer || !state.workoutActive || !state.workoutErg || state.workoutPaused) break;
+
+        const result = await cpCommand(0x05, targetPowerParameters(latest), ergNoAck ? 250 : 1500);
+        lastCpResult = result;
+        lastCpAt = performance.now();
+
+        if (result === -1) {
+          ergNoAck = true;
+          lastErgPower = latest;
+          lastErgSentAt = performance.now();
+          state.simErrorShown = false;
+        } else if (result === 0x02) {
+          state.workoutErg = false;
+          showToast('Trenažér nepodporuje ERG. Tréning pokračuje v guide režime.', 'warning', 8000);
+          break;
+        } else if (result !== 0x01) {
+          if (!state.simErrorShown) {
+            state.simErrorShown = true;
+            showToast(`Cieľový výkon sa nepodarilo nastaviť: ${cpResultText(result)}.`, 'error', 8000);
+          }
+          break;
+        } else {
+          lastErgPower = latest;
+          lastErgSentAt = performance.now();
+          state.simErrorShown = false;
+        }
+
+        force = false;
+        if (Math.abs((state.workoutTargetPower || 0) - latest) < ERG_MIN_DIFF_W) break;
+      }
+    } catch (error) {
+      console.error('ERG cieľový výkon:', error);
+    } finally {
+      ergBusy = false;
+    }
+  })();
+}
+
+async function sendErgTargetOnce(watts) {
+  if (!trainer) return;
+  try {
+    if (!await ensureControl()) return;
+    await cpCommand(0x05, targetPowerParameters(watts), 1500);
+  } catch (error) {
+    console.warn('ERG jednorazový príkaz:', error);
+  }
+}
+
+async function sendSimulationOnce(grade) {
+  if (!trainer) return;
+  try {
+    if (!await ensureControl()) return;
+    await cpCommand(0x11, simulationParameters(grade), 1500);
+  } catch (error) {
+    console.warn('Simulácia jednorazový príkaz:', error);
+  }
+}
+
+/* =========================================================================
+   WORKOUT – RIADENIE TRÉNINGU
+   ========================================================================= */
+let audioContext = null;
+
+function beep(freq = 880, ms = 90, gain = 0.035) {
+  if (state.workoutBeepMuted) return;
+  try {
+    const AudioCtor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtor) return;
+    if (!audioContext) audioContext = new AudioCtor();
+    if (audioContext.state === 'suspended') audioContext.resume();
+
+    const osc = audioContext.createOscillator();
+    const volume = audioContext.createGain();
+    const now = audioContext.currentTime;
+
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    volume.gain.setValueAtTime(0.0001, now);
+    volume.gain.exponentialRampToValueAtTime(Math.max(0.0002, gain), now + 0.012);
+    volume.gain.exponentialRampToValueAtTime(0.0001, now + ms / 1000);
+
+    osc.connect(volume);
+    volume.connect(audioContext.destination);
+    osc.start(now);
+    osc.stop(now + ms / 1000 + 0.03);
+  } catch (_) {}
+}
+
+function readWorkoutFtpInput() {
+  const value = el.workoutFtp ? el.workoutFtp.value : state.ftp;
+  const normalized = normalizeFtp(value);
+  return normalized === null ? state.ftp : normalized;
+}
+
+function updateWorkoutModalState() {
+  if (!el.workoutErg) return;
+  const hasTrainer = Boolean(trainer);
+
+  if (!hasTrainer) {
+    el.workoutErg.checked = false;
+    el.workoutErg.disabled = true;
+    el.workoutErgHint.textContent = 'Trenažér nie je pripojený – guide režim';
+  } else {
+    el.workoutErg.disabled = false;
+    el.workoutErg.checked = Boolean(state.workoutErgPreferred);
+    el.workoutErgHint.textContent = el.workoutErg.checked
+      ? 'Trenažér drží cieľový výkon'
+      : 'Odpor neovládam, zobrazujem len cieľ';
+  }
+}
+
+function refreshWorkoutRouteNote() {
+  if (!el.workoutRouteNote) return;
+  const hasRoute = Boolean(state.route);
+
+  el.workoutRouteNote.classList.toggle('warn', !hasRoute);
+  if (hasRoute) {
+    const totalM = state.route.totalM;
+    const startM = clamp(state.startM, 0, totalM);
+    const loopM = Math.max(0, totalM - startM);
+    el.workoutRouteText.textContent =
+      `Trasa: ${state.route.name} · ${formatKm(totalM / 1000, 1)} km · ` +
+      `štart ${formatKm(startM / 1000, 2)} km · slučka ${formatKm(loopM / 1000, 2)} km. ` +
+      'Terén odpor neovláda, mapa sleduje tvoju polohu.';
+    el.workoutRouteActions.hidden = true;
+  } else {
+    el.workoutRouteText.textContent =
+      'Tréning potrebuje GPX trasu. Mapa bude sledovať tvoju polohu, terén však odpor neovláda.';
+    el.workoutRouteActions.hidden = false;
+  }
+
+  // Bez trasy sa tréning nespustí – tlačidlo to musí dávať najavo.
+  if (el.btnStartWorkout) {
+    el.btnStartWorkout.disabled = !hasRoute;
+    el.btnStartWorkout.title = hasRoute
+      ? ''
+      : 'Najprv načítaj GPX trasu alebo ukážkové GPX.';
+  }
+}
+
+function renderWorkoutList() {
+  if (!el.workoutList) return;
+  el.workoutList.innerHTML = '';
+
+  for (const workout of WORKOUTS) {
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'workout-item' + (workout.id === selectedWorkoutId ? ' active' : '');
+    item.setAttribute('aria-pressed', String(workout.id === selectedWorkoutId));
+
+    const tss = Math.round((workout.totalDuration / 3600) * workout.intensity * workout.intensity * 100);
+    item.innerHTML = `
+      <div class="workout-item-top">
+        <span class="workout-item-name">${workout.name}</span>
+        <span class="workout-item-time">${formatTime(workout.totalDuration)}</span>
+      </div>
+      <div class="workout-item-sub">${workout.subtitle}</div>
+      <div class="workout-item-meta">${workout.intervalCount} intervalov · IF ${workout.intensity.toFixed(2)} · TSS ${tss}</div>
+    `;
+
+    item.addEventListener('click', () => {
+      selectedWorkoutId = workout.id;
+      renderWorkoutList();
+      renderWorkoutPreview();
+    });
+
+    el.workoutList.appendChild(item);
+  }
+}
+
+function renderWorkoutPreview() {
+  if (!el.workoutPreview) return;
+
+  const workout = workoutById(selectedWorkoutId);
+  const ftp = readWorkoutFtpInput();
+  const total = workout.totalDuration;
+  const maxPct = Math.max(100, ...workout.phases.flatMap((phase) => [phase.from, phase.to]));
+  const yFor = (pct) => 36 - (pct / maxPct) * 32;
+
+  const points = [];
+  let x = 0;
+
+  for (const phase of workout.phases) {
+    const x1 = (x / total) * 100;
+    const x2 = ((x + phase.duration) / total) * 100;
+    const y1 = yFor(phase.from);
+    const y2 = yFor(phase.to);
+
+    if (!points.length) {
+      points.push([x1, y1]);
+    } else {
+      const previous = points[points.length - 1];
+      if (Math.abs(previous[1] - y1) > 0.01) {
+        points.push([x1, previous[1]]);
+        points.push([x1, y1]);
+      }
+    }
+
+    points.push([x2, y2]);
+    x += phase.duration;
+  }
+
+  const line = points.map(([px, py]) => `${px.toFixed(2)},${py.toFixed(2)}`).join(' ');
+  const area = `0,38 ${line} 100,38`;
+  const ftpY = yFor(100).toFixed(2);
+  const tss = Math.round((total / 3600) * workout.intensity * workout.intensity * 100);
+
+  el.workoutPreview.innerHTML = `
+    <svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true">
+      <line x1="0" y1="${ftpY}" x2="100" y2="${ftpY}" stroke="rgba(255,255,255,.20)" stroke-width="1" stroke-dasharray="2 2" vector-effect="non-scaling-stroke"/>
+      <polygon points="${area}" fill="rgba(198,244,50,.16)"/>
+      <polyline points="${line}" fill="none" stroke="#c6f432" stroke-width="1.4" vector-effect="non-scaling-stroke"/>
+    </svg>
+    <div class="workout-preview-meta">
+      <span>FTP ${ftp} W · max ${maxPct} % = ${Math.round(ftp * maxPct / 100)} W</span>
+      <span>IF ${workout.intensity.toFixed(2)} · TSS ${tss}</span>
+    </div>
+  `;
+}
+
+function openWorkoutModal() {
+  if (state.workoutActive) {
+    showToast('Tréning už beží.', 'info', 3000);
+    return;
+  }
+
+  selectedWorkoutId = workoutById(selectedWorkoutId).id;
+  if (el.workoutFtp) el.workoutFtp.value = String(state.ftp);
+  updateWorkoutModalState();
+  refreshWorkoutRouteNote();
+  renderWorkoutList();
+  renderWorkoutPreview();
+  el.workoutModal.classList.add('open');
+  el.btnCloseWorkout.focus({ preventScroll: true });
+}
+
+function closeWorkoutModal() {
+  el.workoutModal.classList.remove('open');
+  el.btnWorkout.focus({ preventScroll: true });
+}
+
+function applyWorkoutTarget(force = false) {
+  if (!state.workoutActive || !state.workout) return;
+  const phase = state.workout.phases[state.workoutPhaseIndex];
+  if (!phase) return;
+
+  const ratio = phase.duration > 0
+    ? clamp(state.workoutPhaseElapsed / phase.duration, 0, 1)
+    : 1;
+  const pct = phase.from + (phase.to - phase.from) * ratio;
+  state.workoutTargetPower = Math.max(0, Math.round(state.ftp * pct / 100));
+
+  if (state.workoutErg && trainer && !state.workoutPaused) {
+    queueTargetPower(force);
+  }
+}
+
+function advanceWorkout(dt) {
+  if (!state.workoutActive || !state.workout) return false;
+
+  state.workoutElapsed += dt;
+  state.workoutPhaseElapsed += dt;
+
+  let phase = state.workout.phases[state.workoutPhaseIndex];
+  while (phase && state.workoutPhaseElapsed >= phase.duration) {
+    state.workoutPhaseElapsed -= phase.duration;
+    state.workoutPhaseIndex++;
+    state.workoutLastBeepSecond = null;
+    phase = state.workout.phases[state.workoutPhaseIndex];
+
+    if (!phase) {
+      completeWorkout();
+      return false;
+    }
+
+    if (!state.workoutBeepMuted && phase.kind === 'interval') {
+      beep(1046, 90, 0.03);
+    }
+  }
+
+  if (!phase) {
+    completeWorkout();
+    return false;
+  }
+
+  applyWorkoutTarget();
+
+  if (!state.workoutBeepMuted) {
+    const remaining = phase.duration - state.workoutPhaseElapsed;
+    const seconds = Math.ceil(remaining);
+    if (seconds > 0 && seconds <= 3 && state.workoutLastBeepSecond !== seconds) {
+      state.workoutLastBeepSecond = seconds;
+      beep(seconds === 1 ? 1175 : 880, 80, 0.03);
+    }
+  }
+
+  return true;
+}
+
+function renderWorkoutPanel(now = performance.now()) {
+  const active = Boolean(state.workoutActive && state.workout);
+  const wasActive = document.body.classList.contains('workout-active');
+
+  if (wasActive !== active) {
+    document.body.classList.toggle('workout-active', active);
+    if (profileChart) {
+      setTimeout(() => {
+        try { profileChart.resize(); } catch (_) {}
+      }, 80);
+    }
+  }
+
+  if (!el.workoutPanel) return;
+  el.workoutPanel.hidden = !active;
+  if (!active) return;
+
+  const phase = state.workout.phases[state.workoutPhaseIndex];
+  if (!phase) return;
+
+  const phaseRemaining = Math.max(0, phase.duration - state.workoutPhaseElapsed);
+  const totalRemaining = Math.max(0, state.workout.totalDuration - state.workoutElapsed);
+  const ratio = phase.duration > 0 ? clamp(state.workoutPhaseElapsed / phase.duration, 0, 1) : 1;
+  const pct = phase.from + (phase.to - phase.from) * ratio;
+
+  el.wpPhaseLabel.textContent = phase.label;
+  el.wpPhaseMeta.textContent = `${formatTime(phaseRemaining)} · ${Math.round(pct)} % FTP`;
+  el.wpRemaining.textContent = formatTime(totalRemaining);
+  el.wpTarget.textContent = `${state.workoutTargetPower} W`;
+  el.wpFtp.textContent = `${state.ftp} W`;
+
+  const bikeAlive = Boolean(trainer) && (now - state.lastBikeAt < 6000);
+  if (bikeAlive) {
+    const samples = state.powerSamples.slice(-12);
+    const average = samples.length
+      ? samples.reduce((sum, value) => sum + value, 0) / samples.length
+      : state.power;
+    el.wpCurrent.textContent = `${Math.round(average)} W`;
+    el.wpCadence.textContent = String(Math.round(state.cadence));
+  } else {
+    el.wpCurrent.textContent = '-- W';
+    el.wpCadence.textContent = '--';
+  }
+
+  el.wpBarFill.style.width = `${(ratio * 100).toFixed(1)}%`;
+
+  const next = state.workout.phases[state.workoutPhaseIndex + 1];
+  if (next) {
+    const nextWatts = Math.round(state.ftp * next.from / 100);
+    el.wpNext.textContent = `Ďalej: ${next.label} · ${nextWatts} W`;
+  } else {
+    el.wpNext.textContent = 'Posledná fáza';
+  }
+
+  el.wpPause.textContent = state.workoutPaused ? 'Pokračovať' : 'Pauza';
+  el.wpMute.textContent = state.workoutBeepMuted ? '🔕' : '🔔';
+  el.wpMute.setAttribute('aria-pressed', String(state.workoutBeepMuted));
+}
+
+function startWorkout() {
+  if (state.workoutActive) {
+    showToast('Tréning už beží.', 'info', 3000);
+    return;
+  }
+
+  if (!state.route) {
+    showToast('Najprv načítaj GPX trasu alebo ukážkové GPX.', 'warning', 5000);
+    refreshWorkoutRouteNote();
+    return;
+  }
+
+  if (!setFtp(el.workoutFtp.value)) {
+    showToast('FTP musí byť v rozsahu 50 – 600 W.', 'warning', 4500);
+    el.workoutFtp.focus();
+    return;
+  }
+
+  if (state.rideSeconds > 20 || state.rideM > 20) {
+    const answer = window.confirm('Spustiť tréning? Aktuálna jazda sa vynuluje.');
+    if (!answer) return;
+  }
+
+  const workout = workoutById(selectedWorkoutId);
+
+  state.workout = workout;
+  state.workoutActive = true;
+  state.workoutPaused = false;
+  state.workoutPhaseIndex = 0;
+  state.workoutPhaseElapsed = 0;
+  state.workoutElapsed = 0;
+  state.workoutTargetPower = 0;
+  state.workoutLoopIndex = 0;
+  state.workoutLastBeepSecond = null;
+  state.workoutSummaryName = workout.name;
+  state.workoutErg = Boolean(trainer) && Boolean(el.workoutErg.checked);
+
+  resetRideStats(false);
+  state.workoutSummaryName = workout.name;
+
+  // Panel sa rozšíri ešte pred letom na štart, aby mapa rátala s jeho výškou.
+  renderWorkoutPanel();
+
+  const startSample = sampleRoute(state.startM);
+  if (startSample) {
+    // Kamera je už na štarte – nech ju tick po 20 m nepresúva znova.
+    state.mapRideStarted = true;
+    flyToRider([startSample.lat, startSample.lon], Math.max(map.getZoom(), 13));
+  }
+
+  lastErgPower = null;
+  lastErgSentAt = 0;
+  ergNoAck = false;
+  lastSimGrade = null;
+  lastSimSentAt = 0;
+
+  applyWorkoutTarget(true);
+  if (state.workoutErg) {
+    queueTargetPower(true);
+  } else if (trainer) {
+    sendSimulationOnce(0);
+  }
+
+  closeWorkoutModal();
+  renderWorkoutPanel();
+  updateChartMarker(true);
+  beep(660, 120, 0.04);
+
+  showToast(
+    `Tréning „${workout.name}“ spustený ${state.workoutErg ? 'v ERG režime' : 'v guide režime'}.`,
+    'success',
+    5000
+  );
+}
+
+function pauseWorkout(auto = false) {
+  if (!state.workoutActive || state.workoutPaused) return;
+
+  state.workoutPaused = true;
+  state.ridePaused = true;
+  state.workoutTargetPower = 0;
+
+  if (state.workoutErg && trainer) {
+    sendErgTargetOnce(0);
+    lastErgPower = 0;
+  }
+
+  renderWorkoutPanel();
+  if (!auto) showToast('Tréning pozastavený.', 'info', 2500);
+}
+
+function resumeWorkout() {
+  if (!state.workoutActive || !state.workoutPaused) return;
+
+  state.workoutPaused = false;
+  state.ridePaused = false;
+  lastErgPower = null;
+  lastErgSentAt = 0;
+  ergNoAck = false;
+
+  applyWorkoutTarget(true);
+  renderWorkoutPanel();
+  showToast('Tréning pokračuje.', 'success', 2000);
+}
+
+function toggleWorkoutPause() {
+  if (state.workoutPaused) resumeWorkout();
+  else pauseWorkout(false);
+}
+
+function toggleWorkoutMute() {
+  state.workoutBeepMuted = !state.workoutBeepMuted;
+  renderWorkoutPanel();
+  showToast(
+    state.workoutBeepMuted ? 'Pípnutia sú vypnuté.' : 'Pípnutia sú zapnuté.',
+    'info',
+    2000
+  );
+}
+
+function skipWorkoutPhase() {
+  if (!state.workoutActive || !state.workout) return;
+
+  const phase = state.workout.phases[state.workoutPhaseIndex];
+  if (!phase) return;
+
+  state.workoutElapsed += Math.max(0, phase.duration - state.workoutPhaseElapsed);
+  state.workoutPhaseElapsed = 0;
+  state.workoutPhaseIndex++;
+  state.workoutLastBeepSecond = null;
+
+  if (state.workoutPhaseIndex >= state.workout.phases.length) {
+    completeWorkout();
+    return;
+  }
+
+  applyWorkoutTarget(true);
+  renderWorkoutPanel();
+  showToast(
+    `Preskočené na: ${state.workout.phases[state.workoutPhaseIndex].label}`,
+    'info',
+    2500
+  );
+}
+
+function completeWorkout() {
+  if (!state.workoutActive) return;
+  finishWorkout('complete');
+}
+
+function finishWorkout(reason = 'manual') {
+  if (!state.workoutActive) return;
+
+  const workout = state.workout;
+  const name = workout ? workout.name : 'Tréning';
+  const wasErg = state.workoutErg;
+
+  if (state.route) {
+    // Voľná jazda po tréningu nadviaže na miesto, kde sa tréning práve nachádzal.
+    const loopLength = Math.max(50, state.route.totalM - state.startM);
+    state.routeTravelBaseM = state.rideM - (state.rideM % loopLength);
+    state.routeFinished = false;
+    state.lastEle = null;
+  }
+
+  state.workoutActive = false;
+  state.workoutPaused = false;
+  state.workoutSummaryName = name;
+  state.workoutTargetPower = 0;
+  state.workout = null;
+  state.workoutPhaseIndex = 0;
+  state.workoutPhaseElapsed = 0;
+  state.workoutElapsed = 0;
+  state.workoutLastBeepSecond = null;
+
+  if (trainer) {
+    if (wasErg) sendErgTargetOnce(0);
+    else sendSimulationOnce(0);
+  }
+
+  state.workoutErg = false;
+  lastErgPower = null;
+  lastErgSentAt = 0;
+
+  renderWorkoutPanel();
+  updateChartMarker(true);
+
+  if (reason === 'complete') {
+    showToast(`Tréning „${name}“ dokončený.`, 'success', 6000);
+  } else {
+    showToast(`Tréning „${name}“ ukončený.`, 'info', 4000);
+  }
+
+  openFinishModal();
 }
 
 /* ---------------------------- Hrudný pás ---------------------------- */
@@ -7074,13 +5219,20 @@ function currentRideSummary() {
     avgHr = Math.round(state.hr);
   }
 
-  return {
-    name: state.route ? state.route.name : 'Voľná jazda',
-    routeLabel: state.route
+  const workoutName = state.workoutActive && state.workout
+    ? state.workout.name
+    : state.workoutSummaryName;
+  const routeLabel = workoutName
+    ? `${workoutName}${state.route ? ` · ${state.route.name}` : ''}`
+    : (state.route
       ? (state.startM > 0.5
         ? `${state.route.name} · štart ${formatKm(state.startM / 1000, 2)} km`
         : state.route.name)
-      : 'Voľná jazda bez GPX trasy',
+      : 'Voľná jazda bez GPX trasy');
+
+  return {
+    name: workoutName || (state.route ? state.route.name : 'Voľná jazda'),
+    routeLabel,
     durationS: Math.round(state.rideSeconds),
     distanceM: Math.round(state.rideM),
     ascentM: Math.round(state.ascentM),
@@ -7162,7 +5314,7 @@ function buildTcx(summary) {
   if (samples.length === 0) {
     const startSample = state.route ? sampleRoute(state.startM) : null;
     const endSample = state.route
-      ? sampleRoute(clamp(state.startM + state.rideM, 0, state.route.totalM))
+      ? sampleRoute(routeProgressM())
       : null;
     samples.push({
       t: 0, d: 0,
@@ -7182,7 +5334,7 @@ function buildTcx(summary) {
     const last = samples[samples.length - 1];
     if (last.t < durationS - 1 || (summary.distanceM || 0) > last.d + 1) {
       const endSample = state.route
-        ? sampleRoute(clamp(state.startM + state.rideM, 0, state.route.totalM))
+        ? sampleRoute(routeProgressM())
         : null;
       samples.push({
         t: Math.max(durationS, last.t + 1),
@@ -7364,6 +5516,7 @@ function closeFinishModal() {
     return;
   }
   state.ridePaused = false;
+  state.workoutSummaryName = '';
   if (state.lastTotalM !== null) {
     state.trainerBaseM = state.lastTotalM;
     state.trainerDistOffset = state.rideM;
@@ -7385,6 +5538,20 @@ function closeHelpModal() {
    ========================================================================= */
 let lastChartUpdateAt = 0;
 let lastTickAt = performance.now();
+
+/* Poloha na trase v metroch. Počas tréningu sa trasa opakuje dookola,
+   po tréningu nadviaže voľná jazda od miesta, kde tréning skončil. */
+function routeProgressM() {
+  if (!state.route) return 0;
+  const totalM = state.route.totalM;
+
+  if (state.workoutActive) {
+    const loopLength = Math.max(50, totalM - state.startM);
+    return clamp(state.startM + (state.rideM % loopLength), 0, totalM);
+  }
+
+  return clamp(state.startM + state.rideM - state.routeTravelBaseM, 0, totalM);
+}
 
 function sampleRoute(distanceM) {
   if (!state.route) return null;
@@ -7425,6 +5592,18 @@ function sampleRoute(distanceM) {
 }
 
 function updateGradeChip(grade) {
+  if (state.workoutActive) {
+    const color = '#c6f432';
+    el.gradeChip.textContent = (state.workoutErg && trainer) ? 'ERG' : 'Guide';
+    el.gradeChip.style.color = color;
+    el.gradeChip.style.background = hexToRgba(color, 0.14);
+    el.gradeChip.style.borderColor = hexToRgba(color, 0.36);
+    el.gradeFill.style.left = '50%';
+    el.gradeFill.style.width = '0%';
+    el.gradeFill.style.background = color;
+    return;
+  }
+
   const value = Number.isFinite(grade) ? grade : 0;
   const color = gradeColor(value);
 
@@ -7468,7 +5647,7 @@ function renderHUD(now = performance.now()) {
   el.weightValue.textContent = String(Math.round(state.weight));
 
   if (state.route) {
-    const progressM = clamp(state.startM + state.rideM, 0, state.route.totalM);
+    const progressM = routeProgressM();
     const remainingKm = Math.max(0, (state.route.totalM - progressM) / 1000);
     el.remainValue.textContent = `${formatKm(remainingKm, remainingKm >= 10 ? 1 : 2)} km`;
   } else {
@@ -7492,7 +5671,7 @@ function updateDebugPanel() {
     return;
   }
 
-  const clampedM = clamp(state.startM + state.rideM, 0, state.route.totalM);
+  const clampedM = routeProgressM();
   const pct = state.route.totalM > 0 ? (clampedM / state.route.totalM) * 100 : 0;
   const sample = sampleRoute(clampedM);
   const cpText = lastCpResult === null
@@ -7524,6 +5703,7 @@ function tick(now) {
 
   if (state.ridePaused) {
     renderHUD(now);
+    renderWorkoutPanel(now);
     return;
   }
 
@@ -7562,10 +5742,33 @@ function tick(now) {
     state.rideM += (speed / 3.6) * dt;
   }
 
-  if (state.route) {
-    const progressM = clamp(state.startM + state.rideM, 0, state.route.totalM);
+  if (state.workoutActive) {
+    const workoutRunning = !state.workoutPaused && (moving || !trainer);
+    if (workoutRunning && !advanceWorkout(dt)) {
+      renderHUD(now);
+      renderWorkoutPanel(now);
+      return;
+    }
+  }
 
-    if (!state.routeFinished && progressM >= state.route.totalM - 0.5) {
+  if (state.route) {
+    let progressM;
+
+    if (state.workoutActive) {
+      const loopLength = Math.max(50, state.route.totalM - state.startM);
+      const loopIndex = Math.floor(state.rideM / loopLength);
+      if (loopIndex !== state.workoutLoopIndex) {
+        state.workoutLoopIndex = loopIndex;
+        state.lastEle = null;
+        if (loopIndex === 1) {
+          showToast('Trasa sa opakuje, kým tréning neskončí.', 'info', 4200);
+        }
+      }
+    }
+
+    progressM = routeProgressM();
+
+    if (!state.workoutActive && !state.routeFinished && progressM >= state.route.totalM - 0.5) {
       state.routeFinished = true;
       showToast('Cieľ trasy dosiahnutý!', 'success', 5500);
       openFinishModal();
@@ -7582,7 +5785,11 @@ function tick(now) {
       state.lastEle = sample.ele;
     }
 
-    const target = clamp(state.routeFinished ? 0 : (sample ? sample.grade : 0), GRADE_MIN, GRADE_MAX);
+    const target = clamp(
+      state.workoutActive ? 0 : (state.routeFinished ? 0 : (sample ? sample.grade : 0)),
+      GRADE_MIN,
+      GRADE_MAX
+    );
     state.targetGrade = target;
 
     if (!Number.isFinite(state.currentGrade)) {
@@ -7600,7 +5807,12 @@ function tick(now) {
 
     if (sample) updateMapPosition(sample);
     if (moving) pushRideSample(sample);
-    queueSimulation();
+
+    if (state.workoutActive) {
+      if (state.workoutErg) queueTargetPower();
+    } else {
+      queueSimulation();
+    }
     updateChartMarker();
   } else {
     state.currentGrade = 0;
@@ -7609,6 +5821,7 @@ function tick(now) {
   }
 
   renderHUD(now);
+  renderWorkoutPanel(now);
   if (!el.debugPanel.hidden) updateDebugPanel();
 }
 
@@ -7652,7 +5865,10 @@ el.gpxInput.addEventListener('change', () => {
 });
 
 el.btnWeight.addEventListener('click', editWeight);
-el.btnFinish.addEventListener('click', openFinishModal);
+el.btnFinish.addEventListener('click', () => {
+  if (state.workoutActive) finishWorkout('manual');
+  else openFinishModal();
+});
 el.btnCloseModal.addEventListener('click', closeFinishModal);
 el.btnResumeRide.addEventListener('click', closeFinishModal);
 el.btnSaveActivity.addEventListener('click', saveCurrentActivity);
@@ -7686,6 +5902,35 @@ el.accountModal.addEventListener('click', (event) => {
 el.btnGoogleLogin.addEventListener('click', signInWithGoogle);
 el.btnSignOut.addEventListener('click', signOutAccount);
 el.btnSaveRoute.addEventListener('click', saveCurrentRoute);
+
+el.btnWorkout.addEventListener('click', openWorkoutModal);
+el.btnCloseWorkout.addEventListener('click', closeWorkoutModal);
+el.btnCloseWorkoutAction.addEventListener('click', closeWorkoutModal);
+el.workoutModal.addEventListener('click', (event) => {
+  if (event.target === el.workoutModal) closeWorkoutModal();
+});
+el.workoutFtp.addEventListener('change', () => {
+  if (!setFtp(el.workoutFtp.value)) {
+    el.workoutFtp.value = String(state.ftp);
+    showToast('FTP musí byť v rozsahu 50 – 600 W.', 'warning', 4000);
+  }
+  renderWorkoutPreview();
+});
+el.workoutErg.addEventListener('change', () => {
+  state.workoutErgPreferred = el.workoutErg.checked;
+  updateWorkoutModalState();
+});
+el.btnStartWorkout.addEventListener('click', startWorkout);
+el.wpPause.addEventListener('click', toggleWorkoutPause);
+el.wpSkip.addEventListener('click', skipWorkoutPhase);
+el.wpMute.addEventListener('click', toggleWorkoutMute);
+el.wpStop.addEventListener('click', () => finishWorkout('manual'));
+el.wpRouteLoad.addEventListener('click', openGpxPicker);
+el.wpRouteDemo.addEventListener('click', async () => {
+  await loadDemoRoute();
+  refreshWorkoutRouteNote();
+  renderWorkoutPreview();
+});
 
 let dragDepth = 0;
 window.addEventListener('dragenter', (event) => {
@@ -7740,6 +5985,7 @@ window.addEventListener('keydown', (event) => {
     if (el.helpModal.classList.contains('open')) closeHelpModal();
     else if (el.finishModal.classList.contains('open')) closeFinishModal();
     else if (el.accountModal.classList.contains('open')) closeAccountModal();
+    else if (el.workoutModal.classList.contains('open')) closeWorkoutModal();
   }
 });
 
