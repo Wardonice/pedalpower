@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1" creator="https://mapy.com/">
+	<trk>
+		<name>Route from Kostiviarska cesta to 48.762127N, 19.141947E</name>
+		<trkseg>
+			<trkpt lat="48.757405" lon="19.143521">
+				<ele>378.000000</ele>
+			</trkpt>
+			<trkpt lat="48.757447" lon="19.143529">
+				<ele>378.000000</ele>
+			</trkpt>
+			<trkpt lat="48.757482" lon="19.143521">
+				<ele>378.000000</ele>
+			</trkpt>
+			<trkpt lat="48.757506" lon="19.143502">
+				<ele>379.000000</ele>
+			</trkpt>
+			<trkpt lat="48.757660" lon="19.143386">
+				<ele>379.000000</ele>
+			</trkpt>
+			<trkpt lat="48.758063" lon="19.143036">
+				<ele>379.000000</ele>
+			</trkpt>
+			<trkpt lat="48.758110" lon="19.143009">
+				<ele>379.000000</ele>
+			</trkpt>
+			<trkpt lat="48.758164" lon="19.143000">
+				<ele>380.000000</ele>
+			</trkpt>
+			<trkpt lat="48.758229" lon="19.142991">
+				<ele>380.000000</ele>
+			</trkpt>
+			<trkpt lat="48.758294" lon="19.142955">
+				<ele>380.000000</ele>
+			</trkpt>
+			<trkpt lat="48.758886" lon="19.142434">
+				<ele>380.000000</ele>
+			</trkpt>
+			<trkpt lat="48.759413" lon="19.142011">
+				<ele>380.000000</ele>
+			</trkpt>
+			<trkpt lat="48.759567" lon="19.141904">
+				<ele>380.000000</ele>
+			</trkpt>
+			<trkpt lat="48.759774" lon="19.141823">
+				<ele>380.000000</ele>
+			</trkpt>
+			<trkpt lat="48.760005" lon="19.141770">
+				<ele>380.000000</ele>
+			</trkpt>
+			<trkpt lat="48.760242" lon="19.141760">
+				<ele>380.000000</ele>
+			</trkpt>
+			<trkpt lat="48.760692" lon="19.141797">
+				<ele>380.000000</ele>
+			</trkpt>
+			<trkpt lat="48.761225" lon="19.141797">
+				<ele>380.000000</ele>
+			</trkpt>
+			<trkpt lat="48.761841" lon="19.141805">
+				<ele>380.000000</ele>
+			</trkpt>
+			<trkpt lat="48.761889" lon="19.141814">
+				<ele>380.000000</ele>
+			</trkpt>
+			<trkpt lat="48.761924" lon="19.141833">
+				<ele>380.000000</ele>
+			</trkpt>
+			<trkpt lat="48.762048" lon="19.141940">
+				<ele>380.000000</ele>
+			</trkpt>
+			<trkpt lat="48.762107" lon="19.141957">
+				<ele>380.000000</ele>
+			</trkpt>
+			<trkpt lat="48.762125" lon="19.141957">
+				<ele>380.000000</ele>
+			</trkpt>
+		</trkseg>
+	</trk>
+</gpx>
+
