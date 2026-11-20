@@ -492,7 +492,7 @@
      rovnakou špecificitou (jedna trieda) a tlačidlá sa prekryjú. */
   #btnHelp{ left:14px; right:auto; }
   .side-actions{
-    position:fixed; right:14px; top:calc(50% - var(--profile-h) / 4);
+    position:fixed; right:14px; top:52%;
     transform:translateY(-50%); z-index:950;
     display:flex; flex-direction:column; align-items:flex-end; gap:8px;
   }
@@ -559,7 +559,6 @@
   .help-card .modal-actions{ margin-top:16px; flex:0 0 auto; }
 
   /* ---------- KONTO (TLAČIDLO + MODAL) ---------- */
-  .account-btn{ bottom:calc(var(--profile-h) + 78px); }
   .account-btn.connected{
     border-color:rgba(198,244,50,.38); color:#e4ff9e;
     background:rgba(24,32,18,.42);
@@ -1019,6 +1018,7 @@
     .map-switch{ right:12px; bottom:calc(var(--profile-h) + 30px); }
     #btnHelp{ left:12px; right:auto; }
     .toolbar{ top:12px; right:12px; flex-direction:row; gap:7px; }
+    .account-btn{ order:10; }
     .tool-btn{ width:40px; height:38px; padding:0; justify-content:center; }
     .tool-btn-weight{ width:auto; padding:0 10px; }
     .tool-btn-weight svg{ display:none; }
@@ -1044,7 +1044,6 @@
     .side-actions .help-btn{ left:auto; right:auto; bottom:auto; }
     .map-switch{ right:10px; bottom:calc(var(--profile-h) + 28px); height:38px; }
     .map-btn{ height:28px; padding:0 8px; }
-    .account-btn{ bottom:calc(var(--profile-h) + 72px); }
     .help-card{ max-height:calc(100vh - 24px); padding:18px 18px 15px; }
     .account-card{ max-height:calc(100vh - 24px); padding:18px 18px 15px; }
     .workout-card{ max-height:calc(100vh - 24px); padding:18px 18px 15px; }
@@ -1187,8 +1186,17 @@
   </div>
 </div>
 
-<!-- ================= TOOLBAR (HMOTNOSŤ ÚPLNE NAVRCHU + FINISH) ================= -->
+<!-- ================= TOOLBAR (KONTO + HMOTNOSŤ NAVRCHU + FINISH) ================= -->
 <div class="toolbar">
+  <button id="btnAccount" class="tool-btn account-btn" type="button" title="Konto – prihlásenie a správa účtu" aria-haspopup="dialog">
+    <span id="accountDot" class="device-dot"></span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.6"/>
+      <path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>
+    </svg>
+    <span class="tool-label">Konto</span>
+  </button>
+
   <button id="btnWeight" class="tool-btn tool-btn-weight" type="button" title="Hmotnosť jazdca – klikni pre zmenu">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <circle cx="12" cy="5" r="2.2"/><path d="M8.5 9h7l2.2 11H6.3L8.5 9Z"/><path d="M9.7 9a2.3 2.3 0 0 0 4.6 0"/>
@@ -1263,15 +1271,6 @@
     <path d="M12 17.4h.01"/>
   </svg>
   <span class="help-label">Nápoveda</span>
-</button>
-
-<button id="btnAccount" class="help-btn account-btn" type="button" title="Konto – prihlásenie a správa účtu" aria-haspopup="dialog">
-  <span id="accountDot" class="device-dot"></span>
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <circle cx="12" cy="8" r="3.6"/>
-    <path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>
-  </svg>
-  <span class="help-label">Konto</span>
 </button>
 
 <input id="gpxInput" type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml" style="display:none">
@@ -1558,7 +1557,7 @@
 
       <section class="help-section">
         <div class="help-section-head"><span class="help-step">11</span><h3>Konto, trasy a jazdy</h3></div>
-        <p>Tlačidlom <strong>Konto</strong> vpravo dole sa prihlásiš cez Google. Po prihlásení máš vpravo v strede dve samostatné okná: <strong>Trasy</strong> a <strong>Jazdy</strong>.</p>
+        <p>Tlačidlom <strong>Konto</strong> vpravo hore sa prihlásiš cez Google. Po prihlásení máš vpravo v strede dve samostatné okná: <strong>Trasy</strong> a <strong>Jazdy</strong>.</p>
         <p>V okne <strong>Trasy</strong> uložíš aktuálnu GPX trasu do účtu a uložené trasy môžeš kedykoľvek načítať, premenovať alebo vymazať. Trasy sú súkromné – vidíš ich iba ty.</p>
         <p>Každú ukončenú jazdu uložíš tlačidlom <strong>Uložiť aktivitu</strong> v okne štatistiky. V okne <strong>Jazdy</strong> potom nájdeš celkový súhrn aj históriu jázd s možnosťou zobraziť <strong>Štatistiku</strong>, premenovať jazdu alebo ju vymazať.</p>
         <p>Hmotnosť jazdca (tlačidlo s hodnotou v kg vpravo hore) sa po prihlásení uloží do účtu, takže si ju aplikácia zapamätá aj na inom zariadení.</p>
