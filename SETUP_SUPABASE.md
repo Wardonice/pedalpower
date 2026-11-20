@@ -50,6 +50,12 @@ create policy "Používateľ ukladá iba svoje trasy"
   to authenticated
   with check (auth.uid() = user_id);
 
+create policy "Používateľ upravuje iba svoje trasy"
+  on public.routes for update
+  to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
 create policy "Používateľ maže iba svoje trasy"
   on public.routes for delete
   to authenticated
@@ -93,6 +99,12 @@ create policy "Používateľ číta iba svoje jazdy"
 create policy "Používateľ ukladá iba svoje jazdy"
   on public.activities for insert
   to authenticated
+  with check (auth.uid() = user_id);
+
+create policy "Používateľ upravuje iba svoje jazdy"
+  on public.activities for update
+  to authenticated
+  using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
 create policy "Používateľ maže iba svoje jazdy"

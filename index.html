@@ -490,6 +490,14 @@
   .help-btn svg{ width:16px; height:16px; flex:0 0 auto; filter:drop-shadow(0 1px 4px rgba(0,0,0,.4)); }
   /* Modifikátor musí byť až za základným .help-btn – inak ho prepíše
      rovnakou špecificitou (jedna trieda) a tlačidlá sa prekryjú. */
+  .side-actions{
+    position:fixed; right:14px; top:calc(50% - var(--profile-h) / 4);
+    transform:translateY(-50%); z-index:950;
+    display:flex; flex-direction:column; align-items:flex-end; gap:8px;
+  }
+  .side-actions .help-btn{
+    position:relative; right:auto; bottom:auto;
+  }
   .workout-btn{
     bottom:calc(var(--profile-h) + 126px);
     border-color:rgba(198,244,50,.28); color:#dcff79;
@@ -672,6 +680,14 @@
   }
   .account-item-btn:hover{ background:rgba(255,255,255,.15); color:#fff; }
   .account-item-btn:disabled{ opacity:.5; cursor:default; }
+  .account-item-edit{
+    width:30px; height:30px; flex:0 0 auto; border-radius:8px; cursor:pointer;
+    border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.07);
+    color:rgba(255,255,255,.78); display:grid; place-items:center;
+    transition:background .2s, color .2s, border-color .2s;
+  }
+  .account-item-edit:hover{ background:rgba(255,255,255,.16); color:#fff; border-color:rgba(255,255,255,.28); }
+  .account-item-edit svg{ width:14px; height:14px; }
   .account-item-del{
     width:30px; height:30px; flex:0 0 auto; border-radius:8px; cursor:pointer;
     border:1px solid rgba(248,113,113,.22); background:rgba(248,113,113,.08);
@@ -679,6 +695,23 @@
     transition:background .2s, color .2s;
   }
   .account-item-del:hover{ background:rgba(248,113,113,.20); color:#fecaca; }
+  .activity-summary{
+    display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px;
+  }
+  .activity-summary[hidden]{ display:none !important; }
+  .activity-stat{
+    padding:10px 12px; border-radius:12px;
+    background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.10);
+  }
+  .activity-stat-label{
+    font-size:8.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(255,255,255,.5);
+  }
+  .activity-stat-val{
+    margin-top:3px; font-family:'Barlow Condensed',sans-serif;
+    font-size:21px; line-height:1.05; font-weight:700; color:#fff;
+    font-variant-numeric:tabular-nums;
+  }
   .account-empty{
     padding:20px 14px; border-radius:12px; text-align:center;
     border:1px dashed rgba(255,255,255,.14);
@@ -727,8 +760,8 @@
   .modal-backdrop.open{
     opacity:1; pointer-events:auto;
   }
-  /* Konto sa otvára aj z workout modalu – musí byť navrchu. */
-  #accountModal{ z-index:2050; }
+  /* Konto, Trasy a Jazdy sa môžu otvárať ponad iné okná – musia byť navrchu (pod #finishModal.stack). */
+  #accountModal, #routesModal, #activitiesModal{ z-index:2050; }
   .modal-card{
     width:min(560px, 100%);
     border-radius:24px;
@@ -998,12 +1031,15 @@
     #toasts{ left:12px; right:12px; }
     .help-btn{ width:40px; padding:0; justify-content:center; }
     .help-btn .help-label{ display:none; }
+    .side-actions{ right:12px; }
     .workout-settings{ grid-template-columns:1fr; }
   }
   @media (max-width:640px){
     :root{ --profile-h:146px; }
     body.workout-active{ --profile-h:258px; }
     .help-btn{ right:10px; bottom:calc(var(--profile-h) + 28px); width:38px; height:38px; }
+    .side-actions{ right:10px; }
+    .side-actions .help-btn{ right:auto; bottom:auto; }
     .map-switch{ left:10px; bottom:calc(var(--profile-h) + 28px); height:38px; }
     .map-btn{ height:28px; padding:0 8px; }
     .account-btn{ bottom:calc(var(--profile-h) + 72px); }
@@ -1193,6 +1229,23 @@
   </button>
 </div>
 
+<div class="side-actions">
+  <button id="btnRoutes" class="help-btn" type="button" title="Trasy – uložené GPX trasy" aria-haspopup="dialog">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="6" cy="19" r="2.8"/>
+      <path d="M8.8 19H16a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h7.2"/>
+      <circle cx="18" cy="5" r="2.8"/>
+    </svg>
+    <span class="help-label">Trasy</span>
+  </button>
+  <button id="btnActivities" class="help-btn" type="button" title="Jazdy – história uložených jázd" aria-haspopup="dialog">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3 12h4l3-7 4 14 3-7h4"/>
+    </svg>
+    <span class="help-label">Jazdy</span>
+  </button>
+</div>
+
 <button id="btnHelp" class="help-btn" type="button" title="Nápoveda – návod na ovládanie" aria-haspopup="dialog">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="9"/>
@@ -1212,7 +1265,7 @@
   <span class="help-label">Workout</span>
 </button>
 
-<button id="btnAccount" class="help-btn account-btn" type="button" title="Konto – prihlásenie a uložené trasy" aria-haspopup="dialog">
+<button id="btnAccount" class="help-btn account-btn" type="button" title="Konto – prihlásenie a správa účtu" aria-haspopup="dialog">
   <span id="accountDot" class="device-dot"></span>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <circle cx="12" cy="8" r="3.6"/>
@@ -1505,9 +1558,10 @@
 
       <section class="help-section">
         <div class="help-section-head"><span class="help-step">11</span><h3>Konto, trasy a jazdy</h3></div>
-        <p>Tlačidlom <strong>Konto</strong> vpravo dole sa prihlásiš cez Google. Po prihlásení môžeš aktuálnu trasu uložiť do účtu, neskôr ju kedykoľvek načítať alebo vymazať. Trasy sú súkromné – vidíš ich iba ty.</p>
-        <p>Každú ukončenú jazdu uložíš tlačidlom <strong>Uložiť aktivitu</strong> v okne štatistiky. V okne <strong>Konto</strong> v časti <strong>Moje jazdy</strong> potom nájdeš čas, kilometre, nastúpané metre, kalórie, priemerný výkon, Normalized Power a priemerný tep. Tlačidlom <strong>Štatistika</strong> si ich kedykoľvek zobrazíš znova.</p>
-        <p>Hmotnosť jazdca (tlačidlo s hodnotou v kg vľavo hore) sa po prihlásení uloží do účtu, takže si ju aplikácia zapamätá aj na inom zariadení.</p>
+        <p>Tlačidlom <strong>Konto</strong> vpravo dole sa prihlásiš cez Google. Po prihlásení máš vpravo v strede dve samostatné okná: <strong>Trasy</strong> a <strong>Jazdy</strong>.</p>
+        <p>V okne <strong>Trasy</strong> uložíš aktuálnu GPX trasu do účtu a uložené trasy môžeš kedykoľvek načítať, premenovať alebo vymazať. Trasy sú súkromné – vidíš ich iba ty.</p>
+        <p>Každú ukončenú jazdu uložíš tlačidlom <strong>Uložiť aktivitu</strong> v okne štatistiky. V okne <strong>Jazdy</strong> potom nájdeš celkový súhrn aj históriu jázd s možnosťou zobraziť <strong>Štatistiku</strong>, premenovať jazdu alebo ju vymazať.</p>
+        <p>Hmotnosť jazdca (tlačidlo s hodnotou v kg vpravo hore) sa po prihlásení uloží do účtu, takže si ju aplikácia zapamätá aj na inom zariadení.</p>
       </section>
     </div>
 
@@ -1523,8 +1577,8 @@
     <div class="modal-head">
       <div>
         <div class="modal-badge"><span class="modal-badge-dot"></span>Konto</div>
-        <h2 id="accountModalTitle" class="modal-title">Moje trasy a jazdy</h2>
-        <div id="accountSubtitle" class="modal-route">Prihlás sa a ulož si svoje GPX trasy</div>
+        <h2 id="accountModalTitle" class="modal-title">Môj účet</h2>
+        <div id="accountSubtitle" class="modal-route">Prihlás sa a ulož si svoje GPX trasy a jazdy</div>
       </div>
       <button id="btnCloseAccount" class="modal-close" type="button" aria-label="Zavrieť">×</button>
     </div>
@@ -1567,39 +1621,97 @@
           </div>
           <button id="btnSignOut" class="account-link" type="button">Odhlásiť</button>
         </div>
-
-        <div class="account-save">
-          <div class="account-save-info">
-            <div class="account-save-label">Aktuálna trasa</div>
-            <div id="accountCurrent" class="account-current">Žiadna načítaná trasa</div>
-          </div>
-          <button id="btnSaveRoute" class="modal-btn modal-btn-primary" type="button">Uložiť trasu</button>
-        </div>
-
-        <div class="account-list-head">
-          <span>Uložené trasy</span>
-          <span id="accountCount" class="account-count">0</span>
-        </div>
-        <div id="accountError" class="account-error" hidden></div>
-        <div id="accountEmpty" class="account-empty">
-          Zatiaľ nemáš uložené žiadne trasy. Načítaj GPX a klikni na <strong>Uložiť trasu</strong>.
-        </div>
-        <div id="accountList" class="account-list"></div>
-
-        <div class="account-list-head" style="margin-top:6px;">
-          <span>Moje jazdy</span>
-          <span id="activityCount" class="account-count">0</span>
-        </div>
-        <div id="activityError" class="account-error" hidden></div>
-        <div id="activityEmpty" class="account-empty">
-          Zatiaľ nemáš uložené jazdy. Ukonči jazdu tlačidlom <strong>Finish</strong> a klikni na <strong>Uložiť aktivitu</strong>.
-        </div>
-        <div id="activityList" class="account-list"></div>
+        <p class="account-note">
+          Uložené GPX trasy a históriu jázd nájdeš pod tlačidlami <strong>Trasy</strong> a <strong>Jazdy</strong> vpravo v strede obrazovky.
+        </p>
       </div>
     </div>
 
     <div class="modal-actions">
       <button id="btnCloseAccountAction" class="modal-btn modal-btn-ghost" type="button">Zavrieť</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MOJE TRASY ================= -->
+<div id="routesModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="routesModalTitle">
+  <div class="modal-card account-card">
+    <div class="modal-head">
+      <div>
+        <div class="modal-badge"><span class="modal-badge-dot"></span>Trasy</div>
+        <h2 id="routesModalTitle" class="modal-title">Moje trasy</h2>
+        <div class="modal-route">Uložené GPX trasy v tvojom účte</div>
+      </div>
+      <button id="btnCloseRoutes" class="modal-close" type="button" aria-label="Zavrieť">×</button>
+    </div>
+
+    <div class="account-body">
+      <div class="account-save">
+        <div class="account-save-info">
+          <div class="account-save-label">Aktuálna trasa</div>
+          <div id="accountCurrent" class="account-current">Žiadna načítaná trasa</div>
+        </div>
+        <button id="btnSaveRoute" class="modal-btn modal-btn-primary" type="button">Uložiť trasu</button>
+      </div>
+
+      <div class="account-list-head">
+        <span>Uložené trasy</span>
+        <span id="accountCount" class="account-count">0</span>
+      </div>
+      <div id="accountError" class="account-error" hidden></div>
+      <div id="accountEmpty" class="account-empty">
+        Zatiaľ nemáš uložené žiadne trasy. Načítaj GPX a klikni na <strong>Uložiť trasu</strong>.
+      </div>
+      <div id="accountList" class="account-list"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button id="btnCloseRoutesAction" class="modal-btn modal-btn-ghost" type="button">Zavrieť</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MOJE JAZDY ================= -->
+<div id="activitiesModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="activitiesModalTitle">
+  <div class="modal-card account-card">
+    <div class="modal-head">
+      <div>
+        <div class="modal-badge"><span class="modal-badge-dot"></span>Jazdy</div>
+        <h2 id="activitiesModalTitle" class="modal-title">Moje jazdy</h2>
+        <div class="modal-route">História uložených jázd a tréningov</div>
+      </div>
+      <button id="btnCloseActivities" class="modal-close" type="button" aria-label="Zavrieť">×</button>
+    </div>
+
+    <div class="account-body">
+      <div id="activitySummary" class="activity-summary" hidden>
+        <div class="activity-stat">
+          <div class="activity-stat-label">Spolu jázd</div>
+          <div id="activityTotalCount" class="activity-stat-val">0</div>
+        </div>
+        <div class="activity-stat">
+          <div class="activity-stat-label">Spolu km</div>
+          <div id="activityTotalKm" class="activity-stat-val">0.0</div>
+        </div>
+        <div class="activity-stat">
+          <div class="activity-stat-label">Nastúpané</div>
+          <div id="activityTotalAscent" class="activity-stat-val">+0 m</div>
+        </div>
+      </div>
+
+      <div class="account-list-head">
+        <span>Uložené jazdy</span>
+        <span id="activityCount" class="account-count">0</span>
+      </div>
+      <div id="activityError" class="account-error" hidden></div>
+      <div id="activityEmpty" class="account-empty">
+        Zatiaľ nemáš uložené jazdy. Ukonči jazdu tlačidlom <strong>Finish</strong> a klikni na <strong>Uložiť aktivitu</strong>.
+      </div>
+      <div id="activityList" class="account-list"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button id="btnCloseActivitiesAction" class="modal-btn modal-btn-ghost" type="button">Zavrieť</button>
     </div>
   </div>
 </div>
@@ -1910,6 +2022,19 @@ const el = {
   wpSkip: $('wpSkip'),
   wpMute: $('wpMute'),
   wpStop: $('wpStop'),
+
+  btnRoutes: $('btnRoutes'),
+  routesModal: $('routesModal'),
+  btnCloseRoutes: $('btnCloseRoutes'),
+  btnCloseRoutesAction: $('btnCloseRoutesAction'),
+  btnActivities: $('btnActivities'),
+  activitiesModal: $('activitiesModal'),
+  btnCloseActivities: $('btnCloseActivities'),
+  btnCloseActivitiesAction: $('btnCloseActivitiesAction'),
+  activitySummary: $('activitySummary'),
+  activityTotalCount: $('activityTotalCount'),
+  activityTotalKm: $('activityTotalKm'),
+  activityTotalAscent: $('activityTotalAscent'),
 
   btnAccount: $('btnAccount'),
   accountDot: $('accountDot'),
@@ -3372,6 +3497,12 @@ function updateAuthLocks() {
   setAuthLockedButton(el.btnLoadGpxEmpty, locked,
     '',
     'Nahratie GPX – dostupné po prihlásení');
+  setAuthLockedButton(el.btnRoutes, locked,
+    'Trasy – uložené GPX trasy',
+    'Trasy – dostupné po prihlásení');
+  setAuthLockedButton(el.btnActivities, locked,
+    'Jazdy – história uložených jázd',
+    'Jazdy – dostupné po prihlásení');
 
   renderHUD();
 
@@ -3436,7 +3567,7 @@ function updateAccountButton() {
   el.accountDot.classList.toggle('connected', signedIn);
   el.btnAccount.title = signedIn
     ? `Konto – ${accountUser.email || 'prihlásený používateľ'}`
-    : 'Konto – prihlásenie a uložené trasy';
+    : 'Konto – prihlásenie a správa účtu';
 }
 
 function findMatchingSavedRoute() {
@@ -3478,6 +3609,17 @@ function refreshAccountCurrentRoute() {
   }
 }
 
+function createRenameButton(title, ariaLabel, onClick) {
+  const edit = document.createElement('button');
+  edit.type = 'button';
+  edit.className = 'account-item-edit';
+  edit.title = title;
+  edit.setAttribute('aria-label', ariaLabel);
+  edit.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+  edit.addEventListener('click', onClick);
+  return edit;
+}
+
 function buildAccountRouteItem(item) {
   const row = document.createElement('div');
   row.className = 'account-item';
@@ -3509,6 +3651,12 @@ function buildAccountRouteItem(item) {
   load.textContent = 'Načítať';
   load.addEventListener('click', () => loadSavedRoute(item.id));
 
+  const rename = createRenameButton(
+    'Premenovať trasu',
+    `Premenovať trasu ${item.name || ''}`.trim(),
+    () => renameSavedRoute(item.id)
+  );
+
   const remove = document.createElement('button');
   remove.type = 'button';
   remove.className = 'account-item-del';
@@ -3517,7 +3665,7 @@ function buildAccountRouteItem(item) {
   remove.textContent = '×';
   remove.addEventListener('click', () => deleteSavedRoute(item.id));
 
-  row.append(main, load, remove);
+  row.append(main, load, rename, remove);
   return row;
 }
 
@@ -3574,6 +3722,12 @@ function buildActivityItem(item) {
   stats.textContent = 'Štatistika';
   stats.addEventListener('click', () => openActivityStats(item.id));
 
+  const rename = createRenameButton(
+    'Premenovať jazdu',
+    `Premenovať jazdu ${item.name || ''}`.trim(),
+    () => renameSavedActivity(item.id)
+  );
+
   const remove = document.createElement('button');
   remove.type = 'button';
   remove.className = 'account-item-del';
@@ -3582,7 +3736,7 @@ function buildActivityItem(item) {
   remove.textContent = '×';
   remove.addEventListener('click', () => deleteSavedActivity(item.id));
 
-  row.append(main, stats, remove);
+  row.append(main, stats, rename, remove);
   return row;
 }
 
@@ -3590,6 +3744,22 @@ function renderSavedActivities() {
   if (!el.activityList) return;
   el.activityList.textContent = '';
   el.activityCount.textContent = String(savedActivities.length);
+
+  if (el.activitySummary) {
+    const hasItems = savedActivities.length > 0;
+    el.activitySummary.hidden = !hasItems;
+    if (hasItems) {
+      let totalM = 0;
+      let totalAscent = 0;
+      for (const item of savedActivities) {
+        totalM += Number(item.distance_m) || 0;
+        totalAscent += Number(item.ascent_m) || 0;
+      }
+      el.activityTotalCount.textContent = String(savedActivities.length);
+      el.activityTotalKm.textContent = formatKm(totalM / 1000, 1);
+      el.activityTotalAscent.textContent = `+${Math.round(totalAscent)} m`;
+    }
+  }
 
   el.activityError.hidden = !savedActivitiesError;
   if (savedActivitiesError) el.activityError.textContent = savedActivitiesError;
@@ -3637,7 +3807,7 @@ function renderAccount() {
   }
 
   if (signedIn) {
-    el.accountSubtitle.textContent = 'Trasy a jazdy uložené v tvojom účte';
+    el.accountSubtitle.textContent = 'Prihlásenie a správa účtu';
     el.accountEmail.textContent = accountUser.email || 'Prihlásený používateľ';
     const initial = (accountUser.email || '?').trim().charAt(0);
     el.accountAvatar.textContent = initial || '?';
@@ -3661,6 +3831,12 @@ function setAccountUser(user) {
     if (wasViewingActivity && el.finishModal.classList.contains('open')) {
       closeFinishModal();
     }
+    if (el.routesModal && el.routesModal.classList.contains('open')) {
+      el.routesModal.classList.remove('open');
+    }
+    if (el.activitiesModal && el.activitiesModal.classList.contains('open')) {
+      el.activitiesModal.classList.remove('open');
+    }
     savedRoutes = [];
     savedRoutesError = '';
     savedRoutesLoading = false;
@@ -3683,15 +3859,42 @@ function openAccountModal() {
   renderAccount();
   el.accountModal.classList.add('open');
   el.btnCloseAccount.focus({ preventScroll: true });
-  if (supa && accountUser) {
-    refreshSavedRoutes();
-    refreshSavedActivities();
-  }
 }
 
 function closeAccountModal() {
   el.accountModal.classList.remove('open');
   el.btnAccount.focus({ preventScroll: true });
+}
+
+function openRoutesModal() {
+  if (!requireLogin('Moje trasy')) return;
+  refreshAccountCurrentRoute();
+  renderSavedRoutes();
+  el.routesModal.classList.add('open');
+  el.btnCloseRoutes.focus({ preventScroll: true });
+  if (supa && accountUser) {
+    refreshSavedRoutes();
+  }
+}
+
+function closeRoutesModal() {
+  el.routesModal.classList.remove('open');
+  el.btnRoutes.focus({ preventScroll: true });
+}
+
+function openActivitiesModal() {
+  if (!requireLogin('Moje jazdy')) return;
+  renderSavedActivities();
+  el.activitiesModal.classList.add('open');
+  el.btnCloseActivities.focus({ preventScroll: true });
+  if (supa && accountUser) {
+    refreshSavedActivities();
+  }
+}
+
+function closeActivitiesModal() {
+  el.activitiesModal.classList.remove('open');
+  el.btnActivities.focus({ preventScroll: true });
 }
 
 function consumeLoginPending() {
@@ -3861,6 +4064,48 @@ async function saveCurrentActivity() {
   }
 }
 
+async function renameSavedActivity(id) {
+  if (!supa || !accountUser || activityBusy) return;
+  const item = savedActivities.find((activity) => activity.id === id);
+  if (!item) return;
+
+  const current = String(item.name || 'Jazda');
+  const answer = window.prompt('Nový názov jazdy:', current);
+  if (answer === null) return;
+
+  const nextName = answer.trim().slice(0, 160);
+  if (!nextName) {
+    showToast('Názov jazdy nesmie byť prázdny.', 'warning', 3800);
+    return;
+  }
+  if (nextName === current) return;
+
+  activityBusy = true;
+  try {
+    const { data, error } = await supa
+      .from(ACTIVITIES_TABLE)
+      .update({ name: nextName })
+      .eq('id', id)
+      .eq('user_id', accountUser.id)
+      .select('id, name');
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      throw new Error('Databáza nepovolila premenovanie (chýba RLS pravidlo UPDATE pre tabuľku „activities“ – pozri SETUP_SUPABASE.md).');
+    }
+    item.name = nextName;
+    renderSavedActivities();
+    if (viewingActivityId === id && el.statRouteName) {
+      el.statRouteName.textContent = nextName;
+    }
+    showToast(`Jazda premenovaná na „${nextName}“.`, 'success', 3600);
+  } catch (error) {
+    console.error('Premenovanie jazdy:', error);
+    showToast(`Jazdu sa nepodarilo premenovať: ${accountErrorMessage(error)}`, 'error', 8500);
+  } finally {
+    activityBusy = false;
+  }
+}
+
 async function deleteSavedActivity(id) {
   if (!supa || !accountUser || activityBusy) return;
   const item = savedActivities.find((activity) => activity.id === id);
@@ -3972,7 +4217,7 @@ async function loadSavedRoute(id) {
     parsed.name = item.name || parsed.name;
     parsed.isDemo = false;
     applyRoute(parsed, data.gpx_text, `${parsed.name}.gpx`, id);
-    closeAccountModal();
+    closeRoutesModal();
 
     showToast(
       `Trasa „${parsed.name}“ načítaná z účtu · ${formatKm(parsed.totalM / 1000, 1)} km · +${Math.round(parsed.ascentM)} m.`,
@@ -3982,6 +4227,50 @@ async function loadSavedRoute(id) {
   } catch (error) {
     console.error('Načítanie trasy:', error);
     showToast(`Trasu sa nepodarilo načítať: ${accountErrorMessage(error)}`, 'error', 7500);
+  } finally {
+    accountBusy = false;
+  }
+}
+
+async function renameSavedRoute(id) {
+  if (!supa || !accountUser || accountBusy) return;
+  const item = savedRoutes.find((route) => route.id === id);
+  if (!item) return;
+
+  const current = String(item.name || 'GPX trasa');
+  const answer = window.prompt('Nový názov trasy:', current);
+  if (answer === null) return;
+
+  const nextName = answer.trim().slice(0, 120);
+  if (!nextName) {
+    showToast('Názov trasy nesmie byť prázdny.', 'warning', 3800);
+    return;
+  }
+  if (nextName === current) return;
+
+  accountBusy = true;
+  try {
+    const { data, error } = await supa
+      .from(ROUTES_TABLE)
+      .update({ name: nextName })
+      .eq('id', id)
+      .eq('user_id', accountUser.id)
+      .select('id, name');
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      throw new Error('Databáza nepovolila premenovanie (chýba RLS pravidlo UPDATE pre tabuľku „routes“ – pozri SETUP_SUPABASE.md).');
+    }
+    item.name = nextName;
+    renderSavedRoutes();
+    if (state.route && state.routeSavedId === id) {
+      state.route.name = nextName;
+      el.routeName.textContent = nextName;
+      refreshAccountCurrentRoute();
+    }
+    showToast(`Trasa premenovaná na „${nextName}“.`, 'success', 3600);
+  } catch (error) {
+    console.error('Premenovanie trasy:', error);
+    showToast(`Trasu sa nepodarilo premenovať: ${accountErrorMessage(error)}`, 'error', 8500);
   } finally {
     accountBusy = false;
   }
@@ -4051,9 +4340,9 @@ async function initAccount() {
 
       if (user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
         if (consumeLoginPending()) openAccountModal();
-        else if (event === 'SIGNED_IN' && el.accountModal.classList.contains('open')) {
-          refreshSavedRoutes();
-          refreshSavedActivities();
+        else if (event === 'SIGNED_IN') {
+          if (el.routesModal.classList.contains('open')) refreshSavedRoutes();
+          if (el.activitiesModal.classList.contains('open')) refreshSavedActivities();
         }
       }
     }, 0);
@@ -6029,6 +6318,20 @@ el.btnGoogleLogin.addEventListener('click', signInWithGoogle);
 el.btnSignOut.addEventListener('click', signOutAccount);
 el.btnSaveRoute.addEventListener('click', saveCurrentRoute);
 
+el.btnRoutes.addEventListener('click', openRoutesModal);
+el.btnCloseRoutes.addEventListener('click', closeRoutesModal);
+el.btnCloseRoutesAction.addEventListener('click', closeRoutesModal);
+el.routesModal.addEventListener('click', (event) => {
+  if (event.target === el.routesModal) closeRoutesModal();
+});
+
+el.btnActivities.addEventListener('click', openActivitiesModal);
+el.btnCloseActivities.addEventListener('click', closeActivitiesModal);
+el.btnCloseActivitiesAction.addEventListener('click', closeActivitiesModal);
+el.activitiesModal.addEventListener('click', (event) => {
+  if (event.target === el.activitiesModal) closeActivitiesModal();
+});
+
 el.btnWorkout.addEventListener('click', openWorkoutModal);
 el.btnCloseWorkout.addEventListener('click', closeWorkoutModal);
 el.btnCloseWorkoutAction.addEventListener('click', closeWorkoutModal);
@@ -6145,6 +6448,8 @@ window.addEventListener('keydown', (event) => {
   } else if (event.key === 'Escape') {
     if (el.helpModal.classList.contains('open')) closeHelpModal();
     else if (el.finishModal.classList.contains('open')) closeFinishModal();
+    else if (el.routesModal.classList.contains('open')) closeRoutesModal();
+    else if (el.activitiesModal.classList.contains('open')) closeActivitiesModal();
     else if (el.accountModal.classList.contains('open')) closeAccountModal();
     else if (el.workoutModal.classList.contains('open')) closeWorkoutModal();
   }
