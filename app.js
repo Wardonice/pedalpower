@@ -2031,6 +2031,9 @@ function updateAuthLocks() {
   setAuthLockedButton(el.btnActivities, locked,
     'Jazdy – história uložených jázd',
     'Jazdy – dostupné po prihlásení');
+  setAuthLockedButton(el.btnWorkout, locked,
+    'Workout – intervalový tréning',
+    'Workout – dostupné po prihlásení');
 
   renderHUD();
 
@@ -3739,6 +3742,7 @@ function renderWorkoutPreview() {
 }
 
 function openWorkoutModal() {
+  if (!requireLogin('Workout')) return;
   if (state.workoutActive) {
     showToast('Tréning už beží.', 'info', 3000);
     return;
