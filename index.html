@@ -1229,7 +1229,7 @@
           <li>Klávesa <span class="help-key">F2</span> zapne alebo vypne diagnostický panel.</li>
           <li>Klávesa <span class="help-key">Esc</span> zavrie otvorené okno.</li>
           <li>GPX môžeš kedykoľvek nahradiť iným; nová trasa vždy začína od svojho začiatku.</li>
-          <li>Pri každom spustení stránky sa načíta ukážková trasa, aby si mohol hneď vyskúšať všetky funkcie.</li>
+          <li>Ukážkovú trasu načítaš tlačidlom <strong>Nahrať ukážkové GPX</strong> v spodnom paneli.</li>
         </ul>
       </section>
 
@@ -4467,7 +4467,7 @@
 /* =========================================================================
    KONŠTANTY
    ========================================================================= */
-const MAPY_API_KEY = 'rI-MCER60WFH3BS1EW7twaDerHDJ47lOwciA-BHCKy8';
+const MAPY_API_KEY = 'hGyz0ci75emI0QP9CjrtfA_Hx3qXyHFu_gaau1M8r8A';
 
 const UUID_FTMS = '00001826-0000-1000-8000-00805f9b34fb';
 const UUID_IBD  = '00002ad2-0000-1000-8000-00805f9b34fb';
@@ -4811,6 +4811,18 @@ const map = L.map('map', {
   zoomSnap: 1,
   wheelPxPerZoomLevel: 70
 });
+
+// Počiatočný pohľad: celé Slovensko, s miestom pre HUD a výškový profil.
+const SLOVAKIA_BOUNDS = L.latLngBounds([47.70, 16.80], [49.65, 22.60]);
+function fitSlovakiaOnMap() {
+  map.fitBounds(SLOVAKIA_BOUNDS, {
+    paddingTopLeft: [24, 118],
+    paddingBottomRight: [24, 196],
+    maxZoom: 8,
+    animate: false
+  });
+}
+fitSlovakiaOnMap();
 
 const MAPY_TILE_SIZE = window.devicePixelRatio > 1 ? '256@2x' : '256';
 const MAPY_ATTRIBUTION = '<a href="https://api.mapy.com/copyright" target="_blank" rel="noopener">&copy; Seznam.cz a.s. a další</a>';
@@ -6116,8 +6128,9 @@ async function signInWithGoogle() {
     return;
   }
   if (!/^https?:$/.test(location.protocol)) {
+    console.warn('Google login: stránka nie je otvorená cez http(s).');
     showToast(
-      'Prihlásenie cez Google funguje len na https:// alebo http://localhost. Spusti stránku cez lokálny server alebo ju nasaď na web.',
+      'Prihlásenie cez Google tu nie je dostupné. Otvor stránku z webovej adresy a skús to znova.',
       'warning',
       8500
     );
@@ -6487,7 +6500,7 @@ function setHrUI(mode) {
 function bluetoothErrorText(error) {
   if (!error) return 'neznáma chyba';
   if (error.name === 'SecurityError') {
-    return 'Web Bluetooth vyžaduje zabezpečený kontext (https:// alebo http://localhost).';
+    return 'Web Bluetooth nie je dostupné. Použi Windows a prehliadač Chrome alebo Edge.';
   }
   if (error.name === 'NotFoundError') {
     return 'výber zariadenia bol zrušený alebo sa nenašlo žiadne zariadenie.';
@@ -6517,7 +6530,7 @@ async function connectTrainer() {
   if (state.connectingTrainer) return;
 
   if (!navigator.bluetooth) {
-    showToast('Web Bluetooth nie je dostupné. Použi Google Chrome na Windows a stránku otvor cez https:// alebo http://localhost.', 'error', 9000);
+    showToast('Web Bluetooth nie je dostupné. Použi Windows a prehliadač Chrome alebo Edge.', 'error', 9000);
     return;
   }
 
@@ -6955,7 +6968,7 @@ async function connectHeartRate() {
   if (state.connectingHr) return;
 
   if (!navigator.bluetooth) {
-    showToast('Web Bluetooth nie je dostupné. Použi Google Chrome na Windows a stránku otvor cez https:// alebo http://localhost.', 'error', 9000);
+    showToast('Web Bluetooth nie je dostupné. Použi Windows a prehliadač Chrome alebo Edge.', 'error', 9000);
     return;
   }
 
@@ -7739,6 +7752,7 @@ initAccount();
 
 setTimeout(() => {
   map.invalidateSize({ animate: false });
+  if (!state.route) fitSlovakiaOnMap();
 }, 120);
 
 setInterval(() => tick(performance.now()), 250);
