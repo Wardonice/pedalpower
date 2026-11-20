@@ -287,6 +287,9 @@ const el = {
   profileFtpWkg: $('profileFtpWkg'),
   btnMapTourist: $('btnMapTourist'),
   btnMapSatellite: $('btnMapSatellite'),
+  btnMap3d: $('btnMap3d'),
+  btnMapHeading: $('btnMapHeading'),
+  mapHeadingLabel: $('mapHeadingLabel'),
   trainerDot: $('trainerDot'),
   hrDot: $('hrDot'),
 
@@ -530,33 +533,16 @@ function removeToast(toast) {
 }
 
 /* =========================================================================
-   MAPA – Mapy.com dlaždice + Leaflet
+   MAPA – Mapy.com dlaždice + MapLibre GL JS (2D / 3D terén)
    ========================================================================= */
-const map = L.map('map', {
-  center: [48.85, 19.6],
-  zoom: 7,
-  zoomControl: false,
-  attributionControl: true,
-  preferCanvas: true,
-  worldCopyJump: true,
-  zoomSnap: 1,
-  wheelPxPerZoomLevel: 70
-});
-
-// Počiatočný pohľad: celé Slovensko, s miestom pre HUD a výškový profil.
-const SLOVAKIA_BOUNDS = L.latLngBounds([47.70, 16.80], [49.65, 22.60]);
-function fitSlovakiaOnMap() {
-  map.fitBounds(SLOVAKIA_BOUNDS, {
-    paddingTopLeft: [24, 118],
-    paddingBottomRight: [24, 196],
-    maxZoom: 8,
-    animate: false
-  });
-}
-fitSlovakiaOnMap();
-
 const MAPY_TILE_SIZE = window.devicePixelRatio > 1 ? '256@2x' : '256';
 const MAPY_ATTRIBUTION = '<a href="https://api.mapy.com/copyright" target="_blank" rel="noopener">&copy; Seznam.cz a.s. a další</a>';
+const TERRAIN_DEM_TILES = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
+const MAP_3D_KEY = 'vct.map3d';
+const MAP_HEADING_KEY = 'vct.mapHeading';
+const MAP_3D_PITCH = 58;
+const MAP_3D_EXAGGERATION = 1.25;
+const EMPTY_FC = { type: 'FeatureCollection', features: [] };
 
 const MAP_TYPES = {
   tourist: {
@@ -569,29 +555,228 @@ const MAP_TYPES = {
   }
 };
 
+// Počiatočný pohľad: celé Slovensko [lon, lat].
+const SLOVAKIA_BOUNDS = [[16.80, 47.70], [22.60, 49.65]];
+
 let activeMapType = 'satellite';
-let baseLayer = null;
+let map3dEnabled = false;
+let mapHeadingEnabled = false;
+let mapReady = false;
+let routeBounds = null;
+let pendingRouteLine = EMPTY_FC;
+let pendingRouteEndpoints = EMPTY_FC;
+let lastFollowAt = 0;
+let lastUserInteractAt = 0;
 
-function setMapType(type) {
-  if (!MAP_TYPES[type]) return;
-  if (type === activeMapType && baseLayer) return;
+try {
+  map3dEnabled = localStorage.getItem(MAP_3D_KEY) === '1';
+  mapHeadingEnabled = localStorage.getItem(MAP_HEADING_KEY) === '1';
+} catch (_) {}
 
-  const previous = baseLayer;
-  const maxZoom = MAP_TYPES[type].maxZoom;
+const map = new maplibregl.Map({
+  container: 'map',
+  center: [19.6, 48.85],
+  zoom: 6.8,
+  minZoom: 2,
+  maxZoom: 18,
+  maxPitch: 75,
+  attributionControl: false,
+  dragRotate: true,
+  pitchWithRotate: true,
+  style: {
+    version: 8,
+    sources: {
+      'mapy-tourist': {
+        type: 'raster',
+        tiles: [MAP_TYPES.tourist.url],
+        tileSize: 256,
+        maxzoom: MAP_TYPES.tourist.maxZoom,
+        attribution: MAPY_ATTRIBUTION
+      },
+      'mapy-satellite': {
+        type: 'raster',
+        tiles: [MAP_TYPES.satellite.url],
+        tileSize: 256,
+        maxzoom: MAP_TYPES.satellite.maxZoom,
+        attribution: MAPY_ATTRIBUTION
+      },
+      'terrain-dem': {
+        type: 'raster-dem',
+        tiles: [TERRAIN_DEM_TILES],
+        tileSize: 256,
+        maxzoom: 15,
+        encoding: 'terrarium',
+        attribution: 'Elevation: AWS Open Data'
+      },
+      'route-line': {
+        type: 'geojson',
+        data: EMPTY_FC
+      },
+      'route-endpoints': {
+        type: 'geojson',
+        data: EMPTY_FC
+      }
+    },
+    layers: [
+      {
+        id: 'layer-tourist',
+        type: 'raster',
+        source: 'mapy-tourist',
+        layout: { visibility: 'none' }
+      },
+      {
+        id: 'layer-satellite',
+        type: 'raster',
+        source: 'mapy-satellite',
+        layout: { visibility: 'visible' }
+      },
+      {
+        id: 'route-casing',
+        type: 'line',
+        source: 'route-line',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': '#071018',
+          'line-width': 8,
+          'line-opacity': 0.52
+        }
+      },
+      {
+        id: 'route-main',
+        type: 'line',
+        source: 'route-line',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': '#ef4444',
+          'line-width': 4.5,
+          'line-opacity': 0.98
+        }
+      },
+      {
+        id: 'route-endpoints-layer',
+        type: 'circle',
+        source: 'route-endpoints',
+        paint: {
+          'circle-radius': 5.5,
+          'circle-stroke-color': '#081017',
+          'circle-stroke-width': 2,
+          'circle-color': ['match', ['get', 'kind'], 'end', '#c6f432', '#ffffff']
+        }
+      }
+    ]
+  }
+});
 
-  baseLayer = L.tileLayer(MAP_TYPES[type].url, {
-    minZoom: 0,
-    maxZoom,
-    attribution: MAPY_ATTRIBUTION,
-    crossOrigin: true
-  }).addTo(map);
+map.addControl(new maplibregl.AttributionControl({ compact: false }), 'bottom-right');
 
-  if (previous) map.removeLayer(previous);
-  activeMapType = type;
+function markUserMapInteraction(ev) {
+  if (ev && ev.originalEvent) lastUserInteractAt = Date.now();
+}
+map.on('dragstart', markUserMapInteraction);
+map.on('rotatestart', markUserMapInteraction);
+map.on('pitchstart', markUserMapInteraction);
+map.on('wheel', markUserMapInteraction);
 
-  if (map.getZoom() > maxZoom) map.setZoom(maxZoom);
+const riderMarkerEl = document.createElement('div');
+riderMarkerEl.className = 'rider-marker-wrap';
+riderMarkerEl.innerHTML = '<div class="rider-marker"><span class="rider-pulse"></span><span class="rider-core"></span></div>';
 
-  const isTourist = type === 'tourist';
+const riderMarker = new maplibregl.Marker({
+  element: riderMarkerEl,
+  anchor: 'center'
+}).setLngLat([19.6, 48.85]);
+
+let riderMarkerAdded = false;
+function setRiderPosition(lat, lon, ensureAdded = false) {
+  riderMarker.setLngLat([lon, lat]);
+  if (ensureAdded && !riderMarkerAdded) {
+    riderMarker.addTo(map);
+    riderMarkerAdded = true;
+  }
+}
+
+function getProfilePanelHeight() {
+  return parseFloat(getComputedStyle(document.body).getPropertyValue('--profile-h')) || 168;
+}
+
+function riderCameraPadding() {
+  const panelH = getProfilePanelHeight();
+  if (map3dEnabled && mapHeadingEnabled) {
+    return {
+      top: Math.round(window.innerHeight * 0.28),
+      bottom: panelH + 12,
+      left: 20,
+      right: 20
+    };
+  }
+  return {
+    top: 96,
+    bottom: panelH + 16,
+    left: 20,
+    right: 20
+  };
+}
+
+function currentRouteDistM() {
+  if (!state.route) return 0;
+  return clamp(state.startM + state.rideM - state.routeTravelBaseM, 0, state.route.totalM);
+}
+
+function computeRouteBearing(distM = currentRouteDistM()) {
+  if (!state.route || state.route.points.length < 2) return 0;
+  const lookAhead = 45;
+  let d0 = clamp(distM, 0, state.route.totalM);
+  let d1 = Math.min(state.route.totalM, d0 + lookAhead);
+  if (d1 - d0 < 5 && d0 > 5) {
+    d1 = d0;
+    d0 = Math.max(0, d1 - lookAhead);
+  }
+  const p0 = sampleRoute(d0);
+  const p1 = sampleRoute(d1);
+  if (!p0 || !p1) return 0;
+  const rad = Math.PI / 180;
+  const lat1 = p0.lat * rad;
+  const lat2 = p1.lat * rad;
+  const dLon = (p1.lon - p0.lon) * rad;
+  const y = Math.sin(dLon) * Math.cos(lat2);
+  const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+  return ((Math.atan2(y, x) / rad) + 360) % 360;
+}
+
+function currentTargetBearing(distM = currentRouteDistM()) {
+  if (!mapHeadingEnabled) return 0;
+  return state.route ? computeRouteBearing(distM) : map.getBearing();
+}
+
+function applyTerrainAndSky() {
+  if (!mapReady) return;
+  try {
+    if (map3dEnabled) {
+      map.setTerrain({ source: 'terrain-dem', exaggeration: MAP_3D_EXAGGERATION });
+      if (typeof map.setSky === 'function') {
+        map.setSky({
+          'sky-color': '#4c79b0',
+          'horizon-color': '#bfd4e8',
+          'fog-color': '#c7d8e8',
+          'sky-horizon-blend': 0.55,
+          'horizon-fog-blend': 0.7,
+          'fog-ground-blend': 0.85,
+          'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 10, 1, 12, 0.75]
+        });
+      }
+    } else {
+      map.setTerrain(null);
+      if (typeof map.setSky === 'function') {
+        map.setSky(undefined);
+      }
+    }
+  } catch (err) {
+    console.warn('3D terrain toggle error:', err);
+  }
+}
+
+function syncMapTypeUi() {
+  const isTourist = activeMapType === 'tourist';
   document.body.classList.toggle('map-tourist', isTourist);
   el.btnMapTourist.classList.toggle('active', isTourist);
   el.btnMapSatellite.classList.toggle('active', !isTourist);
@@ -599,29 +784,100 @@ function setMapType(type) {
   el.btnMapSatellite.setAttribute('aria-pressed', String(!isTourist));
 }
 
-setMapType('satellite');
+function setMapType(type) {
+  if (!MAP_TYPES[type]) return;
+  activeMapType = type;
+  const maxZoom = MAP_TYPES[type].maxZoom;
+  map.setMaxZoom(maxZoom);
+  if (map.getZoom() > maxZoom) map.setZoom(maxZoom);
+
+  if (mapReady) {
+    map.setLayoutProperty('layer-tourist', 'visibility', type === 'tourist' ? 'visible' : 'none');
+    map.setLayoutProperty('layer-satellite', 'visibility', type === 'satellite' ? 'visible' : 'none');
+  }
+  syncMapTypeUi();
+}
+
+function syncMap3dUi() {
+  if (!el.btnMap3d) return;
+  el.btnMap3d.classList.toggle('active', map3dEnabled);
+  el.btnMap3d.setAttribute('aria-pressed', String(map3dEnabled));
+  el.btnMap3d.title = map3dEnabled
+    ? '3D pohľad zapnutý (kliknutím prepneš na 2D)'
+    : '3D pohľad s reliéfom terénu';
+}
+
+function setMap3d(enabled, animate = true) {
+  map3dEnabled = Boolean(enabled);
+  try { localStorage.setItem(MAP_3D_KEY, map3dEnabled ? '1' : '0'); } catch (_) {}
+  syncMap3dUi();
+  if (!mapReady) return;
+
+  applyTerrainAndSky();
+  const targetPitch = map3dEnabled ? MAP_3D_PITCH : 0;
+  map.easeTo({
+    pitch: targetPitch,
+    bearing: currentTargetBearing(),
+    padding: riderCameraPadding(),
+    duration: animate ? 650 : 0
+  });
+}
+
+function syncMapHeadingUi() {
+  if (!el.btnMapHeading) return;
+  el.btnMapHeading.classList.toggle('active', mapHeadingEnabled);
+  el.btnMapHeading.setAttribute('aria-pressed', String(mapHeadingEnabled));
+  if (el.mapHeadingLabel) el.mapHeadingLabel.textContent = mapHeadingEnabled ? 'Smer' : 'Sever';
+  el.btnMapHeading.title = mapHeadingEnabled
+    ? 'Orientácia mapy: v smere jazdy (kliknutím prepneš na pevný sever)'
+    : 'Orientácia mapy: pevný sever (kliknutím prepneš na smer jazdy)';
+}
+
+function setMapHeading(enabled, animate = true) {
+  mapHeadingEnabled = Boolean(enabled);
+  try { localStorage.setItem(MAP_HEADING_KEY, mapHeadingEnabled ? '1' : '0'); } catch (_) {}
+  syncMapHeadingUi();
+  if (!mapReady) return;
+
+  map.easeTo({
+    bearing: currentTargetBearing(),
+    padding: riderCameraPadding(),
+    duration: animate ? 500 : 0
+  });
+}
+
+syncMapTypeUi();
+syncMap3dUi();
+syncMapHeadingUi();
+
 el.btnMapTourist.addEventListener('click', () => setMapType('tourist'));
 el.btnMapSatellite.addEventListener('click', () => setMapType('satellite'));
+if (el.btnMap3d) el.btnMap3d.addEventListener('click', () => setMap3d(!map3dEnabled));
+if (el.btnMapHeading) el.btnMapHeading.addEventListener('click', () => setMapHeading(!mapHeadingEnabled));
 
-map.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>');
+function fitSlovakiaOnMap() {
+  map.fitBounds(SLOVAKIA_BOUNDS, {
+    padding: { top: 118, bottom: 196, left: 24, right: 24 },
+    maxZoom: 7.5,
+    pitch: map3dEnabled ? MAP_3D_PITCH : 0,
+    bearing: 0,
+    duration: 0
+  });
+}
 
-const riderIcon = L.divIcon({
-  className: 'rider-marker-wrap',
-  html: '<div class="rider-marker"><span class="rider-pulse"></span><span class="rider-core"></span></div>',
-  iconSize: [28, 28],
-  iconAnchor: [14, 14]
+map.on('load', () => {
+  mapReady = true;
+  map.setLayoutProperty('layer-tourist', 'visibility', activeMapType === 'tourist' ? 'visible' : 'none');
+  map.setLayoutProperty('layer-satellite', 'visibility', activeMapType === 'satellite' ? 'visible' : 'none');
+  map.getSource('route-line').setData(pendingRouteLine);
+  map.getSource('route-endpoints').setData(pendingRouteEndpoints);
+  applyTerrainAndSky();
+  if (routeBounds) {
+    fitRouteOnMap(false);
+  } else {
+    fitSlovakiaOnMap();
+  }
 });
-
-const riderMarker = L.marker([48.85, 19.6], {
-  icon: riderIcon,
-  interactive: false,
-  keyboard: false,
-  zIndexOffset: 1000
-});
-
-let routeLayer = null;
-let routeBounds = null;
-let lastFollowAt = 0;
 
 function trainerInMotion() {
   if (!trainer) return false;
@@ -630,64 +886,70 @@ function trainerInMotion() {
   return state.speed > 0.8 || state.power > 10;
 }
 
-function mapVisibleCenterPoint() {
-  const panelH = parseFloat(getComputedStyle(document.body).getPropertyValue('--profile-h')) || 168;
-  const size = map.getSize();
-  return L.point(size.x / 2, Math.max(60, (size.y - panelH) / 2));
-}
-
 function flyToRider(latlng, zoom) {
-  // Vycentruj mapu tak, aby jazdec sedel v strede viditeľnej časti nad panelom.
-  const panelH = parseFloat(getComputedStyle(document.body).getPropertyValue('--profile-h')) || 168;
-  const center = map.unproject(map.project(latlng, zoom).add([0, panelH / 2]), zoom);
-  map.flyTo(center, zoom, { animate: true, duration: 1.1, easeLinearity: 0.2 });
+  const targetZoom = Math.min(zoom, MAP_TYPES[activeMapType].maxZoom);
+  map.flyTo({
+    center: [latlng[1], latlng[0]],
+    zoom: targetZoom,
+    pitch: map3dEnabled ? MAP_3D_PITCH : 0,
+    bearing: currentTargetBearing(),
+    padding: riderCameraPadding(),
+    duration: 1100
+  });
 }
 
 function updateMapPosition(sample, force = false) {
   if (!sample) return;
   const latlng = [sample.lat, sample.lon];
-  riderMarker.setLatLng(latlng);
+  setRiderPosition(sample.lat, sample.lon);
 
   // Kamera sleduje jazdca iba počas jazdy. Keď trenažér stojí,
-  // mapa zostane na mieste a dá sa voľne posúvať a približovať.
+  // mapa zostane na mieste a dá sa voľne posúvať, nakláňať a približovať.
   if (!trainerInMotion()) return;
+
+  const now = Date.now();
+  // Po ručnom posune alebo otočení mapy dáme používateľovi 5 s pokoj.
+  if (!force && now - lastUserInteractAt < 5000) return;
 
   if (!state.mapRideStarted) {
     if (state.rideM > 20) {
       state.mapRideStarted = true;
-      flyToRider(latlng, 15);
-      lastFollowAt = Date.now();
+      flyToRider(latlng, map3dEnabled ? 15 : 14.5);
+      lastFollowAt = now;
     }
     return;
   }
 
-  const now = Date.now();
-  if (!force && now - lastFollowAt < 1200) return;
+  if (!force && now - lastFollowAt < 950) return;
 
-  // Jazdec má zostať v strede viditeľnej časti mapy, nie pod výškovým panelom.
-  const target = mapVisibleCenterPoint();
-  const riderPoint = map.latLngToContainerPoint(latlng);
-  if (riderPoint.distanceTo(target) <= 10) return;
-
-  const size = map.getSize();
-  const centerPoint = L.point(size.x / 2, size.y / 2).add(riderPoint).subtract(target);
-  map.panTo(map.containerPointToLatLng(centerPoint), {
-    animate: true,
-    duration: 0.8,
-    easeLinearity: 0.2,
-    noMoveStart: true
-  });
+  const easeOpts = {
+    center: [sample.lon, sample.lat],
+    padding: riderCameraPadding(),
+    duration: 950,
+    easing: (t) => t
+  };
+  if (mapHeadingEnabled) {
+    easeOpts.bearing = computeRouteBearing(sample.distM);
+  }
+  map.easeTo(easeOpts);
   lastFollowAt = now;
 }
 
-function fitRouteOnMap() {
-  if (!routeBounds || !routeBounds.isValid()) return;
+function fitRouteOnMap(animate = true) {
+  if (!routeBounds) return;
   const isNarrow = window.innerWidth <= 980;
-  const panelH = parseFloat(getComputedStyle(document.body).getPropertyValue('--profile-h')) || 168;
+  const panelH = getProfilePanelHeight();
   map.fitBounds(routeBounds, {
-    paddingTopLeft: [isNarrow ? 24 : 60, isNarrow ? 185 : 150],
-    paddingBottomRight: [isNarrow ? 24 : 60, panelH + 45],
-    maxZoom: 16
+    padding: {
+      top: isNarrow ? 175 : 140,
+      bottom: panelH + 40,
+      left: isNarrow ? 24 : 56,
+      right: isNarrow ? 24 : 56
+    },
+    maxZoom: 15,
+    pitch: map3dEnabled ? MAP_3D_PITCH : 0,
+    bearing: mapHeadingEnabled && state.route ? computeRouteBearing(state.startM) : 0,
+    duration: animate ? 700 : 0
   });
 }
 
@@ -1174,7 +1436,7 @@ function parseGPX(xmlText, fileName) {
     totalM,
     ascentM: ascent,
     hasElevation,
-    bounds: L.latLngBounds([minLat, minLon], [maxLat, maxLon]),
+    bounds: [[minLon, minLat], [maxLon, maxLat]],
     chartSamples: []
   };
 }
@@ -1188,38 +1450,38 @@ function decimateRoutePoints(points, maxPoints) {
 }
 
 function renderRouteOnMap(route) {
-  if (routeLayer) {
-    map.removeLayer(routeLayer);
-    routeLayer = null;
-  }
-
-  routeLayer = L.layerGroup().addTo(map);
   const renderPoints = decimateRoutePoints(route.points, MAP_MAX_POINTS);
-  const latlngs = renderPoints.map((p) => [p.lat, p.lon]);
+  const coords = renderPoints.map((p) => [p.lon, p.lat]);
 
-  L.polyline(latlngs, {
-    color: '#071018',
-    weight: 8,
-    opacity: 0.5,
-    lineCap: 'round',
-    lineJoin: 'round'
-  }).addTo(routeLayer);
+  pendingRouteLine = {
+    type: 'FeatureCollection',
+    features: coords.length >= 2 ? [{
+      type: 'Feature',
+      properties: {},
+      geometry: { type: 'LineString', coordinates: coords }
+    }] : []
+  };
 
-  L.polyline(latlngs, {
-    color: '#ef4444',
-    weight: 4.5,
-    opacity: 0.98,
-    lineCap: 'round',
-    lineJoin: 'round'
-  }).addTo(routeLayer);
+  pendingRouteEndpoints = {
+    type: 'FeatureCollection',
+    features: coords.length >= 1 ? [
+      {
+        type: 'Feature',
+        properties: { kind: 'start' },
+        geometry: { type: 'Point', coordinates: coords[0] }
+      },
+      {
+        type: 'Feature',
+        properties: { kind: 'end' },
+        geometry: { type: 'Point', coordinates: coords[coords.length - 1] }
+      }
+    ] : []
+  };
 
-  L.circleMarker(latlngs[0], {
-    radius: 5, color: '#081017', weight: 2, fillColor: '#ffffff', fillOpacity: 1
-  }).addTo(routeLayer);
-
-  L.circleMarker(latlngs[latlngs.length - 1], {
-    radius: 5, color: '#081017', weight: 2, fillColor: '#c6f432', fillOpacity: 1
-  }).addTo(routeLayer);
+  if (mapReady) {
+    map.getSource('route-line').setData(pendingRouteLine);
+    map.getSource('route-endpoints').setData(pendingRouteEndpoints);
+  }
 
   routeBounds = route.bounds;
 }
@@ -1267,7 +1529,7 @@ function resetRideStats(fitMap = true) {
     state.currentGrade = startSample?.grade || 0;
     state.targetGrade = state.currentGrade;
     if (startSample) {
-      riderMarker.setLatLng([startSample.lat, startSample.lon]);
+      setRiderPosition(startSample.lat, startSample.lon);
     }
     if (fitMap) fitRouteOnMap();
   } else {
@@ -1303,7 +1565,7 @@ function setRouteStart(distanceM) {
 
   const sample = sampleRoute(startM);
   if (sample) {
-    riderMarker.setLatLng([sample.lat, sample.lon]);
+    setRiderPosition(sample.lat, sample.lon, true);
     flyToRider([sample.lat, sample.lon], Math.max(map.getZoom(), 13));
   }
 
@@ -1339,8 +1601,7 @@ function applyRoute(route, gpxText = '', fileName = '', savedId = null) {
   createOrUpdateChart(route);
 
   const first = route.points[0];
-  riderMarker.setLatLng([first.lat, first.lon]);
-  if (!map.hasLayer(riderMarker)) riderMarker.addTo(map);
+  setRiderPosition(first.lat, first.lon, true);
   fitRouteOnMap();
 
   updateGradeChip(state.currentGrade);
@@ -4707,7 +4968,7 @@ window.addEventListener('drop', (event) => {
 });
 
 window.addEventListener('resize', () => {
-  map.invalidateSize({ animate: false });
+  map.resize();
 });
 
 let wakeLockSentinel = null;
@@ -4781,7 +5042,7 @@ updateAuthLocks();
 initAccount();
 
 setTimeout(() => {
-  map.invalidateSize({ animate: false });
+  map.resize();
   if (!state.route) fitSlovakiaOnMap();
 }, 120);
 

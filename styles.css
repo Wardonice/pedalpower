@@ -28,16 +28,17 @@ img,svg,canvas{ display:block; }
 
 /* ---------- MAP ---------- */
 #map{ position:fixed; inset:0; z-index:0; background:#0a0f15; }
-#map .leaflet-tile-pane{ filter:saturate(1.04) contrast(1.02); }
-.leaflet-container{ font-family:'Inter',sans-serif; background:#0a0f15; }
-.leaflet-bottom{ bottom:calc(var(--profile-h) + 8px) !important; }
-.leaflet-control-attribution{
+#map .maplibregl-canvas{ filter:saturate(1.04) contrast(1.02); }
+.maplibregl-map{ font-family:'Inter',sans-serif; background:#0a0f15; }
+.maplibregl-ctrl-bottom-right{ bottom:calc(var(--profile-h) + 8px) !important; right:0 !important; }
+.maplibregl-ctrl-attrib{
   background:rgba(9,13,18,.38) !important; color:rgba(255,255,255,.65) !important;
   -webkit-backdrop-filter:blur(14px);
-  backdrop-filter:blur(14px); border-radius:6px 0 0 0; font-size:9px !important;
-  padding:2px 7px !important;
+  backdrop-filter:blur(14px); border-radius:6px 0 0 0 !important; font-size:9px !important;
+  padding:2px 7px !important; margin:0 !important;
 }
-.leaflet-control-attribution a{ color:rgba(255,255,255,.8) !important; }
+.maplibregl-ctrl-attrib a{ color:rgba(255,255,255,.8) !important; }
+.maplibregl-ctrl-attrib-button{ display:none !important; }
 .mapy-logo{
   position:fixed; left:14px; top:14px; z-index:850;
   display:inline-flex; align-items:center; height:38px; padding:4px 7px;
@@ -49,7 +50,7 @@ img,svg,canvas{ display:block; }
 .mapy-logo img{ height:28px; width:auto; display:block; }
 
 /* ---------- RIDER MARKER ---------- */
-.rider-marker-wrap{ background:none; border:none; }
+.rider-marker-wrap{ background:none; border:none; pointer-events:none; }
 .rider-marker{ position:relative; width:28px; height:28px; display:grid; place-items:center; }
 .rider-pulse{
   position:absolute; inset:0; border-radius:50%;
@@ -271,6 +272,10 @@ img,svg,canvas{ display:block; }
 .map-btn svg{ width:13px; height:13px; flex:0 0 auto; }
 .map-btn:hover{ color:#fff; }
 .map-btn.active{ background:rgba(198,244,50,.18); color:#dcff79; }
+.map-switch-sep{
+  width:1px; height:18px; margin:0 3px;
+  background:rgba(255,255,255,.16); flex:0 0 auto;
+}
 
 /* ---------- PROFILE ---------- */
 .profile-panel{
@@ -1018,7 +1023,7 @@ body.map-tourist .account-btn.connected{
 .debug-panel pre{ margin:0; font:inherit; white-space:pre-wrap; }
 
 /* ---------- TURISTICKÁ MAPA – VYŠŠIE KRYTIE PRVKOV PRE ČITATEĽNOSŤ ---------- */
-body.map-tourist .leaflet-control-attribution{
+body.map-tourist .maplibregl-ctrl-attrib{
   background:rgba(9,13,18,.78) !important;
 }
 body.map-tourist .mapy-logo{

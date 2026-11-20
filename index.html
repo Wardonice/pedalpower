@@ -9,9 +9,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.1/dist/maplibre-gl.css" integrity="sha384-uTttxo/aOKbdE5RlD/SPzSDoDmNvGlUYPjONi2MN/b7c9HPSvW07OIuyP7uL6jxK" crossorigin="anonymous">
 
-<link rel="stylesheet" href="styles.css?v=6">
+<link rel="stylesheet" href="styles.css?v=7">
 </head>
 
 <body>
@@ -22,7 +22,7 @@
   <img src="https://api.mapy.com/img/api/logo.svg" alt="Mapy.com">
 </a>
 
-<div class="map-switch" role="group" aria-label="Typ mapy">
+<div class="map-switch" role="group" aria-label="Typ a zobrazenie mapy">
   <button id="btnMapTourist" class="map-btn" type="button" aria-pressed="false" title="Turistická mapa">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="m3 19 5.5-8 4 5 2.5-3.5L21 19H3Z"/><path d="M8.5 11 6 7l4-2 2 3"/>
@@ -34,6 +34,21 @@
       <circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/>
     </svg>
     <span class="map-label">Satelitná</span>
+  </button>
+  <span class="map-switch-sep" aria-hidden="true"></span>
+  <button id="btnMap3d" class="map-btn" type="button" aria-pressed="false" title="3D pohľad s reliéfom terénu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 3 3 7.5 12 12l9-4.5L12 3Z"/>
+      <path d="M3 12l9 4.5 9-4.5"/>
+      <path d="M3 16.5 12 21l9-4.5"/>
+    </svg>
+    <span>3D</span>
+  </button>
+  <button id="btnMapHeading" class="map-btn" type="button" aria-pressed="false" title="Orientácia mapy: pevný sever (kliknutím prepneš na smer jazdy)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <polygon points="12 2 19 21 12 17 5 21 12 2"/>
+    </svg>
+    <span id="mapHeadingLabel" class="map-label">Sever</span>
   </button>
 </div>
 
@@ -697,9 +712,9 @@
 <div id="toasts" aria-live="polite"></div>
 
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.1/dist/maplibre-gl.js" integrity="sha384-nXMl9YiLoSG5KBPTFgvxVuIqQQcqIvo0bFrvoEaGJC6r7IibIzF1S36Zbf/sKBtL" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" integrity="sha384-JUh163oCRItcbPme8pYnROHQMC6fNKTBWtRG3I3I0erJkzNgL7uxKlNwcrcFKeqF" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js" integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ" crossorigin="anonymous"></script>
-<script src="app.js?v=7"></script>
+<script src="app.js?v=8"></script>
 </body>
 </html>
