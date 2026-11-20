@@ -519,26 +519,27 @@
           </div>
           <button id="btnSignOut" class="account-link" type="button">Odhlásiť</button>
         </div>
+
+        <div class="account-profile">
+          <div class="account-profile-head">
+            <span>Profil jazdca</span>
+            <span id="profileFtpWkg" class="account-profile-wkg tabular">2.67 W/kg</span>
+          </div>
+          <div class="account-profile-grid">
+            <label class="workout-field" for="profileWeight">
+              <span>Hmotnosť (kg)</span>
+              <input id="profileWeight" type="number" min="30" max="250" step="0.5" value="75" inputmode="decimal">
+            </label>
+            <label class="workout-field" for="profileFtp">
+              <span>FTP (W)</span>
+              <input id="profileFtp" type="number" min="50" max="600" step="1" value="200" inputmode="numeric">
+            </label>
+          </div>
+        </div>
+
         <p class="account-note">
           Uložené GPX trasy a históriu jázd nájdeš pod tlačidlami <strong>Trasy</strong> a <strong>Jazdy</strong> vpravo v strede obrazovky.
         </p>
-      </div>
-
-      <div class="account-profile">
-        <div class="account-profile-head">
-          <span>Profil jazdca</span>
-          <span id="profileFtpWkg" class="account-profile-wkg tabular">2.67 W/kg</span>
-        </div>
-        <div class="account-profile-grid">
-          <label class="workout-field" for="profileWeight">
-            <span>Hmotnosť (kg)</span>
-            <input id="profileWeight" type="number" min="30" max="250" step="0.5" value="75" inputmode="decimal">
-          </label>
-          <label class="workout-field" for="profileFtp">
-            <span>FTP (W)</span>
-            <input id="profileFtp" type="number" min="50" max="600" step="1" value="200" inputmode="numeric">
-          </label>
-        </div>
       </div>
     </div>
 
@@ -690,6 +691,6 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" integrity="sha384-JUh163oCRItcbPme8pYnROHQMC6fNKTBWtRG3I3I0erJkzNgL7uxKlNwcrcFKeqF" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js" integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ" crossorigin="anonymous"></script>
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>

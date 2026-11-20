@@ -2195,6 +2195,14 @@ async function signOutAccount() {
   try {
     const { error } = await supa.auth.signOut();
     if (error) throw error;
+    try {
+      localStorage.removeItem(RIDER_WEIGHT_KEY);
+      localStorage.removeItem(RIDER_WEIGHT_UPDATED_KEY);
+      localStorage.removeItem(FTP_KEY);
+      localStorage.removeItem(FTP_UPDATED_KEY);
+    } catch (_) {}
+    state.weight = 75;
+    applyFtp(200);
     setAccountUser(null);
     showToast('Odhlásené z účtu.', 'info', 3000);
   } catch (error) {
