@@ -217,6 +217,8 @@ const $ = (id) => document.getElementById(id);
 const el = {
   map: $('map'),
   rideTime: $('rideTime'),
+  timeCell: $('timeCell'),
+  timeKicker: $('timeKicker'),
   gradeCell: $('gradeCell'),
   gradeChip: $('gradeChip'),
   gradeFill: $('gradeFill'),
@@ -4580,7 +4582,20 @@ function renderHUD(now = performance.now()) {
   const power = bikeAlive ? Math.max(0, Math.round(state.power)) : 0;
   const locked = !accountUser;
 
-  el.rideTime.textContent = formatTime(state.rideSeconds);
+  const workoutPhase = state.workoutActive && state.workout
+    ? state.workout.phases[state.workoutPhaseIndex]
+    : null;
+  if (workoutPhase) {
+    const phaseLeft = Math.max(0, workoutPhase.duration - state.workoutPhaseElapsed);
+    el.rideTime.textContent = formatTime(phaseLeft);
+    el.timeKicker.textContent = 'Interval';
+    const countdown = phaseLeft > 0 && phaseLeft <= 3;
+    el.timeCell.classList.toggle('is-countdown', countdown);
+  } else {
+    el.rideTime.textContent = formatTime(state.rideSeconds);
+    el.timeKicker.textContent = 'Čas jazdy';
+    el.timeCell.classList.remove('is-countdown');
+  }
   el.powerValue.textContent = String(power);
   const zone = powerZoneForWatts(power, state.ftp);
   if (el.powerCell) {
