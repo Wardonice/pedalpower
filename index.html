@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.1/dist/maplibre-gl.css" integrity="sha384-uTttxo/aOKbdE5RlD/SPzSDoDmNvGlUYPjONi2MN/b7c9HPSvW07OIuyP7uL6jxK" crossorigin="anonymous">
 
-<link rel="stylesheet" href="styles.css?v=8">
+<link rel="stylesheet" href="styles.css?v=9">
 </head>
 
 <body>
@@ -198,48 +198,50 @@
 
 <input id="gpxInput" type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml" style="display:none">
 
-<!-- ================= ELEVATION PROFILE ================= -->
-<section id="profilePanel" class="profile-panel">
-  <div id="workoutPanel" class="workout-panel" hidden>
-    <div class="wp-top">
-      <div class="wp-phase">
-        <span id="wpPhaseLabel" class="wp-phase-label">Rozcvička</span>
-        <span id="wpPhaseMeta" class="wp-phase-meta">5:00 · 50 % FTP</span>
-      </div>
-      <div class="wp-remaining">
-        <span>Zostáva</span>
-        <b id="wpRemaining" class="tabular">29:00</b>
-      </div>
+<!-- ================= ACTIVE WORKOUT CARD ================= -->
+<aside id="workoutPanel" class="workout-panel select-none" aria-label="Priebeh tréningu" hidden>
+  <div class="wp-top">
+    <div class="wp-target-wrap">
+      <span class="wp-kicker">Cieľ</span>
+      <b id="wpTarget" class="wp-target tabular">-- W</b>
     </div>
-    <div class="wp-metrics">
-      <div class="wp-metric">
-        <span class="wp-kicker">Cieľ</span>
-        <b id="wpTarget" class="wp-val wp-target tabular">-- W</b>
-      </div>
-      <div class="wp-metric">
-        <span class="wp-kicker">Teraz</span>
-        <b id="wpCurrent" class="wp-val tabular">-- W</b>
-      </div>
-      <div class="wp-metric wp-metric-ftp">
-        <span class="wp-kicker">FTP</span>
-        <b id="wpFtp" class="wp-val wp-small tabular">200 W</b>
-      </div>
-      <div class="wp-metric">
-        <span class="wp-kicker">Kadencia</span>
-        <b id="wpCadence" class="wp-val wp-small tabular">--</b>
+    <button id="wpSkip" class="wp-skip" type="button" title="Preskočiť aktuálny interval">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polygon points="5 4 15 12 5 20 5 4"/>
+        <line x1="19" y1="5" x2="19" y2="19"/>
+      </svg>
+      <span>Preskočiť</span>
+    </button>
+    <div class="wp-remaining">
+      <span class="wp-kicker">Zostáva</span>
+      <b id="wpRemaining" class="tabular">29:00</b>
+    </div>
+  </div>
+
+  <div class="wp-graph-wrap">
+    <div id="wpGraph" class="wp-graph"></div>
+    <div id="wpDoneShade" class="wp-done-shade" aria-hidden="true"></div>
+    <div id="wpPlayhead" class="wp-playhead" aria-hidden="true">
+      <span id="wpPlayDot" class="wp-play-dot"></span>
+    </div>
+  </div>
+
+  <div class="wp-footer">
+    <div class="wp-interval-row">
+      <span id="wpPhaseLabel" class="wp-phase-label">Rozcvička</span>
+      <span id="wpPhaseTime" class="wp-phase-time tabular">05:00</span>
+      <div class="wp-mini-actions">
+        <button id="wpPause" class="wp-icon-btn" type="button" title="Pozastaviť / pokračovať" aria-label="Pozastaviť tréning">⏸</button>
+        <button id="wpMute" class="wp-icon-btn" type="button" title="Stlmiť pípnutia" aria-label="Stlmiť pípnutia" aria-pressed="false">🔔</button>
+        <button id="wpStop" class="wp-icon-btn wp-icon-stop" type="button" title="Ukončiť tréning" aria-label="Ukončiť tréning">✕</button>
       </div>
     </div>
     <div class="wp-bar" aria-hidden="true"><span id="wpBarFill" class="wp-bar-fill"></span></div>
-    <div class="wp-bottom">
-      <div id="wpNext" class="wp-next">Ďalej: --</div>
-      <div class="wp-actions">
-        <button id="wpPause" class="wp-btn" type="button">Pauza</button>
-        <button id="wpSkip" class="wp-btn" type="button">Preskočiť</button>
-        <button id="wpMute" class="wp-btn wp-btn-icon" type="button" title="Stlmiť pípnutia" aria-pressed="false">🔔</button>
-        <button id="wpStop" class="wp-btn wp-btn-stop" type="button">Ukončiť</button>
-      </div>
-    </div>
   </div>
+</aside>
+
+<!-- ================= ELEVATION PROFILE ================= -->
+<section id="profilePanel" class="profile-panel">
 
   <div class="profile-head">
     <div class="route-block">
@@ -715,6 +717,6 @@
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.1/dist/maplibre-gl.js" integrity="sha384-nXMl9YiLoSG5KBPTFgvxVuIqQQcqIvo0bFrvoEaGJC6r7IibIzF1S36Zbf/sKBtL" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" integrity="sha384-JUh163oCRItcbPme8pYnROHQMC6fNKTBWtRG3I3I0erJkzNgL7uxKlNwcrcFKeqF" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js" integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ" crossorigin="anonymous"></script>
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>

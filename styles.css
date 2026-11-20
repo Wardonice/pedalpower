@@ -5,9 +5,6 @@
   --accent:#c6f432;
   --profile-h:168px;
 }
-/* Počas tréningu je spodný panel vyšší – pravidlo musí byť pred responzívnymi
-   media queries, aby ich hodnoty (282 px / 258 px) mali prednosť. */
-body.workout-active{ --profile-h:300px; }
 *, *::before, *::after{ box-sizing:border-box; }
 html,body{ height:100%; margin:0; }
 body{
@@ -445,73 +442,122 @@ img,svg,canvas{ display:block; }
   font-size:9.5px; color:rgba(255,255,255,.5); font-variant-numeric:tabular-nums;
 }
 
-/* ---------- PANEL POČAS WORKOUTU ---------- */
+/* ---------- SAMOSTATNÉ OKNO POČAS WORKOUTU (VĽAVO DOLE) ---------- */
 .workout-panel{
-  flex:0 0 auto; display:flex; flex-direction:column; gap:5px;
-  margin:-1px -10px 6px; padding:7px 10px 8px; border-radius:14px;
-  background:linear-gradient(180deg, rgba(198,244,50,.13), rgba(198,244,50,.035));
-  border:1px solid rgba(198,244,50,.28);
-  box-shadow:0 8px 24px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.08);
+  --wp-zone-color:#cbd5e1;
+  position:fixed; left:14px; bottom:calc(var(--profile-h) + 14px); z-index:950;
+  width:min(360px, calc(100vw - 28px));
+  display:flex; flex-direction:column; gap:8px;
+  padding:10px 12px 10px; border-radius:16px;
+  background:linear-gradient(180deg, rgba(15,19,26,.64), rgba(8,11,16,.56));
+  border:1px solid rgba(255,255,255,.15);
+  box-shadow:0 12px 32px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.1);
+  -webkit-backdrop-filter:blur(24px) saturate(155%);
+  backdrop-filter:blur(24px) saturate(155%);
 }
 .workout-panel[hidden]{ display:none !important; }
-.wp-top{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
-.wp-phase{ display:flex; align-items:baseline; gap:8px; min-width:0; }
-.wp-phase-label{
-  font-size:12px; font-weight:700; color:#fff; white-space:nowrap;
-  overflow:hidden; text-overflow:ellipsis; text-shadow:0 1px 6px rgba(0,0,0,.45);
+
+.wp-top{
+  display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px;
 }
-.wp-phase-meta{
-  font-size:9.5px; color:rgba(255,255,255,.55); white-space:nowrap;
-  font-variant-numeric:tabular-nums;
-}
-.wp-remaining{ display:flex; align-items:baseline; gap:5px; flex:0 0 auto; }
-.wp-remaining span{
-  font-size:8px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
-  color:rgba(255,255,255,.5);
-}
-.wp-remaining b{
-  font-family:'Barlow Condensed',sans-serif; font-size:17px; font-weight:600;
-  color:#dcff79; font-variant-numeric:tabular-nums;
-}
-.wp-metrics{ display:flex; align-items:flex-end; gap:16px; }
-.wp-metric{ display:flex; flex-direction:column; gap:1px; min-width:0; }
 .wp-kicker{
-  font-size:8px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
-  color:rgba(255,255,255,.48);
+  display:block; font-size:8px; font-weight:700; letter-spacing:.14em;
+  text-transform:uppercase; color:rgba(255,255,255,.5); line-height:1.1;
 }
-.wp-val{
-  font-family:'Barlow Condensed',sans-serif; font-size:20px; line-height:1;
+.wp-target-wrap{ display:flex; flex-direction:column; align-items:flex-start; gap:1px; }
+.wp-target{
+  font-family:'Barlow Condensed',sans-serif; font-size:28px; line-height:.95;
+  font-weight:700; color:var(--wp-zone-color); font-variant-numeric:tabular-nums;
+  text-shadow:0 2px 12px rgba(0,0,0,.55);
+  transition:color .25s ease;
+}
+.wp-skip{
+  display:inline-flex; align-items:center; justify-content:center; gap:5px;
+  height:30px; padding:0 11px; border-radius:10px; cursor:pointer;
+  border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.07);
+  color:rgba(255,255,255,.9); font-size:10px; font-weight:700;
+  letter-spacing:.07em; text-transform:uppercase; white-space:nowrap;
+  transition:background .2s, border-color .2s, color .2s, transform .12s;
+}
+.wp-skip svg{ width:12px; height:12px; flex:0 0 auto; }
+.wp-skip:hover{ background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.32); color:#fff; }
+.wp-skip:active{ transform:translateY(1px); }
+
+.wp-remaining{ display:flex; flex-direction:column; align-items:flex-end; gap:1px; }
+.wp-remaining b{
+  font-family:'Barlow Condensed',sans-serif; font-size:24px; line-height:.95;
   font-weight:600; color:#fff; font-variant-numeric:tabular-nums;
+  text-shadow:0 2px 10px rgba(0,0,0,.5);
 }
-.wp-target{ color:#dcff79; }
-.wp-small{ font-size:15px; color:rgba(255,255,255,.8); }
-.wp-bar{ height:4px; border-radius:99px; background:rgba(255,255,255,.1); overflow:hidden; }
-.wp-bar-fill{
-  display:block; height:100%; width:0%; border-radius:99px;
-  background:linear-gradient(90deg,#c6f432,#84cc16);
+
+.wp-graph-wrap{
+  position:relative; height:74px; border-radius:10px; overflow:hidden;
+  background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.08);
+}
+.wp-graph{ width:100%; height:100%; }
+.wp-graph svg{ display:block; width:100%; height:100%; }
+.wp-done-shade{
+  position:absolute; left:0; top:0; bottom:0; width:0%;
+  background:rgba(5,9,14,.46); pointer-events:none;
   transition:width .25s linear;
 }
-.workout-panel.is-paused .wp-bar-fill{ opacity:.42; }
-.workout-panel.is-paused .wp-phase-meta{ color:#fbbf24; }
-.wp-bottom{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.wp-next{
-  font-size:9.5px; color:rgba(255,255,255,.52); min-width:0;
+.wp-playhead{
+  position:absolute; top:0; bottom:0; left:0%; width:2px;
+  transform:translateX(-1px);
+  background:rgba(255,255,255,.92);
+  box-shadow:0 0 8px rgba(255,255,255,.65);
+  pointer-events:none;
+  transition:left .25s linear;
+}
+.wp-play-dot{
+  position:absolute; left:50%; top:50%;
+  width:9px; height:9px; border-radius:50%;
+  transform:translate(-50%, -50%);
+  background:var(--wp-zone-color);
+  border:2px solid #081017;
+  box-shadow:0 0 0 1px rgba(255,255,255,.8), 0 0 10px var(--wp-zone-color);
+  transition:top .25s linear, background .25s ease;
+}
+
+.wp-footer{ display:flex; flex-direction:column; gap:5px; }
+.wp-interval-row{
+  display:flex; align-items:center; gap:7px; min-width:0;
+}
+.wp-phase-label{
+  flex:1 1 auto; min-width:0;
+  font-size:11px; font-weight:600; color:rgba(255,255,255,.9);
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  text-shadow:0 1px 5px rgba(0,0,0,.45);
 }
-.wp-actions{ display:flex; align-items:center; gap:6px; flex:0 0 auto; }
-.wp-btn{
-  height:26px; padding:0 9px; border-radius:8px; cursor:pointer;
-  border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.07);
-  color:rgba(255,255,255,.85); font-size:9px; font-weight:700;
-  letter-spacing:.05em; text-transform:uppercase; white-space:nowrap;
-  transition:background .2s, color .2s, border-color .2s;
+.wp-phase-time{
+  flex:0 0 auto; font-size:11px; font-weight:700;
+  color:var(--wp-zone-color); font-variant-numeric:tabular-nums;
+  transition:color .25s ease;
 }
-.wp-btn:hover{ background:rgba(255,255,255,.14); color:#fff; }
-.wp-btn-icon{ width:28px; padding:0; font-size:12px; letter-spacing:0; text-transform:none; }
-.wp-btn-stop{
-  border-color:rgba(248,113,113,.3); background:rgba(248,113,113,.1); color:#fca5a5;
+.wp-mini-actions{ display:flex; align-items:center; gap:4px; flex:0 0 auto; }
+.wp-icon-btn{
+  width:22px; height:22px; padding:0; border-radius:6px; cursor:pointer;
+  display:grid; place-items:center;
+  border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.8); font-size:11px; line-height:1;
+  transition:background .2s, border-color .2s, color .2s;
 }
-.wp-btn-stop:hover{ background:rgba(248,113,113,.2); color:#fecaca; }
+.wp-icon-btn:hover{ background:rgba(255,255,255,.15); color:#fff; }
+.wp-icon-stop{ border-color:rgba(248,113,113,.28); color:#fca5a5; }
+.wp-icon-stop:hover{ background:rgba(248,113,113,.22); border-color:rgba(248,113,113,.55); color:#fecaca; }
+
+.wp-bar{
+  height:5px; border-radius:99px;
+  background:rgba(255,255,255,.11); overflow:hidden;
+}
+.wp-bar-fill{
+  display:block; height:100%; width:0%; border-radius:99px;
+  background:var(--wp-zone-color);
+  box-shadow:0 0 10px var(--wp-zone-color);
+  transition:width .25s linear, background .25s ease;
+}
+.workout-panel.is-paused .wp-bar-fill{ opacity:.42; }
+.workout-panel.is-paused .wp-phase-label{ color:#fbbf24; }
 
 /* ---------- NÁPOVEDA (TLAČIDLO + MODAL) ---------- */
 .help-btn{
@@ -1066,6 +1112,9 @@ body.map-tourist .help-btn{
 body.map-tourist .help-btn:hover{
   background:rgba(22,28,36,.88);
 }
+body.map-tourist .workout-panel{
+  background:linear-gradient(180deg, rgba(15,19,26,.88), rgba(8,11,16,.84));
+}
 
 /* ---------- RESPONSIVE ---------- */
 @media (max-width:1100px){
@@ -1073,8 +1122,8 @@ body.map-tourist .help-btn:hover{
 }
 @media (max-width:980px){
   :root{ --profile-h:156px; }
-  body.workout-active{ --profile-h:282px; }
   #hud{ top:60px; width:calc(100vw - 24px); }
+  .workout-panel{ left:12px; bottom:calc(var(--profile-h) + 12px); width:min(336px, calc(100vw - 24px)); }
   .map-switch{ right:12px; bottom:calc(var(--profile-h) + 34px); }
   #btnHelp{ left:12px; right:auto; }
   .toolbar{ top:12px; right:12px; flex-direction:row; gap:7px; }
@@ -1097,7 +1146,6 @@ body.map-tourist .help-btn:hover{
 }
 @media (max-width:640px){
   :root{ --profile-h:146px; }
-  body.workout-active{ --profile-h:258px; }
   .help-btn{ right:10px; bottom:calc(var(--profile-h) + 32px); width:38px; height:38px; }
   #btnHelp{ left:10px; right:auto; }
   .side-actions{ right:10px; gap:6px; }
@@ -1130,18 +1178,17 @@ body.map-tourist .help-btn:hover{
   .profile-empty-copy{ display:none; }
   .stats-row-2{ grid-template-columns:1fr; }
   .stat-val{ font-size:36px; }
-  .wp-metrics{ gap:11px; }
-  .wp-metric-ftp{ display:none; }
-  .wp-val{ font-size:18px; }
-  .wp-small{ font-size:13px; }
-  .wp-next{ display:none; }
-  .wp-btn{ padding:0 7px; font-size:8.5px; }
-  .wp-btn-icon{ width:26px; padding:0; }
+  .workout-panel{ left:10px; bottom:calc(var(--profile-h) + 76px); width:calc(100vw - 20px); padding:9px 10px; }
+  .wp-target{ font-size:24px; }
+  .wp-remaining b{ font-size:21px; }
+  .wp-graph-wrap{ height:62px; }
 }
 .profile-empty.hidden{ display:none !important; }
 
-/* ---------- WORKOUT – ROZŠÍRENIE SPODNÉHO PANELU ---------- */
+/* ---------- WORKOUT – SAMOSTATNÉ OKNO VĽAVO DOLE ---------- */
 body.workout-active #btnHelp{ display:none; }
+body.workout-active #toasts{ bottom:calc(var(--profile-h) + 204px); }
+body.workout-active .debug-panel{ bottom:calc(var(--profile-h) + 204px); }
 
 /* ---------- ZAMKNUTÉ FUNKCIE PRE NEPRIHLÁSENÝCH ---------- */
 .is-locked{ position:relative; opacity:.65; }

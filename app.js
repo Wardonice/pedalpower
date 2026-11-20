@@ -52,6 +52,28 @@ const GRADE_COLORS = {
   steep: '#ef4444'
 };
 
+const POWER_ZONES = [
+  { zone: 1, maxPct: 55, label: 'Z1', name: 'Regenerácia', color: '#94a3b8', textColor: '#cbd5e1' },
+  { zone: 2, maxPct: 75, label: 'Z2', name: 'Vytrvalosť', color: '#38bdf8', textColor: '#38bdf8' },
+  { zone: 3, maxPct: 90, label: 'Z3', name: 'Tempo', color: '#34d399', textColor: '#34d399' },
+  { zone: 4, maxPct: 105, label: 'Z4', name: 'Prah (FTP)', color: '#c6f432', textColor: '#c6f432' },
+  { zone: 5, maxPct: 120, label: 'Z5', name: 'VO2max', color: '#f59e0b', textColor: '#f59e0b' },
+  { zone: 6, maxPct: Infinity, label: 'Z6', name: 'Anaeróbna', color: '#ef4444', textColor: '#ef4444' }
+];
+
+function powerZoneForPct(pct) {
+  for (const item of POWER_ZONES) {
+    if (pct < item.maxPct) return item;
+  }
+  return POWER_ZONES[POWER_ZONES.length - 1];
+}
+
+function powerZoneForWatts(power, ftp) {
+  if (!(power > 0)) return null;
+  const pct = (power / Math.max(50, ftp || 200)) * 100;
+  return powerZoneForPct(pct);
+}
+
 const CP_RESULT_TEXT = {
   [-1]: 'trenažér neodpovedal (timeout)',
   [-2]: 'zápis do Control Point zlyhal',
@@ -234,17 +256,17 @@ const el = {
   btnStartWorkout: $('btnStartWorkout'),
 
   workoutPanel: $('workoutPanel'),
-  wpPhaseLabel: $('wpPhaseLabel'),
-  wpPhaseMeta: $('wpPhaseMeta'),
-  wpRemaining: $('wpRemaining'),
   wpTarget: $('wpTarget'),
-  wpCurrent: $('wpCurrent'),
-  wpFtp: $('wpFtp'),
-  wpCadence: $('wpCadence'),
-  wpBarFill: $('wpBarFill'),
-  wpNext: $('wpNext'),
-  wpPause: $('wpPause'),
   wpSkip: $('wpSkip'),
+  wpRemaining: $('wpRemaining'),
+  wpGraph: $('wpGraph'),
+  wpDoneShade: $('wpDoneShade'),
+  wpPlayhead: $('wpPlayhead'),
+  wpPlayDot: $('wpPlayDot'),
+  wpPhaseLabel: $('wpPhaseLabel'),
+  wpPhaseTime: $('wpPhaseTime'),
+  wpBarFill: $('wpBarFill'),
+  wpPause: $('wpPause'),
   wpMute: $('wpMute'),
   wpStop: $('wpStop'),
 
@@ -3609,6 +3631,91 @@ function renderWorkoutList() {
   }
 }
 
+const WORKOUT_ZONE_BREAKS = [55, 75, 90, 105, 120];
+let renderedWorkoutGraphId = null;
+
+function workoutGraphMaxPct(workout) {
+  const peak = Math.max(100, ...workout.phases.flatMap((phase) => [phase.from, phase.to]));
+  return Math.max(122, peak * 1.08);
+}
+
+function workoutGraphYRatio(pct, maxPct) {
+  const topPad = 0.09;
+  const botPad = 0.03;
+  const usable = 1 - topPad - botPad;
+  return clamp(1 - botPad - (pct / maxPct) * usable, topPad, 1 - botPad);
+}
+
+function buildWorkoutZonesSvg(workout) {
+  const W = 320;
+  const H = 72;
+  const total = Math.max(1, workout.totalDuration);
+  const maxPct = workoutGraphMaxPct(workout);
+  const yFor = (pct) => workoutGraphYRatio(pct, maxPct) * H;
+  const gap = 0.6;
+
+  const shapes = [];
+  let cursor = 0;
+
+  for (const phase of workout.phases) {
+    const startX = (cursor / total) * W;
+    const endX = ((cursor + phase.duration) / total) * W;
+    const spanX = endX - startX;
+    cursor += phase.duration;
+
+    if (spanX <= 0) continue;
+
+    if (Math.abs(phase.to - phase.from) < 0.01) {
+      const zone = powerZoneForPct(phase.from);
+      const x1 = startX + (spanX > 2.2 ? gap * 0.5 : 0);
+      const x2 = Math.max(x1 + 0.5, endX - (spanX > 2.2 ? gap * 0.5 : 0));
+      const y = yFor(phase.from);
+      shapes.push(
+        `<polygon points="${x1.toFixed(2)},${H} ${x1.toFixed(2)},${y.toFixed(2)} ${x2.toFixed(2)},${y.toFixed(2)} ${x2.toFixed(2)},${H}" fill="${zone.color}" fill-opacity="0.72"/>`,
+        `<line x1="${x1.toFixed(2)}" y1="${y.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y.toFixed(2)}" stroke="${zone.color}" stroke-width="1.6" vector-effect="non-scaling-stroke"/>`
+      );
+      continue;
+    }
+
+    // Rampa: rozdelíme presne na hraniciach FTP zón, aby farby presne sedeli.
+    const low = Math.min(phase.from, phase.to);
+    const high = Math.max(phase.from, phase.to);
+    const splits = [0, 1];
+    for (const brk of WORKOUT_ZONE_BREAKS) {
+      if (brk > low && brk < high) {
+        splits.push((brk - phase.from) / (phase.to - phase.from));
+      }
+    }
+    splits.sort((a, b) => a - b);
+
+    for (let i = 0; i < splits.length - 1; i++) {
+      const t0 = splits[i];
+      const t1 = splits[i + 1];
+      if (t1 - t0 < 0.001) continue;
+      const p0 = phase.from + (phase.to - phase.from) * t0;
+      const p1 = phase.from + (phase.to - phase.from) * t1;
+      const midPct = (p0 + p1) * 0.5;
+      const zone = powerZoneForPct(midPct);
+      const x1 = startX + spanX * t0;
+      const x2 = startX + spanX * t1;
+      const y1 = yFor(p0);
+      const y2 = yFor(p1);
+      shapes.push(
+        `<polygon points="${x1.toFixed(2)},${H} ${x1.toFixed(2)},${y1.toFixed(2)} ${x2.toFixed(2)},${y2.toFixed(2)} ${x2.toFixed(2)},${H}" fill="${zone.color}" fill-opacity="0.72"/>`,
+        `<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}" stroke="${zone.color}" stroke-width="1.6" vector-effect="non-scaling-stroke"/>`
+      );
+    }
+  }
+
+  const ftpY = yFor(100).toFixed(2);
+  return `
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+      <line x1="0" y1="${ftpY}" x2="${W}" y2="${ftpY}" stroke="rgba(255,255,255,.22)" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>
+      ${shapes.join('')}
+    </svg>
+  `;
+}
+
 function renderWorkoutPreview() {
   if (!el.workoutPreview) return;
 
@@ -3616,42 +3723,10 @@ function renderWorkoutPreview() {
   const ftp = readWorkoutFtpInput();
   const total = workout.totalDuration;
   const maxPct = Math.max(100, ...workout.phases.flatMap((phase) => [phase.from, phase.to]));
-  const yFor = (pct) => 36 - (pct / maxPct) * 32;
-
-  const points = [];
-  let x = 0;
-
-  for (const phase of workout.phases) {
-    const x1 = (x / total) * 100;
-    const x2 = ((x + phase.duration) / total) * 100;
-    const y1 = yFor(phase.from);
-    const y2 = yFor(phase.to);
-
-    if (!points.length) {
-      points.push([x1, y1]);
-    } else {
-      const previous = points[points.length - 1];
-      if (Math.abs(previous[1] - y1) > 0.01) {
-        points.push([x1, previous[1]]);
-        points.push([x1, y1]);
-      }
-    }
-
-    points.push([x2, y2]);
-    x += phase.duration;
-  }
-
-  const line = points.map(([px, py]) => `${px.toFixed(2)},${py.toFixed(2)}`).join(' ');
-  const area = `0,38 ${line} 100,38`;
-  const ftpY = yFor(100).toFixed(2);
   const tss = Math.round((total / 3600) * workout.intensity * workout.intensity * 100);
 
   el.workoutPreview.innerHTML = `
-    <svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true">
-      <line x1="0" y1="${ftpY}" x2="100" y2="${ftpY}" stroke="rgba(255,255,255,.20)" stroke-width="1" stroke-dasharray="2 2" vector-effect="non-scaling-stroke"/>
-      <polygon points="${area}" fill="rgba(198,244,50,.16)"/>
-      <polyline points="${line}" fill="none" stroke="#c6f432" stroke-width="1.4" vector-effect="non-scaling-stroke"/>
-    </svg>
+    ${buildWorkoutZonesSvg(workout)}
     <div class="workout-preview-meta">
       <span>FTP ${ftp} W · max ${maxPct} % = ${Math.round(ftp * maxPct / 100)} W</span>
       <span>IF ${workout.intensity.toFixed(2)} · TSS ${tss}</span>
@@ -3744,24 +3819,29 @@ function renderWorkoutPanel(now = performance.now()) {
 
   if (wasActive !== active) {
     document.body.classList.toggle('workout-active', active);
-    if (profileChart) {
-      setTimeout(() => {
-        try { profileChart.resize(); } catch (_) {}
-      }, 80);
-    }
   }
 
   if (!el.workoutPanel) return;
   el.workoutPanel.hidden = !active;
-  if (!active) return;
+  if (!active) {
+    renderedWorkoutGraphId = null;
+    return;
+  }
 
   const phase = state.workout.phases[state.workoutPhaseIndex];
   if (!phase) return;
 
+  if (el.wpGraph && renderedWorkoutGraphId !== state.workout.id) {
+    el.wpGraph.innerHTML = buildWorkoutZonesSvg(state.workout);
+    renderedWorkoutGraphId = state.workout.id;
+  }
+
   const phaseRemaining = Math.max(0, phase.duration - state.workoutPhaseElapsed);
-  const totalRemaining = Math.max(0, state.workout.totalDuration - state.workoutElapsed);
+  const totalDuration = Math.max(1, state.workout.totalDuration);
+  const totalRemaining = Math.max(0, totalDuration - state.workoutElapsed);
   const ratio = phase.duration > 0 ? clamp(state.workoutPhaseElapsed / phase.duration, 0, 1) : 1;
   const pct = phase.from + (phase.to - phase.from) * ratio;
+  const zone = powerZoneForPct(pct);
 
   const bikeAlive = Boolean(trainer) && (now - state.lastBikeAt < 6000);
   const speed = bikeAlive ? Math.max(0, state.speed) : 0;
@@ -3772,36 +3852,27 @@ function renderWorkoutPanel(now = performance.now()) {
     ? ' · Pozastavené'
     : (autoPaused ? ' · Čaká na šliapanie' : '');
 
+  el.workoutPanel.style.setProperty('--wp-zone-color', zone.textColor);
   el.workoutPanel.classList.toggle('is-paused', state.workoutPaused || autoPaused);
-  el.wpPhaseLabel.textContent = phase.label;
-  el.wpPhaseMeta.textContent = `${formatTime(phaseRemaining)} · ${Math.round(pct)} % FTP${pauseNote}`;
-  el.wpRemaining.textContent = formatTime(totalRemaining);
-  el.wpTarget.textContent = `${state.workoutTargetPower} W`;
-  el.wpFtp.textContent = `${state.ftp} W`;
 
-  if (bikeAlive) {
-    const samples = state.powerSamples.slice(-12);
-    const average = samples.length
-      ? samples.reduce((sum, value) => sum + value, 0) / samples.length
-      : state.power;
-    el.wpCurrent.textContent = `${Math.round(average)} W`;
-    el.wpCadence.textContent = String(Math.round(state.cadence));
-  } else {
-    el.wpCurrent.textContent = '-- W';
-    el.wpCadence.textContent = '--';
-  }
+  el.wpTarget.textContent = `${state.workoutTargetPower} W`;
+  el.wpRemaining.textContent = formatTime(totalRemaining);
+  el.wpPhaseLabel.textContent = `${phase.label}${pauseNote}`;
+  if (el.wpPhaseTime) el.wpPhaseTime.textContent = formatTime(phaseRemaining);
+
+  const workoutProgressPct = clamp((state.workoutElapsed / totalDuration) * 100, 0, 100);
+  const maxPct = workoutGraphMaxPct(state.workout);
+  const dotTopPct = workoutGraphYRatio(pct, maxPct) * 100;
+
+  if (el.wpDoneShade) el.wpDoneShade.style.width = `${workoutProgressPct.toFixed(2)}%`;
+  if (el.wpPlayhead) el.wpPlayhead.style.left = `${workoutProgressPct.toFixed(2)}%`;
+  if (el.wpPlayDot) el.wpPlayDot.style.top = `${dotTopPct.toFixed(2)}%`;
 
   el.wpBarFill.style.width = `${(ratio * 100).toFixed(1)}%`;
 
-  const next = state.workout.phases[state.workoutPhaseIndex + 1];
-  if (next) {
-    const nextWatts = Math.round(state.ftp * next.from / 100);
-    el.wpNext.textContent = `Ďalej: ${next.label} · ${nextWatts} W`;
-  } else {
-    el.wpNext.textContent = 'Posledná fáza';
-  }
-
-  el.wpPause.textContent = state.workoutPaused ? 'Pokračovať' : 'Pauza';
+  el.wpPause.textContent = state.workoutPaused ? '▶' : '⏸';
+  el.wpPause.title = state.workoutPaused ? 'Pokračovať v tréningu' : 'Pozastaviť tréning';
+  el.wpPause.setAttribute('aria-label', el.wpPause.title);
   el.wpMute.textContent = state.workoutBeepMuted ? '🔕' : '🔔';
   el.wpMute.setAttribute('aria-pressed', String(state.workoutBeepMuted));
 }
@@ -4552,24 +4623,6 @@ function updateGradeChip(grade) {
     el.gradeFill.style.width = `${-ratio * 50}%`;
   }
   el.gradeFill.style.background = color;
-}
-
-const POWER_ZONES = [
-  { zone: 1, maxPct: 0.55, label: 'Z1', name: 'Regenerácia' },
-  { zone: 2, maxPct: 0.75, label: 'Z2', name: 'Vytrvalosť' },
-  { zone: 3, maxPct: 0.90, label: 'Z3', name: 'Tempo' },
-  { zone: 4, maxPct: 1.05, label: 'Z4', name: 'Prah (FTP)' },
-  { zone: 5, maxPct: 1.20, label: 'Z5', name: 'VO2max' },
-  { zone: 6, maxPct: Infinity, label: 'Z6', name: 'Anaeróbna' }
-];
-
-function powerZoneForWatts(power, ftp) {
-  if (!(power > 0)) return null;
-  const pct = power / Math.max(50, ftp || 200);
-  for (const item of POWER_ZONES) {
-    if (pct < item.maxPct) return item;
-  }
-  return POWER_ZONES[POWER_ZONES.length - 1];
 }
 
 function renderHUD(now = performance.now()) {
