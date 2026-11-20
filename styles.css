@@ -30,11 +30,12 @@ img,svg,canvas{ display:block; }
 #map{ position:fixed; inset:0; z-index:0; background:#0a0f15; }
 #map .maplibregl-canvas{ filter:saturate(1.04) contrast(1.02); }
 .maplibregl-map{ font-family:'Inter',sans-serif; background:#0a0f15; }
-.maplibregl-ctrl-bottom-right{ bottom:calc(var(--profile-h) + 8px) !important; right:0 !important; }
+.maplibregl-ctrl-bottom-right{ bottom:calc(var(--profile-h) + 4px) !important; right:0 !important; }
 .maplibregl-ctrl-attrib{
   background:rgba(9,13,18,.38) !important; color:rgba(255,255,255,.65) !important;
   -webkit-backdrop-filter:blur(14px);
-  backdrop-filter:blur(14px); border-radius:6px 0 0 0 !important; font-size:9px !important;
+  backdrop-filter:blur(14px); border-radius:6px 0 0 0 !important;
+  font-size:9px !important; line-height:1.35 !important;
   padding:2px 7px !important; margin:0 !important;
 }
 .maplibregl-ctrl-attrib a{ color:rgba(255,255,255,.8) !important; }
@@ -253,7 +254,7 @@ img,svg,canvas{ display:block; }
 
 /* ---------- MAP SWITCH ---------- */
 .map-switch{
-  position:fixed; right:14px; bottom:calc(var(--profile-h) + 30px); z-index:950;
+  position:fixed; right:14px; bottom:calc(var(--profile-h) + 34px); z-index:950;
   display:flex; align-items:center; gap:2px; height:40px; padding:4px;
   background:rgba(11,15,21,.34); border:1px solid rgba(255,255,255,.14);
   border-radius:13px;
@@ -514,7 +515,7 @@ img,svg,canvas{ display:block; }
 
 /* ---------- NÁPOVEDA (TLAČIDLO + MODAL) ---------- */
 .help-btn{
-  position:fixed; right:14px; bottom:calc(var(--profile-h) + 30px); z-index:950;
+  position:fixed; right:14px; bottom:calc(var(--profile-h) + 34px); z-index:950;
   display:inline-flex; align-items:center; gap:8px;
   height:40px; padding:0 13px; border-radius:13px; cursor:pointer;
   background:rgba(11,15,21,.34); border:1px solid rgba(255,255,255,.14);
@@ -1074,7 +1075,7 @@ body.map-tourist .help-btn:hover{
   :root{ --profile-h:156px; }
   body.workout-active{ --profile-h:282px; }
   #hud{ top:60px; width:calc(100vw - 24px); }
-  .map-switch{ right:12px; bottom:calc(var(--profile-h) + 30px); }
+  .map-switch{ right:12px; bottom:calc(var(--profile-h) + 34px); }
   #btnHelp{ left:12px; right:auto; }
   .toolbar{ top:12px; right:12px; flex-direction:row; gap:7px; }
   .account-btn{ order:10; }
@@ -1097,11 +1098,11 @@ body.map-tourist .help-btn:hover{
 @media (max-width:640px){
   :root{ --profile-h:146px; }
   body.workout-active{ --profile-h:258px; }
-  .help-btn{ right:10px; bottom:calc(var(--profile-h) + 28px); width:38px; height:38px; }
+  .help-btn{ right:10px; bottom:calc(var(--profile-h) + 32px); width:38px; height:38px; }
   #btnHelp{ left:10px; right:auto; }
   .side-actions{ right:10px; gap:6px; }
   .side-actions .help-btn{ left:auto; right:auto; bottom:auto; }
-  .map-switch{ right:10px; bottom:calc(var(--profile-h) + 28px); height:38px; }
+  .map-switch{ right:10px; bottom:calc(var(--profile-h) + 32px); height:38px; }
   .map-btn{ height:28px; padding:0 8px; }
   .help-card{ max-height:calc(100vh - 24px); padding:18px 18px 15px; }
   .account-card{ max-height:calc(100vh - 24px); padding:18px 18px 15px; }
