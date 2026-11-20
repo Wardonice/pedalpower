@@ -1482,8 +1482,12 @@ function storeRiderWeightLocally(weight, updatedAt = Date.now()) {
 }
 
 function syncProfileInputs() {
-  if (el.profileWeight) el.profileWeight.value = String(state.weight);
-  if (el.profileFtp) el.profileFtp.value = String(state.ftp);
+  if (el.profileWeight && document.activeElement !== el.profileWeight) {
+    el.profileWeight.value = String(state.weight);
+  }
+  if (el.profileFtp && document.activeElement !== el.profileFtp) {
+    el.profileFtp.value = String(state.ftp);
+  }
   if (el.profileFtpWkg) {
     const wkg = state.ftp / Math.max(1, state.weight);
     el.profileFtpWkg.textContent = `${wkg.toFixed(2)} W/kg`;
@@ -4557,23 +4561,29 @@ el.btnResetRide.addEventListener('click', () => {
   closeFinishModal();
   showToast('Štatistiky jazdy boli vynulované.', 'info', 3000);
 });
-el.finishModal.addEventListener('click', (event) => {
-  if (event.target === el.finishModal) closeFinishModal();
-});
+function bindBackdropClose(modal, onClose) {
+  if (!modal) return;
+  let startedOnBackdrop = false;
+  modal.addEventListener('pointerdown', (event) => {
+    startedOnBackdrop = event.target === modal;
+  });
+  modal.addEventListener('click', (event) => {
+    if (startedOnBackdrop && event.target === modal) onClose();
+    startedOnBackdrop = false;
+  });
+}
+
+bindBackdropClose(el.finishModal, closeFinishModal);
 
 el.btnHelp.addEventListener('click', openHelpModal);
 el.btnCloseHelp.addEventListener('click', closeHelpModal);
 el.btnCloseHelpAction.addEventListener('click', closeHelpModal);
-el.helpModal.addEventListener('click', (event) => {
-  if (event.target === el.helpModal) closeHelpModal();
-});
+bindBackdropClose(el.helpModal, closeHelpModal);
 
 el.btnAccount.addEventListener('click', openAccountModal);
 el.btnCloseAccount.addEventListener('click', closeAccountModal);
 el.btnCloseAccountAction.addEventListener('click', closeAccountModal);
-el.accountModal.addEventListener('click', (event) => {
-  if (event.target === el.accountModal) closeAccountModal();
-});
+bindBackdropClose(el.accountModal, closeAccountModal);
 el.btnGoogleLogin.addEventListener('click', signInWithGoogle);
 el.btnSignOut.addEventListener('click', signOutAccount);
 el.btnSaveRoute.addEventListener('click', saveCurrentRoute);
@@ -4581,23 +4591,17 @@ el.btnSaveRoute.addEventListener('click', saveCurrentRoute);
 el.btnRoutes.addEventListener('click', openRoutesModal);
 el.btnCloseRoutes.addEventListener('click', closeRoutesModal);
 el.btnCloseRoutesAction.addEventListener('click', closeRoutesModal);
-el.routesModal.addEventListener('click', (event) => {
-  if (event.target === el.routesModal) closeRoutesModal();
-});
+bindBackdropClose(el.routesModal, closeRoutesModal);
 
 el.btnActivities.addEventListener('click', openActivitiesModal);
 el.btnCloseActivities.addEventListener('click', closeActivitiesModal);
 el.btnCloseActivitiesAction.addEventListener('click', closeActivitiesModal);
-el.activitiesModal.addEventListener('click', (event) => {
-  if (event.target === el.activitiesModal) closeActivitiesModal();
-});
+bindBackdropClose(el.activitiesModal, closeActivitiesModal);
 
 el.btnWorkout.addEventListener('click', openWorkoutModal);
 el.btnCloseWorkout.addEventListener('click', closeWorkoutModal);
 el.btnCloseWorkoutAction.addEventListener('click', closeWorkoutModal);
-el.workoutModal.addEventListener('click', (event) => {
-  if (event.target === el.workoutModal) closeWorkoutModal();
-});
+bindBackdropClose(el.workoutModal, closeWorkoutModal);
 el.workoutFtp.addEventListener('change', () => {
   if (!setFtp(el.workoutFtp.value)) {
     el.workoutFtp.value = String(state.ftp);
