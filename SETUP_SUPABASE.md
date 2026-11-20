@@ -4,11 +4,11 @@ Tento návod popisuje nastavenie projektu v [Supabase](https://supabase.com/) pr
 
 ---
 
-## Krok 1: Adresa projektu a anon kľúč v `index.html`
+## Krok 1: Adresa projektu a anon kľúč v `app.js`
 
 1. V Supabase Dashboarde otvor **Project Settings → API**.
 2. Skopíruj **Project URL** a verejný **anon / publishable** kľúč (nikdy nepoužívaj `service_role` kľúč!).
-3. Doplň ich do konštánt v súbore `index.html`:
+3. Doplň ich do konštánt v súbore `app.js`:
 
 ```js
 const SUPABASE_URL = 'https://TVOJ-PROJEKT.supabase.co';
