@@ -205,6 +205,7 @@ const el = {
   powerCell: $('powerCell'),
   powerZoneBadge: $('powerZoneBadge'),
   powerValue: $('powerValue'),
+  wkgCell: $('wkgCell'),
   wkgValue: $('wkgValue'),
 
   btnTrainer: $('btnTrainer'),
@@ -4326,6 +4327,13 @@ function renderHUD(now = performance.now()) {
     } else {
       delete el.powerCell.dataset.zone;
       el.powerCell.removeAttribute('title');
+    }
+  }
+  if (el.wkgCell) {
+    if (zone && !locked) {
+      el.wkgCell.dataset.zone = String(zone.zone);
+    } else {
+      delete el.wkgCell.dataset.zone;
     }
   }
   if (el.powerZoneBadge) {
