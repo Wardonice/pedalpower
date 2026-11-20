@@ -113,6 +113,10 @@
     text-shadow:0 1px 6px rgba(0,0,0,.45);
   }
   .hud-cell.power .hud-kicker{ color:rgba(198,244,50,.9); }
+  .hud-cell.hr .hud-kicker{ color:rgba(248,113,113,.9); }
+  .hud-cell.hr .hud-val{ color:#f87171; }
+  .hud-cell.wkg .hud-kicker{ color:rgba(56,189,248,.9); }
+  .hud-cell.wkg .hud-val{ color:#38bdf8; }
   .live-dot{
     width:9px; height:9px; flex:0 0 auto; border-radius:50%;
     background:rgba(255,255,255,.28); transition:background .3s;
@@ -1142,7 +1146,7 @@
     </div>
 
     <!-- 2. BPM -->
-    <div class="hud-cell">
+    <div class="hud-cell hr">
       <div class="hud-head">
         <span class="hud-kicker">BPM</span>
       </div>
@@ -1164,7 +1168,7 @@
     </div>
 
     <!-- 4. W/kg -->
-    <div class="hud-cell">
+    <div class="hud-cell wkg">
       <div class="hud-head">
         <span class="hud-kicker">W/kg</span>
       </div>
