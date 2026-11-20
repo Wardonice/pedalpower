@@ -195,6 +195,7 @@ const $ = (id) => document.getElementById(id);
 const el = {
   map: $('map'),
   rideTime: $('rideTime'),
+  gradeCell: $('gradeCell'),
   gradeChip: $('gradeChip'),
   gradeFill: $('gradeFill'),
   debugPanel: $('debugPanel'),
@@ -4227,6 +4228,9 @@ function sampleRoute(distanceM) {
 }
 
 function updateGradeChip(grade) {
+  if (el.gradeCell) {
+    el.gradeCell.classList.toggle('is-mode', Boolean(state.workoutActive));
+  }
   if (state.workoutActive) {
     const color = '#c6f432';
     el.gradeChip.textContent = (state.workoutErg && trainer) ? 'ERG' : 'Guide';
@@ -4267,7 +4271,7 @@ function renderHUD(now = performance.now()) {
   el.powerValue.textContent = String(power);
   setLockableValue(
     el.hrValue,
-    state.hr !== null && Number.isFinite(state.hr) ? String(Math.round(state.hr)) : '--',
+    state.hr !== null && Number.isFinite(state.hr) ? String(Math.round(state.hr)) : '0',
     locked,
     '🔒',
     'Tep je dostupný po prihlásení'

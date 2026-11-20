@@ -154,6 +154,9 @@ img,svg,canvas{ display:block; }
   font-variant-numeric:tabular-nums; transition:color .3s,background .3s,border-color .3s;
   text-shadow:0 1px 8px rgba(0,0,0,.45);
 }
+.hud-cell.grade.is-mode .hud-head,
+.hud-cell.grade.is-mode .grade-bar{ display:none; }
+.hud-cell.grade.is-mode .grade-chip{ height:44px; min-width:96px; font-size:28px; }
 
 /* ---------- TOOLBAR ---------- */
 .toolbar{
@@ -1048,6 +1051,7 @@ body.map-tourist .help-btn:hover{
   .hud-val-power{ font-size:34px; }
   .metric-unit{ font-size:10px; }
   .grade-chip{ min-width:64px; font-size:18px; height:28px; padding:0 7px; }
+  .hud-cell.grade.is-mode .grade-chip{ min-width:64px; font-size:20px; height:32px; }
   .grade-bar{ display:none; }
   .profile-panel{ padding:5px 10px 4px; }
   .profile-head{ gap:8px; }
