@@ -221,19 +221,19 @@
 
   /* ---------- MAP SWITCH ---------- */
   .map-switch{
-    position:fixed; left:14px; top:60px; z-index:850;
-    display:flex; align-items:center; gap:2px; padding:2px;
+    position:fixed; left:14px; bottom:calc(var(--profile-h) + 30px); z-index:950;
+    display:flex; align-items:center; gap:2px; height:40px; padding:4px;
     background:rgba(11,15,21,.34); border:1px solid rgba(255,255,255,.14);
-    border-radius:10px;
+    border-radius:13px;
     box-shadow:0 6px 20px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.1);
     -webkit-backdrop-filter:blur(22px) saturate(155%);
     backdrop-filter:blur(22px) saturate(155%);
   }
   .map-btn{
-    display:inline-flex; align-items:center; gap:5px;
-    height:26px; padding:0 9px; border:0; border-radius:7px;
+    display:inline-flex; align-items:center; gap:6px;
+    height:30px; padding:0 10px; border:0; border-radius:9px;
     background:transparent; color:rgba(255,255,255,.72); cursor:pointer;
-    font-size:9.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+    font-size:10px; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
     text-shadow:0 1px 6px rgba(0,0,0,.45);
     transition:background .2s, color .2s;
   }
@@ -454,6 +454,8 @@
     background:linear-gradient(90deg,#c6f432,#84cc16);
     transition:width .25s linear;
   }
+  .workout-panel.is-paused .wp-bar-fill{ opacity:.42; }
+  .workout-panel.is-paused .wp-phase-meta{ color:#fbbf24; }
   .wp-bottom{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
   .wp-next{
     font-size:9.5px; color:rgba(255,255,255,.52); min-width:0;
@@ -918,7 +920,7 @@
   .toast-close:hover{ color:#fff; background:rgba(255,255,255,.1); }
 
   .debug-panel{
-    position:fixed; left:12px; bottom:calc(var(--profile-h) + 46px); z-index:1400;
+    position:fixed; left:14px; bottom:calc(var(--profile-h) + 78px); z-index:1400;
     max-width:min(430px, calc(100vw - 24px)); padding:8px 10px;
     background:rgba(4,8,12,.48); border:1px solid rgba(198,244,50,.22);
     border-radius:10px; color:rgba(214,245,120,.95);
@@ -986,15 +988,15 @@
     :root{ --profile-h:156px; }
     body.workout-active{ --profile-h:282px; }
     #hud{ top:60px; width:calc(100vw - 24px); }
-    .map-switch{ top:12px; left:12px; }
+    .map-switch{ left:12px; bottom:calc(var(--profile-h) + 30px); }
     .toolbar{ top:12px; right:12px; flex-direction:row; gap:7px; }
     .tool-btn{ width:40px; height:38px; padding:0; justify-content:center; }
     .tool-btn-weight{ width:auto; padding:0 10px; }
     .tool-btn-weight svg{ display:none; }
     .tool-label{ display:none !important; }
     .grade-bar{ display:none; }
-    .mapy-logo{ top:auto; bottom:calc(var(--profile-h) + 10px); left:10px; height:32px; padding:2px 5px; }
-    .mapy-logo img{ height:24px; }
+    .mapy-logo{ top:12px; left:12px; height:38px; padding:4px 7px; }
+    .mapy-logo img{ height:26px; }
     .route-name{ max-width:38vw; }
     .profile-legend{ display:none; }
     .profile-panel{ padding-left:12px; padding-right:12px; }
@@ -1007,6 +1009,8 @@
     :root{ --profile-h:146px; }
     body.workout-active{ --profile-h:258px; }
     .help-btn{ right:10px; bottom:calc(var(--profile-h) + 28px); width:38px; height:38px; }
+    .map-switch{ left:10px; bottom:calc(var(--profile-h) + 28px); height:38px; }
+    .map-btn{ height:28px; padding:0 8px; }
     .account-btn{ bottom:calc(var(--profile-h) + 72px); }
     .workout-btn{ bottom:calc(var(--profile-h) + 116px); }
     .help-card{ max-height:calc(100vh - 24px); padding:18px 18px 15px; }
@@ -1456,7 +1460,7 @@
 
       <section class="help-section">
         <div class="help-section-head"><span class="help-step">5</span><h3>Mapa</h3></div>
-        <p>Vľavo hore prepínaš medzi <strong>Turistickou</strong> a <strong>Satelitnou</strong> mapou. Počas jazdy sa mapa automaticky centruje na tvoju značku. Keď trenažér stojí, mapa zostane na mieste a môžeš ju voľne posúvať a približovať. Koliesko myši zoomuje po väčších celých krokoch.</p>
+        <p>Vľavo dole prepínaš medzi <strong>Turistickou</strong> a <strong>Satelitnou</strong> mapou. Počas jazdy sa mapa automaticky centruje na tvoju značku. Keď trenažér stojí, mapa zostane na mieste a môžeš ju voľne posúvať a približovať. Koliesko myši zoomuje po väčších celých krokoch.</p>
       </section>
 
       <section class="help-section">
@@ -1534,7 +1538,7 @@
       <div id="accountSetup" class="account-setup" hidden>
         <div class="account-setup-title">Účet ešte nie je nastavený</div>
         <p id="accountSetupNote" class="account-setup-text">
-          Doplň do súboru <code>index2.html</code> adresu Supabase projektu a verejný anon kľúč. Potom spusti SQL a povoľ Google prihlásenie podľa návodu v súbore <code>SETUP_SUPABASE.md</code>.
+          Doplň do súboru <code>index.html</code> adresu Supabase projektu a verejný anon kľúč. Potom spusti SQL a povoľ Google prihlásenie podľa návodu v súbore <code>SETUP_SUPABASE.md</code>.
         </p>
         <div class="account-setup-row">
           <span>Adresa pre presmerovanie po prihlásení</span>
@@ -1982,6 +1986,7 @@ const state = {
   route: null,
   routeGpxText: '',
   routeFileName: '',
+  routeSavedId: null,
   rideM: 0,
   startM: 0,
   routeTravelBaseM: 0,
@@ -1995,6 +2000,11 @@ const state = {
   powerSum: 0,
   powerTime: 0,
   powerSamples: [],
+  npBucketSum: 0,
+  npBucketTime: 0,
+  npWindow: [],
+  npFourthSum: 0,
+  npFourthCount: 0,
   tcxSamples: [],
   energyKcal: 0,
   ascentM: 0,
@@ -2004,6 +2014,8 @@ const state = {
   hrAllSum: 0,
   hrAllTime: 0,
   ridePaused: false,
+  lastSavedRideSeconds: null,
+  lastSavedRideM: null,
 
   currentGrade: 0,
   targetGrade: 0,
@@ -2670,6 +2682,7 @@ function parseGPX(xmlText, fileName) {
 
   const rawPoints = [];
   let lastEle = null;
+  let firstEle = null;
   let hasElevation = false;
 
   for (const node of nodes) {
@@ -2682,12 +2695,18 @@ function parseGPX(xmlText, fileName) {
     let ele = eleNode ? parseFloat(eleNode.textContent) : NaN;
     if (Number.isFinite(ele)) {
       hasElevation = true;
+      if (firstEle === null) firstEle = ele;
       lastEle = ele;
     } else {
-      ele = lastEle !== null ? lastEle : 0;
+      ele = lastEle !== null ? lastEle : null;
     }
 
     rawPoints.push({ lat, lon, ele });
+  }
+
+  const fallbackEle = firstEle !== null ? firstEle : 0;
+  for (const pt of rawPoints) {
+    if (pt.ele === null) pt.ele = fallbackEle;
   }
 
   if (rawPoints.length < 2) {
@@ -2864,6 +2883,11 @@ function resetRideStats(fitMap = true) {
   state.powerSum = 0;
   state.powerTime = 0;
   state.powerSamples = [];
+  state.npBucketSum = 0;
+  state.npBucketTime = 0;
+  state.npWindow = [];
+  state.npFourthSum = 0;
+  state.npFourthCount = 0;
   state.tcxSamples = [];
   state.energyKcal = 0;
   state.ascentM = 0;
@@ -2881,9 +2905,13 @@ function resetRideStats(fitMap = true) {
   state.hasTotalDistance = false;
   state.lastTotalM = null;
   state.lastTotalAt = 0;
+  state.lastTotalDistance = null;
+  state.lastTotalDelta = 0;
   state.lastDistChangeAt = 0;
   state.distanceFallback = false;
   state.ridePaused = false;
+  state.lastSavedRideSeconds = null;
+  state.lastSavedRideM = null;
   state.workoutLoopIndex = 0;
   state.workoutSummaryName = '';
 
@@ -2945,10 +2973,11 @@ function setRouteStart(distanceM) {
   );
 }
 
-function applyRoute(route, gpxText = '', fileName = '') {
+function applyRoute(route, gpxText = '', fileName = '', savedId = null) {
   state.route = route;
   state.routeGpxText = gpxText;
   state.routeFileName = fileName || `${route.name || 'trasa'}.gpx`;
+  state.routeSavedId = savedId;
   state.startM = 0;
   resetRideStats();
 
@@ -3356,7 +3385,7 @@ function updateAuthLocks() {
   }
 }
 
-const ACCOUNT_SETUP_NOTE = 'Doplň do súboru <code>index2.html</code> adresu Supabase projektu a verejný anon kľúč. Potom spusti SQL a povoľ Google prihlásenie podľa návodu v súbore <code>SETUP_SUPABASE.md</code>.';
+const ACCOUNT_SETUP_NOTE = 'Doplň do súboru <code>index.html</code> adresu Supabase projektu a verejný anon kľúč. Potom spusti SQL a povoľ Google prihlásenie podľa návodu v súbore <code>SETUP_SUPABASE.md</code>.';
 const ACCOUNT_EMPTY_TEXT = 'Zatiaľ nemáš uložené žiadne trasy. Načítaj GPX a klikni na <strong>Uložiť trasu</strong>.';
 
 function supabaseConfigured() {
@@ -3374,11 +3403,10 @@ function accountErrorMessage(error) {
     return 'Tabuľka v databáze neexistuje. Spusti SQL z návodu SETUP_SUPABASE.md (krok 2 pre trasy, 2b pre jazdy).';
   }
   if (/permission denied for table/i.test(message)) {
-    return 'Databáza nepovoľuje prístup k tabuľke „routes“. Spusti v Supabase SQL Editor: ' +
-      'grant select, insert, update, delete on public.routes to authenticated;';
+    return 'Databáza nepovoľuje prístup k tabuľke („routes“ alebo „activities“). Spusti GRANT príkazy podľa SETUP_SUPABASE.md.';
   }
   if (/row-level security/i.test(message)) {
-    return 'Databáza odmietla zápis (RLS). Skontroluj pravidlá pre tabuľku „routes“ podľa SETUP_SUPABASE.md.';
+    return 'Databáza odmietla zápis (RLS). Skontroluj pravidlá pre tabuľky „routes“ a „activities“ podľa SETUP_SUPABASE.md.';
   }
   if (/JWT|session|token/i.test(message)) {
     return 'Prihlásenie vypršalo. Prihlás sa znova.';
@@ -3416,17 +3444,42 @@ function updateAccountButton() {
     : 'Konto – prihlásenie a uložené trasy';
 }
 
+function findMatchingSavedRoute() {
+  if (!state.route) return null;
+  if (state.routeSavedId) {
+    const byId = savedRoutes.find((route) => route.id === state.routeSavedId);
+    if (byId) return byId;
+  }
+  const name = String(state.route.name || 'GPX trasa').slice(0, 120);
+  const dist = Math.round(state.route.totalM);
+  const count = state.route.points.length;
+  return savedRoutes.find((route) =>
+    route.name === name &&
+    Math.abs((route.distance_m || 0) - dist) <= 5 &&
+    (route.point_count || 0) === count
+  ) || null;
+}
+
 function refreshAccountCurrentRoute() {
   if (!el.accountCurrent || !el.btnSaveRoute) return;
   if (state.route && state.routeGpxText) {
     el.accountCurrent.textContent = `${state.route.name} · ${formatKm(state.route.totalM / 1000, 1)} km`;
-    el.btnSaveRoute.disabled = false;
+    const alreadySaved = Boolean(state.routeSavedId);
+    el.btnSaveRoute.disabled = alreadySaved;
+    el.btnSaveRoute.textContent = alreadySaved ? 'Uložené ✓' : 'Uložiť trasu';
+    el.btnSaveRoute.title = alreadySaved
+      ? 'Táto trasa je už uložená v účte'
+      : 'Uložiť aktuálnu trasu do účtu';
   } else if (state.route) {
     el.accountCurrent.textContent = `${state.route.name} (GPX nie je k dispozícii)`;
     el.btnSaveRoute.disabled = true;
+    el.btnSaveRoute.textContent = 'Uložiť trasu';
+    el.btnSaveRoute.removeAttribute('title');
   } else {
     el.accountCurrent.textContent = 'Žiadna načítaná trasa';
     el.btnSaveRoute.disabled = true;
+    el.btnSaveRoute.textContent = 'Uložiť trasu';
+    el.btnSaveRoute.removeAttribute('title');
   }
 }
 
@@ -3574,7 +3627,7 @@ function renderAccount() {
     el.accountSetupNote.innerHTML = hasConfig && !libReady
       ? 'Knižnicu Supabase sa nepodarilo načítať z CDN. Skontroluj internet a obnov stránku.'
       : hasConfig && libReady
-        ? 'Klienta Supabase sa nepodarilo spustiť. Skontroluj adresu a anon kľúč projektu v súbore <code>index2.html</code>.'
+        ? 'Klienta Supabase sa nepodarilo spustiť. Skontroluj adresu a anon kľúč projektu v súbore <code>index.html</code>.'
         : ACCOUNT_SETUP_NOTE;
     el.accountRedirect.textContent = accountRedirectUrl();
   }
@@ -3604,6 +3657,11 @@ function setAccountUser(user) {
   const previousId = accountUser ? accountUser.id : null;
   const wasViewingActivity = Boolean(viewingActivityId);
   accountUser = user || null;
+  if ((accountUser ? accountUser.id : null) !== previousId) {
+    state.lastSavedRideSeconds = null;
+    state.lastSavedRideM = null;
+    state.routeSavedId = null;
+  }
   if (!accountUser) {
     if (wasViewingActivity && el.finishModal.classList.contains('open')) {
       closeFinishModal();
@@ -3718,6 +3776,7 @@ async function refreshSavedRoutes() {
     const { data, error } = await supa
       .from(ROUTES_TABLE)
       .select('id, name, distance_m, ascent_m, point_count, created_at')
+      .eq('user_id', accountUser.id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -3742,6 +3801,7 @@ async function refreshSavedActivities() {
     const { data, error } = await supa
       .from(ACTIVITIES_TABLE)
       .select('id, name, duration_s, distance_m, ascent_m, calories, avg_power_w, np_w, avg_hr, weight_kg, created_at')
+      .eq('user_id', accountUser.id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -3775,6 +3835,7 @@ async function saveCurrentActivity() {
 
   try {
     const payload = {
+      user_id: accountUser.id,
       name: (summary.name || 'Jazda').slice(0, 160),
       duration_s: Math.max(0, Math.round(summary.durationS)),
       distance_m: Math.max(0, Math.round(summary.distanceM)),
@@ -3789,7 +3850,10 @@ async function saveCurrentActivity() {
     const { error } = await supa.from(ACTIVITIES_TABLE).insert(payload);
     if (error) throw error;
 
+    state.lastSavedRideSeconds = summary.durationS;
+    state.lastSavedRideM = summary.distanceM;
     el.btnSaveActivity.textContent = 'Uložené ✓';
+    el.btnSaveActivity.title = 'Táto jazda je už uložená (pokračuj v jazde pre nové uloženie)';
     showToast(`Jazda „${payload.name}“ je uložená v účte.`, 'success', 4400);
     await refreshSavedActivities();
   } catch (error) {
@@ -3812,7 +3876,11 @@ async function deleteSavedActivity(id) {
 
   activityBusy = true;
   try {
-    const { error } = await supa.from(ACTIVITIES_TABLE).delete().eq('id', id);
+    const { error } = await supa
+      .from(ACTIVITIES_TABLE)
+      .delete()
+      .eq('id', id)
+      .eq('user_id', accountUser.id);
     if (error) throw error;
     savedActivities = savedActivities.filter((activity) => activity.id !== id);
     renderSavedActivities();
@@ -3837,8 +3905,15 @@ async function saveCurrentRoute() {
   }
   if (accountBusy) return;
 
+  const duplicate = findMatchingSavedRoute();
+  if (duplicate) {
+    const saveCopy = window.confirm(
+      `Trasa „${duplicate.name || state.route.name}“ s rovnakou dĺžkou už v účte existuje.\n\nChceš ju napriek tomu uložiť ako novú kópiu?`
+    );
+    if (!saveCopy) return;
+  }
+
   accountBusy = true;
-  const originalText = el.btnSaveRoute.textContent;
   el.btnSaveRoute.disabled = true;
   el.btnSaveRoute.textContent = 'Ukladám…';
 
@@ -3863,12 +3938,13 @@ async function saveCurrentRoute() {
 
     showToast(`Trasa „${payload.name}“ je uložená v účte.`, 'success', 4200);
     await refreshSavedRoutes();
+    const saved = findMatchingSavedRoute();
+    state.routeSavedId = saved ? saved.id : 'saved';
   } catch (error) {
     console.error('Uloženie trasy:', error);
     showToast(`Trasu sa nepodarilo uložiť: ${accountErrorMessage(error)}`, 'error', 8000);
   } finally {
     accountBusy = false;
-    el.btnSaveRoute.textContent = originalText || 'Uložiť trasu';
     refreshAccountCurrentRoute();
   }
 }
@@ -3891,6 +3967,7 @@ async function loadSavedRoute(id) {
       .from(ROUTES_TABLE)
       .select('gpx_text')
       .eq('id', id)
+      .eq('user_id', accountUser.id)
       .single();
 
     if (error) throw error;
@@ -3899,7 +3976,7 @@ async function loadSavedRoute(id) {
     const parsed = parseGPX(data.gpx_text, `${item.name || 'trasa'}.gpx`);
     parsed.name = item.name || parsed.name;
     parsed.isDemo = false;
-    applyRoute(parsed, data.gpx_text, `${parsed.name}.gpx`);
+    applyRoute(parsed, data.gpx_text, `${parsed.name}.gpx`, id);
     closeAccountModal();
 
     showToast(
@@ -3925,9 +4002,17 @@ async function deleteSavedRoute(id) {
 
   accountBusy = true;
   try {
-    const { error } = await supa.from(ROUTES_TABLE).delete().eq('id', id);
+    const { error } = await supa
+      .from(ROUTES_TABLE)
+      .delete()
+      .eq('id', id)
+      .eq('user_id', accountUser.id);
     if (error) throw error;
     savedRoutes = savedRoutes.filter((route) => route.id !== id);
+    if (state.routeSavedId === id) {
+      state.routeSavedId = null;
+      refreshAccountCurrentRoute();
+    }
     renderSavedRoutes();
     showToast('Trasa bola vymazaná z účtu.', 'info', 3200);
   } catch (error) {
@@ -4025,6 +4110,7 @@ function setTrainerUI(mode) {
   if (el.workoutModal && el.workoutModal.classList.contains('open')) {
     updateWorkoutModalState();
   }
+  syncWakeLock();
 }
 
 function setHrUI(mode) {
@@ -4367,6 +4453,11 @@ function onIndoorBikeData(event) {
 
       const totalRideM = state.trainerDistOffset + delta;
       if (totalRideM > state.rideM) state.rideM = totalRideM;
+    }
+
+    const tickNow = performance.now();
+    if (tickNow - lastTickAt >= 250) {
+      tick(tickNow);
     }
   } catch (error) {
     console.warn('Neplatný FTMS packet 0x2AD2:', error);
@@ -4873,13 +4964,22 @@ function renderWorkoutPanel(now = performance.now()) {
   const ratio = phase.duration > 0 ? clamp(state.workoutPhaseElapsed / phase.duration, 0, 1) : 1;
   const pct = phase.from + (phase.to - phase.from) * ratio;
 
+  const bikeAlive = Boolean(trainer) && (now - state.lastBikeAt < 6000);
+  const speed = bikeAlive ? Math.max(0, state.speed) : 0;
+  const power = bikeAlive ? Math.max(0, state.power) : 0;
+  const moving = bikeAlive && (speed > 0.8 || power > 10);
+  const autoPaused = Boolean(trainer) && !state.workoutPaused && !moving;
+  const pauseNote = state.workoutPaused
+    ? ' · Pozastavené'
+    : (autoPaused ? ' · Čaká na šliapanie' : '');
+
+  el.workoutPanel.classList.toggle('is-paused', state.workoutPaused || autoPaused);
   el.wpPhaseLabel.textContent = phase.label;
-  el.wpPhaseMeta.textContent = `${formatTime(phaseRemaining)} · ${Math.round(pct)} % FTP`;
+  el.wpPhaseMeta.textContent = `${formatTime(phaseRemaining)} · ${Math.round(pct)} % FTP${pauseNote}`;
   el.wpRemaining.textContent = formatTime(totalRemaining);
   el.wpTarget.textContent = `${state.workoutTargetPower} W`;
   el.wpFtp.textContent = `${state.ftp} W`;
 
-  const bikeAlive = Boolean(trainer) && (now - state.lastBikeAt < 6000);
   if (bikeAlive) {
     const samples = state.powerSamples.slice(-12);
     const average = samples.length
@@ -4974,6 +5074,7 @@ function startWorkout() {
   renderWorkoutPanel();
   updateChartMarker(true);
   beep(660, 120, 0.04);
+  syncWakeLock();
 
   showToast(
     `Tréning „${workout.name}“ spustený ${state.workoutErg ? 'v ERG režime' : 'v guide režime'}.`,
@@ -5189,20 +5290,39 @@ function onHeartRateMeasurement(event) {
 /* =========================================================================
    FINISH / ŠTATISTIKA JAZDY
    ========================================================================= */
-function computeNormalizedPower(samples, fallback) {
-  if (!Array.isArray(samples) || samples.length === 0) {
-    return Math.max(0, Math.round(fallback || 0));
+function recordNormalizedPower(power, dt) {
+  if (!(dt > 0) || !Number.isFinite(power)) return;
+  let remaining = dt;
+  while (remaining > 1e-9) {
+    const need = 1 - state.npBucketTime;
+    const slice = Math.min(remaining, need);
+    state.npBucketSum += power * slice;
+    state.npBucketTime += slice;
+    remaining -= slice;
+
+    if (state.npBucketTime >= 1 - 1e-9) {
+      const secPower = state.npBucketSum / state.npBucketTime;
+      state.npBucketSum = 0;
+      state.npBucketTime = 0;
+
+      state.npWindow.push(secPower);
+      if (state.npWindow.length > 30) state.npWindow.shift();
+      if (state.npWindow.length === 30) {
+        let sum30 = 0;
+        for (let i = 0; i < 30; i++) sum30 += state.npWindow[i];
+        const avg30 = sum30 / 30;
+        state.npFourthSum += avg30 ** 4;
+        state.npFourthCount++;
+      }
+    }
   }
-  const rolling30 = [];
-  for (let i = 0; i < samples.length; i++) {
-    const start = Math.max(0, i - 29);
-    let sum = 0;
-    for (let j = start; j <= i; j++) sum += samples[j];
-    rolling30.push(sum / (i - start + 1));
+}
+
+function computeNormalizedPower(fallback) {
+  if (state.npFourthCount > 0) {
+    return Math.round((state.npFourthSum / state.npFourthCount) ** 0.25);
   }
-  let fourthSum = 0;
-  for (const val of rolling30) fourthSum += val ** 4;
-  return Math.round((fourthSum / rolling30.length) ** 0.25);
+  return Math.max(0, Math.round(fallback || 0));
 }
 
 function currentRideSummary() {
@@ -5238,7 +5358,7 @@ function currentRideSummary() {
     ascentM: Math.round(state.ascentM),
     calories: Math.round(state.energyKcal),
     avgPowerW,
-    npW: computeNormalizedPower(state.powerSamples, avgPowerW),
+    npW: computeNormalizedPower(avgPowerW),
     avgHr,
     weightKg: state.weight || 75
   };
@@ -5475,17 +5595,25 @@ function openFinishModal() {
   state.ridePaused = true;
   viewingActivityId = null;
 
-  fillStatsView(currentRideSummary());
+  const summary = currentRideSummary();
+  fillStatsView(summary);
   setFinishMode('live');
 
   const canSave = Boolean(supa && accountUser);
-  el.btnSaveActivity.disabled = !canSave;
-  el.btnSaveActivity.textContent = 'Uložiť aktivitu';
-  el.btnSaveActivity.title = canSave
-    ? 'Uložiť túto jazdu do účtu'
-    : 'Najprv sa prihlás v okne Konto';
+  const alreadySaved = state.lastSavedRideSeconds !== null &&
+    summary.durationS <= state.lastSavedRideSeconds &&
+    summary.distanceM <= state.lastSavedRideM;
+
+  el.btnSaveActivity.disabled = !canSave || alreadySaved;
+  el.btnSaveActivity.textContent = alreadySaved ? 'Uložené ✓' : 'Uložiť aktivitu';
+  el.btnSaveActivity.title = !canSave
+    ? 'Najprv sa prihlás v okne Konto'
+    : (alreadySaved
+      ? 'Táto jazda je už uložená (pokračuj v jazde pre nové uloženie)'
+      : 'Uložiť túto jazdu do účtu');
 
   el.finishModal.classList.add('open');
+  syncWakeLock();
 }
 
 function openActivityStats(id) {
@@ -5506,6 +5634,7 @@ function openActivityStats(id) {
   });
   setFinishMode('saved');
   el.finishModal.classList.add('open');
+  syncWakeLock();
 }
 
 function closeFinishModal() {
@@ -5516,11 +5645,11 @@ function closeFinishModal() {
     return;
   }
   state.ridePaused = false;
-  state.workoutSummaryName = '';
   if (state.lastTotalM !== null) {
     state.trainerBaseM = state.lastTotalM;
     state.trainerDistOffset = state.rideM;
   }
+  syncWakeLock();
 }
 
 function openHelpModal() {
@@ -5726,6 +5855,8 @@ function tick(now) {
     state.powerSum += power * dt;
     state.powerTime += dt;
     state.powerSamples.push(power);
+    if (state.powerSamples.length > 12) state.powerSamples.shift();
+    recordNormalizedPower(power, dt);
 
     // Mechanická práca v kJ / (efektivita bicyklovania × kJ na kcal).
     // Pri efektivite 24 % vychádza približne 1 kJ ≈ 1 kcal.
@@ -5964,7 +6095,42 @@ window.addEventListener('resize', () => {
   map.invalidateSize({ animate: false });
 });
 
+let wakeLockSentinel = null;
+let wakeLockPending = false;
+
+function shouldKeepScreenAwake() {
+  return !state.ridePaused && (Boolean(trainer) || state.workoutActive);
+}
+
+async function syncWakeLock() {
+  if (!('wakeLock' in navigator) || !navigator.wakeLock) return;
+  const want = shouldKeepScreenAwake() && document.visibilityState === 'visible';
+  if (want) {
+    if (wakeLockSentinel || wakeLockPending) return;
+    wakeLockPending = true;
+    try {
+      const sentinel = await navigator.wakeLock.request('screen');
+      wakeLockSentinel = sentinel;
+      sentinel.addEventListener('release', () => {
+        if (wakeLockSentinel === sentinel) wakeLockSentinel = null;
+      });
+    } catch (_) {
+    } finally {
+      wakeLockPending = false;
+    }
+  } else if (wakeLockSentinel) {
+    const sentinel = wakeLockSentinel;
+    wakeLockSentinel = null;
+    try { await sentinel.release(); } catch (_) {}
+  }
+}
+
+document.addEventListener('visibilitychange', () => {
+  syncWakeLock();
+});
+
 window.addEventListener('beforeunload', () => {
+  try { if (wakeLockSentinel) wakeLockSentinel.release(); } catch (_) {}
   try { if (trainer) trainer.device.gatt.disconnect(); } catch (_) {}
   try { if (heartRateSensor) heartRateSensor.device.gatt.disconnect(); } catch (_) {}
 });
