@@ -202,6 +202,8 @@ const el = {
   debugText: $('debugText'),
   liveDot: $('liveDot'),
   hrValue: $('hrValue'),
+  powerCell: $('powerCell'),
+  powerZoneBadge: $('powerZoneBadge'),
   powerValue: $('powerValue'),
   wkgValue: $('wkgValue'),
 
@@ -1595,6 +1597,7 @@ function applyFtp(ftp) {
   state.ftp = normalized;
   if (el.workoutFtp) el.workoutFtp.value = String(normalized);
   syncProfileInputs();
+  renderHUD();
 }
 
 function setFtp(value, save = true) {
@@ -1604,6 +1607,7 @@ function setFtp(value, save = true) {
   state.ftp = normalized;
   if (el.workoutFtp) el.workoutFtp.value = String(normalized);
   syncProfileInputs();
+  renderHUD();
 
   if (save) {
     const now = Date.now();
@@ -4288,6 +4292,24 @@ function updateGradeChip(grade) {
   el.gradeFill.style.background = color;
 }
 
+const POWER_ZONES = [
+  { zone: 1, maxPct: 0.55, label: 'Z1', name: 'Regenerácia' },
+  { zone: 2, maxPct: 0.75, label: 'Z2', name: 'Vytrvalosť' },
+  { zone: 3, maxPct: 0.90, label: 'Z3', name: 'Tempo' },
+  { zone: 4, maxPct: 1.05, label: 'Z4', name: 'Prah (FTP)' },
+  { zone: 5, maxPct: 1.20, label: 'Z5', name: 'VO2max' },
+  { zone: 6, maxPct: Infinity, label: 'Z6', name: 'Anaeróbna' }
+];
+
+function powerZoneForWatts(power, ftp) {
+  if (!(power > 0)) return null;
+  const pct = power / Math.max(50, ftp || 200);
+  for (const item of POWER_ZONES) {
+    if (pct < item.maxPct) return item;
+  }
+  return POWER_ZONES[POWER_ZONES.length - 1];
+}
+
 function renderHUD(now = performance.now()) {
   const bikeAlive = Boolean(trainer) && (now - state.lastBikeAt < 6000);
   const power = bikeAlive ? Math.max(0, Math.round(state.power)) : 0;
@@ -4295,6 +4317,21 @@ function renderHUD(now = performance.now()) {
 
   el.rideTime.textContent = formatTime(state.rideSeconds);
   el.powerValue.textContent = String(power);
+  const zone = powerZoneForWatts(power, state.ftp);
+  if (el.powerCell) {
+    if (zone) {
+      el.powerCell.dataset.zone = String(zone.zone);
+      const pct = Math.round((power / Math.max(50, state.ftp || 200)) * 100);
+      el.powerCell.title = `${zone.label} · ${zone.name} (${pct} % FTP)`;
+    } else {
+      delete el.powerCell.dataset.zone;
+      el.powerCell.removeAttribute('title');
+    }
+  }
+  if (el.powerZoneBadge) {
+    el.powerZoneBadge.hidden = !zone;
+    if (zone) el.powerZoneBadge.textContent = zone.label;
+  }
   setLockableValue(
     el.hrValue,
     state.hr !== null && Number.isFinite(state.hr) ? String(Math.round(state.hr)) : '0',

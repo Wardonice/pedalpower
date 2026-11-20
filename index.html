@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
 
-<link rel="stylesheet" href="styles.css?v=3">
+<link rel="stylesheet" href="styles.css?v=4">
 </head>
 
 <body>
@@ -62,13 +62,22 @@
     </div>
 
     <!-- 3. Výkon -->
-    <div class="hud-cell power">
+    <div id="powerCell" class="hud-cell power">
       <div class="hud-head">
         <span class="hud-kicker">Výkon</span>
+        <span id="powerZoneBadge" class="power-zone-badge" hidden>Z1</span>
       </div>
       <div class="metric-line">
         <span id="powerValue" class="hud-val-power tabular">0</span>
         <span class="metric-unit">W</span>
+      </div>
+      <div class="power-zone-bar" aria-hidden="true">
+        <span class="pz-seg" data-zone="1"></span>
+        <span class="pz-seg" data-zone="2"></span>
+        <span class="pz-seg" data-zone="3"></span>
+        <span class="pz-seg" data-zone="4"></span>
+        <span class="pz-seg" data-zone="5"></span>
+        <span class="pz-seg" data-zone="6"></span>
       </div>
     </div>
 
@@ -145,7 +154,7 @@
     </svg>
     <span class="help-label">Jazdy</span>
   </button>
-  <button id="btnWorkout" class="help-btn workout-btn" type="button" title="Workout – intervalový tréning" aria-haspopup="dialog">
+  <button id="btnWorkout" class="help-btn" type="button" title="Workout – intervalový tréning" aria-haspopup="dialog">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <circle cx="12" cy="13" r="7.5"/>
       <path d="M12 9v4l2.6 2.6"/>
@@ -691,6 +700,6 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" integrity="sha384-JUh163oCRItcbPme8pYnROHQMC6fNKTBWtRG3I3I0erJkzNgL7uxKlNwcrcFKeqF" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js" integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ" crossorigin="anonymous"></script>
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>
