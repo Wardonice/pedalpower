@@ -266,8 +266,6 @@ const el = {
   wpPhaseLabel: $('wpPhaseLabel'),
   wpPhaseTime: $('wpPhaseTime'),
   wpBarFill: $('wpBarFill'),
-  wpPause: $('wpPause'),
-  wpMute: $('wpMute'),
   wpStop: $('wpStop'),
 
   btnRoutes: $('btnRoutes'),
@@ -3073,12 +3071,16 @@ async function connectTrainer() {
     setTrainerUI('connected');
     showToast(`Trenažér pripojený: ${name}`, 'success', 4200);
 
-    if (state.workoutActive && state.workoutErg && !state.workoutPaused) {
-      lastErgPower = null;
-      lastErgSentAt = 0;
-      ergNoAck = false;
-      queueTargetPower(true);
-    } else if (!state.workoutActive) {
+    if (state.workoutActive) {
+      if (!state.workoutErg && state.workoutErgPreferred) state.workoutErg = true;
+      if (state.workoutErg) {
+        lastErgPower = null;
+        lastErgSentAt = 0;
+        ergNoAck = false;
+        applyWorkoutTarget(true);
+      }
+      renderWorkoutPanel();
+    } else {
       queueSimulation();
     }
   } catch (error) {
@@ -3118,10 +3120,10 @@ function onTrainerDisconnected() {
 
   setTrainerUI('disconnected');
   renderHUD();
+  renderWorkoutPanel();
 
-  if (state.workoutActive && state.workoutErg && !state.workoutPaused) {
-    pauseWorkout(true);
-    showToast('Tréning pozastavený – trenažér sa odpojil.', 'warning', 6000);
+  if (state.workoutActive) {
+    showToast('Trenažér sa odpojil – tréning čaká na pripojenie.', 'warning', 6000);
   } else if (wasConnected) {
     showToast(`${name} bol odpojený.`, 'info', 4500);
   }
@@ -3847,17 +3849,16 @@ function renderWorkoutPanel(now = performance.now()) {
   const speed = bikeAlive ? Math.max(0, state.speed) : 0;
   const power = bikeAlive ? Math.max(0, state.power) : 0;
   const moving = bikeAlive && (speed > 0.8 || power > 10);
-  const autoPaused = Boolean(trainer) && !state.workoutPaused && !moving;
-  const pauseNote = state.workoutPaused
-    ? ' · Pozastavené'
-    : (autoPaused ? ' · Čaká na šliapanie' : '');
+  const waitNote = !trainer
+    ? ' · Pripoj trenažér'
+    : (!moving ? ' · Čaká na šliapanie' : '');
 
   el.workoutPanel.style.setProperty('--wp-zone-color', zone.textColor);
-  el.workoutPanel.classList.toggle('is-paused', state.workoutPaused || autoPaused);
+  el.workoutPanel.classList.toggle('is-paused', !moving);
 
   el.wpTarget.textContent = `${state.workoutTargetPower} W`;
   el.wpRemaining.textContent = formatTime(totalRemaining);
-  el.wpPhaseLabel.textContent = `${phase.label}${pauseNote}`;
+  el.wpPhaseLabel.textContent = `${phase.label}${waitNote}`;
   if (el.wpPhaseTime) el.wpPhaseTime.textContent = formatTime(phaseRemaining);
 
   const workoutProgressPct = clamp((state.workoutElapsed / totalDuration) * 100, 0, 100);
@@ -3869,12 +3870,6 @@ function renderWorkoutPanel(now = performance.now()) {
   if (el.wpPlayDot) el.wpPlayDot.style.top = `${dotTopPct.toFixed(2)}%`;
 
   el.wpBarFill.style.width = `${(ratio * 100).toFixed(1)}%`;
-
-  el.wpPause.textContent = state.workoutPaused ? '▶' : '⏸';
-  el.wpPause.title = state.workoutPaused ? 'Pokračovať v tréningu' : 'Pozastaviť tréning';
-  el.wpPause.setAttribute('aria-label', el.wpPause.title);
-  el.wpMute.textContent = state.workoutBeepMuted ? '🔕' : '🔔';
-  el.wpMute.setAttribute('aria-pressed', String(state.workoutBeepMuted));
 }
 
 function startWorkout() {
@@ -3950,51 +3945,6 @@ function startWorkout() {
     `Tréning „${workout.name}“ spustený ${state.workoutErg ? 'v ERG režime' : 'v guide režime'}.`,
     'success',
     5000
-  );
-}
-
-function pauseWorkout(auto = false) {
-  if (!state.workoutActive || state.workoutPaused) return;
-
-  state.workoutPaused = true;
-  state.ridePaused = true;
-  state.workoutTargetPower = 0;
-
-  if (state.workoutErg && trainer) {
-    sendErgTargetOnce(0);
-    lastErgPower = 0;
-  }
-
-  renderWorkoutPanel();
-  if (!auto) showToast('Tréning pozastavený.', 'info', 2500);
-}
-
-function resumeWorkout() {
-  if (!state.workoutActive || !state.workoutPaused) return;
-
-  state.workoutPaused = false;
-  state.ridePaused = false;
-  lastErgPower = null;
-  lastErgSentAt = 0;
-  ergNoAck = false;
-
-  applyWorkoutTarget(true);
-  renderWorkoutPanel();
-  showToast('Tréning pokračuje.', 'success', 2000);
-}
-
-function toggleWorkoutPause() {
-  if (state.workoutPaused) resumeWorkout();
-  else pauseWorkout(false);
-}
-
-function toggleWorkoutMute() {
-  state.workoutBeepMuted = !state.workoutBeepMuted;
-  renderWorkoutPanel();
-  showToast(
-    state.workoutBeepMuted ? 'Pípnutia sú vypnuté.' : 'Pípnutia sú zapnuté.',
-    'info',
-    2000
   );
 }
 
@@ -4768,8 +4718,7 @@ function tick(now) {
   }
 
   if (state.workoutActive) {
-    const workoutRunning = !state.workoutPaused && (moving || !trainer);
-    if (workoutRunning && !advanceWorkout(dt)) {
+    if (moving && !advanceWorkout(dt)) {
       renderHUD(now);
       renderWorkoutPanel(now);
       return;
@@ -4981,9 +4930,7 @@ el.workoutErg.addEventListener('change', () => {
   updateWorkoutModalState();
 });
 el.btnStartWorkout.addEventListener('click', startWorkout);
-el.wpPause.addEventListener('click', toggleWorkoutPause);
 el.wpSkip.addEventListener('click', skipWorkoutPhase);
-el.wpMute.addEventListener('click', toggleWorkoutMute);
 el.wpStop.addEventListener('click', () => finishWorkout('manual'));
 el.wpRouteLoad.addEventListener('click', openGpxPicker);
 el.wpRouteDemo.addEventListener('click', async () => {

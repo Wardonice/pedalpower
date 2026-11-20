@@ -534,7 +534,6 @@ img,svg,canvas{ display:block; }
   color:var(--wp-zone-color); font-variant-numeric:tabular-nums;
   transition:color .25s ease;
 }
-.wp-mini-actions{ display:flex; align-items:center; gap:4px; flex:0 0 auto; }
 .wp-icon-btn{
   width:22px; height:22px; padding:0; border-radius:6px; cursor:pointer;
   display:grid; place-items:center;
