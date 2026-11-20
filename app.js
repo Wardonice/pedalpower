@@ -208,7 +208,6 @@ const el = {
   btnTrainer: $('btnTrainer'),
   btnHr: $('btnHr'),
   btnGpx: $('btnGpx'),
-  btnWeight: $('btnWeight'),
   btnFinish: $('btnFinish'),
   btnHelp: $('btnHelp'),
   helpModal: $('helpModal'),
@@ -280,7 +279,9 @@ const el = {
   accountEmpty: $('accountEmpty'),
   accountCount: $('accountCount'),
   accountError: $('accountError'),
-  weightValue: $('weightValue'),
+  profileWeight: $('profileWeight'),
+  profileFtp: $('profileFtp'),
+  profileFtpWkg: $('profileFtpWkg'),
   btnMapTourist: $('btnMapTourist'),
   btnMapSatellite: $('btnMapSatellite'),
   trainerDot: $('trainerDot'),
@@ -1480,10 +1481,20 @@ function storeRiderWeightLocally(weight, updatedAt = Date.now()) {
   } catch (_) {}
 }
 
+function syncProfileInputs() {
+  if (el.profileWeight) el.profileWeight.value = String(state.weight);
+  if (el.profileFtp) el.profileFtp.value = String(state.ftp);
+  if (el.profileFtpWkg) {
+    const wkg = state.ftp / Math.max(1, state.weight);
+    el.profileFtpWkg.textContent = `${wkg.toFixed(2)} W/kg`;
+  }
+}
+
 function applyRiderWeight(weight) {
   const normalized = normalizeRiderWeight(weight);
   if (normalized === null) return;
   state.weight = normalized;
+  syncProfileInputs();
   renderHUD();
 }
 
@@ -1579,6 +1590,7 @@ function applyFtp(ftp) {
   if (normalized === null) return;
   state.ftp = normalized;
   if (el.workoutFtp) el.workoutFtp.value = String(normalized);
+  syncProfileInputs();
 }
 
 function setFtp(value, save = true) {
@@ -1587,6 +1599,7 @@ function setFtp(value, save = true) {
 
   state.ftp = normalized;
   if (el.workoutFtp) el.workoutFtp.value = String(normalized);
+  syncProfileInputs();
 
   if (save) {
     const now = Date.now();
@@ -1992,7 +2005,7 @@ function renderSavedActivities() {
   if (showEmpty) {
     el.activityEmpty.innerHTML = savedActivitiesLoading
       ? 'Načítavam uložené jazdy…'
-      : 'Zatiaľ nemáš uložené jazdy. Ukonči jazdu tlačidlom <strong>Finish</strong> a klikni na <strong>Uložiť aktivitu</strong>.';
+      : 'Zatiaľ nemáš uložené jazdy. Ukonči jazdu tlačidlom <strong>Ukončiť</strong> a klikni na <strong>Uložiť aktivitu</strong>.';
   }
 
   for (const item of savedActivities) {
@@ -2009,6 +2022,7 @@ function renderAccount() {
 
   refreshAccountCurrentRoute();
   updateAccountButton();
+  syncProfileInputs();
 
   el.accountSetup.hidden = configured;
   if (!configured) {
@@ -4283,7 +4297,6 @@ function renderHUD(now = performance.now()) {
     '🔒',
     'W/kg je dostupné po prihlásení'
   );
-  el.weightValue.textContent = String(Math.round(state.weight));
 
   if (state.route) {
     const progressM = routeProgressM();
@@ -4467,25 +4480,45 @@ function tick(now) {
 }
 
 /* =========================================================================
-   HMOTNOSŤ A OVLÁDANIE
+   PROFIL JAZDCA (HMOTNOSŤ, FTP) A OVLÁDANIE
    ========================================================================= */
-function editWeight() {
-  const current = state.weight;
-  const answer = window.prompt('Hmotnosť jazdca v kg (30 – 250):', String(current));
-  if (answer === null) return;
-
-  const value = normalizeRiderWeight(String(answer).replace(',', '.'));
+function saveProfileWeightInput() {
+  if (!el.profileWeight) return;
+  const value = normalizeRiderWeight(String(el.profileWeight.value).replace(',', '.'));
   if (value === null) {
+    el.profileWeight.value = String(state.weight);
     showToast('Zadaj hmotnosť v rozsahu 30 – 250 kg.', 'error', 4200);
+    return;
+  }
+  if (value === state.weight) {
+    syncProfileInputs();
     return;
   }
 
   const now = Date.now();
   state.weight = value;
   storeRiderWeightLocally(value, now);
+  syncProfileInputs();
   renderHUD();
-  showToast(`Hmotnosť jazdca: ${value} kg`, 'info', 2000);
+  showToast(`Hmotnosť jazdca: ${value} kg`, 'info', 2200);
   if (supa && accountUser) saveRiderWeightToAccount(value, now);
+}
+
+function saveProfileFtpInput() {
+  if (!el.profileFtp) return;
+  const prev = state.ftp;
+  if (!setFtp(el.profileFtp.value)) {
+    el.profileFtp.value = String(state.ftp);
+    showToast('FTP musí byť v rozsahu 50 – 600 W.', 'warning', 4000);
+    return;
+  }
+  if (state.ftp !== prev) {
+    showToast(`FTP nastavené na ${state.ftp} W`, 'info', 2200);
+  }
+  if (el.workoutModal && el.workoutModal.classList.contains('open')) {
+    renderWorkoutPreview();
+  }
+  renderWorkoutPanel();
 }
 
 el.btnTrainer.addEventListener('click', connectTrainer);
@@ -4505,7 +4538,8 @@ el.gpxInput.addEventListener('change', () => {
   if (file) loadGPXFile(file);
 });
 
-el.btnWeight.addEventListener('click', editWeight);
+if (el.profileWeight) el.profileWeight.addEventListener('change', saveProfileWeightInput);
+if (el.profileFtp) el.profileFtp.addEventListener('change', saveProfileFtpInput);
 el.btnFinish.addEventListener('click', () => {
   if (state.workoutActive) finishWorkout('manual');
   else openFinishModal();
@@ -4683,6 +4717,7 @@ window.addEventListener('keydown', (event) => {
 
 setTrainerUI('disconnected');
 setHrUI('disconnected');
+syncProfileInputs();
 renderHUD();
 updateGradeChip(0);
 updateAuthLocks();

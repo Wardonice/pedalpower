@@ -485,7 +485,7 @@ img,svg,canvas{ display:block; }
    rovnakou špecificitou (jedna trieda) a tlačidlá sa prekryjú. */
 #btnHelp{ left:14px; right:auto; }
 .side-actions{
-  position:fixed; right:14px; top:52%;
+  position:fixed; right:14px; top:48%;
   transform:translateY(-50%); z-index:950;
   display:flex; flex-direction:column; align-items:flex-end; gap:8px;
 }
@@ -497,6 +497,12 @@ img,svg,canvas{ display:block; }
 }
 .workout-btn:hover{
   background:rgba(24,32,18,.55); border-color:rgba(198,244,50,.5); color:#eaffb0;
+}
+.finish-btn{
+  border-color:rgba(248,113,113,.28); color:#fca5a5;
+}
+.finish-btn:hover{
+  background:rgba(48,18,22,.55); border-color:rgba(248,113,113,.5); color:#fecaca;
 }
 .help-card{
   width:min(700px, 100%);
@@ -619,6 +625,24 @@ body.map-tourist .account-btn.connected{
 }
 .account-link:hover{ color:#fff; background:rgba(255,255,255,.08); }
 .account-link:disabled{ opacity:.5; cursor:default; }
+.account-profile{
+  display:flex; flex-direction:column; gap:10px;
+  padding:13px 14px; border-radius:14px;
+  background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.10);
+}
+.account-profile-head{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  font-size:9.5px; font-weight:700; letter-spacing:.15em; text-transform:uppercase;
+  color:rgba(255,255,255,.55);
+}
+.account-profile-wkg{
+  padding:2px 8px; border-radius:99px;
+  background:rgba(56,189,248,.12); border:1px solid rgba(56,189,248,.28);
+  color:#38bdf8; font-size:10px; letter-spacing:.04em; text-transform:none;
+}
+.account-profile-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:10px;
+}
 .account-save{
   display:flex; align-items:center; justify-content:space-between; gap:12px;
   padding:12px 14px; border-radius:14px;
@@ -947,14 +971,14 @@ body.map-tourist .account-btn.connected{
   text-shadow:0 1px 4px rgba(0,0,0,.6);
   font:10px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px);
-  pointer-events:none; white-space:pre-wrap;
+  pointer-events:none;
 }
 .debug-panel[hidden]{ display:none; }
 .debug-panel .debug-head{
   font:600 9px/1 Inter, sans-serif; letter-spacing:.16em; text-transform:uppercase;
   color:rgba(198,244,50,.7); margin-bottom:5px;
 }
-.debug-panel pre{ margin:0; font:inherit; }
+.debug-panel pre{ margin:0; font:inherit; white-space:pre-wrap; }
 
 /* ---------- TURISTICKÁ MAPA – VYŠŠIE KRYTIE PRVKOV PRE ČITATEĽNOSŤ ---------- */
 body.map-tourist .leaflet-control-attribution{
@@ -1033,7 +1057,7 @@ body.map-tourist .help-btn:hover{
   body.workout-active{ --profile-h:258px; }
   .help-btn{ right:10px; bottom:calc(var(--profile-h) + 28px); width:38px; height:38px; }
   #btnHelp{ left:10px; right:auto; }
-  .side-actions{ right:10px; }
+  .side-actions{ right:10px; gap:6px; }
   .side-actions .help-btn{ left:auto; right:auto; bottom:auto; }
   .map-switch{ right:10px; bottom:calc(var(--profile-h) + 28px); height:38px; }
   .map-btn{ height:28px; padding:0 8px; }
