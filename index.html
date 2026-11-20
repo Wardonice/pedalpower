@@ -216,7 +216,7 @@
 
   /* ---------- MAP SWITCH ---------- */
   .map-switch{
-    position:fixed; left:14px; bottom:calc(var(--profile-h) + 30px); z-index:950;
+    position:fixed; right:14px; bottom:calc(var(--profile-h) + 30px); z-index:950;
     display:flex; align-items:center; gap:2px; height:40px; padding:4px;
     background:rgba(11,15,21,.34); border:1px solid rgba(255,255,255,.14);
     border-radius:13px;
@@ -490,16 +490,16 @@
   .help-btn svg{ width:16px; height:16px; flex:0 0 auto; filter:drop-shadow(0 1px 4px rgba(0,0,0,.4)); }
   /* Modifikátor musí byť až za základným .help-btn – inak ho prepíše
      rovnakou špecificitou (jedna trieda) a tlačidlá sa prekryjú. */
+  #btnHelp{ left:14px; right:auto; }
   .side-actions{
     position:fixed; right:14px; top:calc(50% - var(--profile-h) / 4);
     transform:translateY(-50%); z-index:950;
     display:flex; flex-direction:column; align-items:flex-end; gap:8px;
   }
   .side-actions .help-btn{
-    position:relative; right:auto; bottom:auto;
+    position:relative; left:auto; right:auto; bottom:auto;
   }
   .workout-btn{
-    bottom:calc(var(--profile-h) + 126px);
     border-color:rgba(198,244,50,.28); color:#dcff79;
   }
   .workout-btn:hover{
@@ -1016,7 +1016,8 @@
     :root{ --profile-h:156px; }
     body.workout-active{ --profile-h:282px; }
     #hud{ top:60px; width:calc(100vw - 24px); }
-    .map-switch{ left:12px; bottom:calc(var(--profile-h) + 30px); }
+    .map-switch{ right:12px; bottom:calc(var(--profile-h) + 30px); }
+    #btnHelp{ left:12px; right:auto; }
     .toolbar{ top:12px; right:12px; flex-direction:row; gap:7px; }
     .tool-btn{ width:40px; height:38px; padding:0; justify-content:center; }
     .tool-btn-weight{ width:auto; padding:0 10px; }
@@ -1038,12 +1039,12 @@
     :root{ --profile-h:146px; }
     body.workout-active{ --profile-h:258px; }
     .help-btn{ right:10px; bottom:calc(var(--profile-h) + 28px); width:38px; height:38px; }
+    #btnHelp{ left:10px; right:auto; }
     .side-actions{ right:10px; }
-    .side-actions .help-btn{ right:auto; bottom:auto; }
-    .map-switch{ left:10px; bottom:calc(var(--profile-h) + 28px); height:38px; }
+    .side-actions .help-btn{ left:auto; right:auto; bottom:auto; }
+    .map-switch{ right:10px; bottom:calc(var(--profile-h) + 28px); height:38px; }
     .map-btn{ height:28px; padding:0 8px; }
     .account-btn{ bottom:calc(var(--profile-h) + 72px); }
-    .workout-btn{ bottom:calc(var(--profile-h) + 116px); }
     .help-card{ max-height:calc(100vh - 24px); padding:18px 18px 15px; }
     .account-card{ max-height:calc(100vh - 24px); padding:18px 18px 15px; }
     .workout-card{ max-height:calc(100vh - 24px); padding:18px 18px 15px; }
@@ -1244,6 +1245,15 @@
     </svg>
     <span class="help-label">Jazdy</span>
   </button>
+  <button id="btnWorkout" class="help-btn workout-btn" type="button" title="Workout – intervalový tréning" aria-haspopup="dialog">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="13" r="7.5"/>
+      <path d="M12 9v4l2.6 2.6"/>
+      <path d="M9 2h6"/>
+      <path d="M12 2v2.5"/>
+    </svg>
+    <span class="help-label">Workout</span>
+  </button>
 </div>
 
 <button id="btnHelp" class="help-btn" type="button" title="Nápoveda – návod na ovládanie" aria-haspopup="dialog">
@@ -1253,16 +1263,6 @@
     <path d="M12 17.4h.01"/>
   </svg>
   <span class="help-label">Nápoveda</span>
-</button>
-
-<button id="btnWorkout" class="help-btn workout-btn" type="button" title="Workout – intervalový tréning" aria-haspopup="dialog">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <circle cx="12" cy="13" r="7.5"/>
-    <path d="M12 9v4l2.6 2.6"/>
-    <path d="M9 2h6"/>
-    <path d="M12 2v2.5"/>
-  </svg>
-  <span class="help-label">Workout</span>
 </button>
 
 <button id="btnAccount" class="help-btn account-btn" type="button" title="Konto – prihlásenie a správa účtu" aria-haspopup="dialog">
@@ -1508,7 +1508,7 @@
 
       <section class="help-section">
         <div class="help-section-head"><span class="help-step">5</span><h3>Mapa</h3></div>
-        <p>Vľavo dole prepínaš medzi <strong>Turistickou</strong> a <strong>Satelitnou</strong> mapou. Počas jazdy sa mapa automaticky centruje na tvoju značku. Keď trenažér stojí, mapa zostane na mieste a môžeš ju voľne posúvať a približovať. Koliesko myši zoomuje po väčších celých krokoch.</p>
+        <p>Vpravo dole prepínaš medzi <strong>Turistickou</strong> a <strong>Satelitnou</strong> mapou. Počas jazdy sa mapa automaticky centruje na tvoju značku. Keď trenažér stojí, mapa zostane na mieste a môžeš ju voľne posúvať a približovať. Koliesko myši zoomuje po väčších celých krokoch.</p>
       </section>
 
       <section class="help-section">
@@ -1524,7 +1524,7 @@
 
       <section class="help-section">
         <div class="help-section-head"><span class="help-step">8</span><h3>Workout – intervalový tréning</h3></div>
-        <p>Tlačidlom <strong>Workout</strong> vpravo dole otvoríš ponuku intervalových tréningov. Vyber tréning, zadaj svoje <strong>FTP</strong> a zapni <strong>ERG režim</strong>. Tréning potrebuje načítanú GPX trasu – mapa aj výškový profil fungujú ako pri voľnej jazde, ale sklon trasy odpor neovláda.</p>
+        <p>Tlačidlom <strong>Workout</strong> vpravo v strede otvoríš ponuku intervalových tréningov. Vyber tréning, zadaj svoje <strong>FTP</strong> a zapni <strong>ERG režim</strong>. Tréning potrebuje načítanú GPX trasu – mapa aj výškový profil fungujú ako pri voľnej jazde, ale sklon trasy odpor neovláda.</p>
         <ul class="help-list">
           <li><strong>ERG</strong> – trenažér drží cieľový výkon v každej fáze tréningu.</li>
           <li><strong>Guide</strong> – bez ERG alebo bez trenažéra sa cieľový výkon iba zobrazuje.</li>
