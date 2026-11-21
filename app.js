@@ -316,12 +316,11 @@ const el = {
   adTime: $('adTime'),
   adDistance: $('adDistance'),
   adAvgPower: $('adAvgPower'),
-  adAvgWkg: $('adAvgWkg'),
   adNp: $('adNp'),
-  adNpWkg: $('adNpWkg'),
   adAvgHr: $('adAvgHr'),
   adAscent: $('adAscent'),
   adCalories: $('adCalories'),
+  adParamsLabel: $('adParamsLabel'),
   adWeight: $('adWeight'),
 
   btnAccount: $('btnAccount'),
@@ -2378,16 +2377,23 @@ function renderActivityDetail() {
 
   el.adTime.textContent = formatTime(item.duration_s || 0);
   el.adDistance.innerHTML = `${formatKm((item.distance_m || 0) / 1000, 2)} <small>km</small>`;
-  el.adAvgPower.innerHTML = `${avgPower} <small>W</small>`;
-  el.adAvgWkg.textContent = `${(avgPower / weight).toFixed(2)} W/kg`;
-  el.adNp.innerHTML = `${npPower} <small>W</small>`;
-  el.adNpWkg.textContent = `${(npPower / weight).toFixed(2)} W/kg`;
+  el.adAvgPower.innerHTML = `${avgPower} <small>W</small><span class="ad-inline-sub">· ${(avgPower / weight).toFixed(2)} W/kg</span>`;
+  el.adNp.innerHTML = `${npPower} <small>W</small><span class="ad-inline-sub">· ${(npPower / weight).toFixed(2)} W/kg</span>`;
   el.adAvgHr.innerHTML = hasHr ? `${Math.round(Number(item.avg_hr))} <small>bpm</small>` : '--';
   el.adAscent.innerHTML = `+${Math.round(item.ascent_m || 0)} <small>m</small>`;
   el.adCalories.innerHTML = `${Math.round(item.calories || 0)} <small>kcal</small>`;
-  el.adWeight.innerHTML = Number(item.weight_kg) > 0
-    ? `${Number(item.weight_kg).toFixed(1).replace(/\.0$/, '')} <small>kg</small>`
+
+  const weightText = Number(item.weight_kg) > 0
+    ? Number(item.weight_kg).toFixed(1).replace(/\.0$/, '')
     : '--';
+  const ftpVal = Number(item.ftp_w);
+  const hasFtp = Number.isFinite(ftpVal) && ftpVal > 0;
+  if (el.adParamsLabel) {
+    el.adParamsLabel.textContent = hasFtp ? 'Hmotnosť · FTP' : 'Hmotnosť';
+  }
+  el.adWeight.innerHTML = hasFtp
+    ? `${weightText} <small>kg</small><span class="ad-inline-sub">·</span> ${Math.round(ftpVal)} <small>W</small>`
+    : (weightText === '--' ? '--' : `${weightText} <small>kg</small>`);
 }
 
 function selectActivityDetail(id) {
@@ -2651,11 +2657,19 @@ async function refreshSavedActivities() {
   renderSavedActivities();
 
   try {
-    const { data, error } = await supa
+    let { data, error } = await supa
       .from(ACTIVITIES_TABLE)
-      .select('id, name, duration_s, distance_m, ascent_m, calories, avg_power_w, np_w, avg_hr, weight_kg, created_at')
+      .select('id, name, duration_s, distance_m, ascent_m, calories, avg_power_w, np_w, avg_hr, weight_kg, ftp_w, created_at')
       .eq('user_id', accountUser.id)
       .order('created_at', { ascending: false });
+
+    if (error && /ftp_w/i.test(String(error.message || ''))) {
+      ({ data, error } = await supa
+        .from(ACTIVITIES_TABLE)
+        .select('id, name, duration_s, distance_m, ascent_m, calories, avg_power_w, np_w, avg_hr, weight_kg, created_at')
+        .eq('user_id', accountUser.id)
+        .order('created_at', { ascending: false }));
+    }
 
     if (error) throw error;
     savedActivities = Array.isArray(data) ? data : [];
@@ -2697,10 +2711,15 @@ async function saveCurrentActivity() {
       avg_power_w: Math.max(0, Math.round(summary.avgPowerW)),
       np_w: Math.max(0, Math.round(summary.npW)),
       avg_hr: summary.avgHr === null || summary.avgHr === undefined ? null : Math.round(summary.avgHr),
-      weight_kg: summary.weightKg || null
+      weight_kg: summary.weightKg || null,
+      ftp_w: state.workoutSummaryName ? Math.round(state.ftp) : null
     };
 
-    const { error } = await supa.from(ACTIVITIES_TABLE).insert(payload);
+    let { error } = await supa.from(ACTIVITIES_TABLE).insert(payload);
+    if (error && /ftp_w/i.test(String(error.message || ''))) {
+      const { ftp_w, ...fallbackPayload } = payload;
+      ({ error } = await supa.from(ACTIVITIES_TABLE).insert(fallbackPayload));
+    }
     if (error) throw error;
 
     state.lastSavedRideSeconds = summary.durationS;

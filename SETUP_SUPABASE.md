@@ -81,8 +81,12 @@ create table if not exists public.activities (
   np_w integer not null default 0,
   avg_hr integer,
   weight_kg numeric(5, 1),
+  ftp_w integer,
   created_at timestamptz not null default now()
 );
+
+-- Ak už tabuľku activities máš vytvorenú, doplň iba chýbajúci stĺpec:
+alter table public.activities add column if not exists ftp_w integer;
 
 create index if not exists activities_user_created_idx
   on public.activities (user_id, created_at desc);

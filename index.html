@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.1/dist/maplibre-gl.css" integrity="sha384-uTttxo/aOKbdE5RlD/SPzSDoDmNvGlUYPjONi2MN/b7c9HPSvW07OIuyP7uL6jxK" crossorigin="anonymous">
 
-<link rel="stylesheet" href="styles.css?v=18">
+<link rel="stylesheet" href="styles.css?v=19">
 </head>
 
 <body>
@@ -355,7 +355,7 @@
         </div>
 
         <div class="stat-box highlight">
-          <div class="stat-label">Normalized Power</div>
+          <div class="stat-label">Normalizovaný výkon</div>
           <div class="stat-val-line">
             <span id="statNp" class="stat-val tabular">0</span>
             <span class="stat-unit">W</span>
@@ -468,7 +468,7 @@
 
       <section class="help-section">
         <div class="help-section-head"><span class="help-step">9</span><h3>Ukončenie jazdy a štatistiky</h3></div>
-        <p>Tlačidlo <strong>Ukončiť</strong> zobrazí čas, prejdené kilometre, nastúpané metre, spálené kalórie, priemerný výkon, Normalized Power a priemerný tep.</p>
+        <p>Tlačidlo <strong>Ukončiť</strong> zobrazí čas, prejdené kilometre, nastúpané metre, spálené kalórie, priemerný výkon, normalizovaný výkon a priemerný tep.</p>
         <p>Kalórie sa odhadujú z mechanického výkonu pri uvažovanej efektivite bicyklovania 24 %.</p>
         <ul class="help-list">
           <li><strong>Pokračovať v jazde</strong> – zavrie štatistiky a pokračuješ ďalej.</li>
@@ -662,34 +662,32 @@
                 <span class="ad-label">Čas jazdy</span>
                 <b id="adTime" class="ad-val tabular">00:00</b>
               </div>
-              <div class="ad-box">
-                <span class="ad-label">Vzdialenosť</span>
-                <b id="adDistance" class="ad-val tabular">0.0 <small>km</small></b>
-              </div>
               <div class="ad-box ad-box-accent">
                 <span class="ad-label">Priemerný výkon</span>
                 <b id="adAvgPower" class="ad-val tabular">0 <small>W</small></b>
-                <span id="adAvgWkg" class="ad-sub tabular">0.00 W/kg</span>
+              </div>
+              <div class="ad-box">
+                <span class="ad-label">Vzdialenosť</span>
+                <b id="adDistance" class="ad-val tabular">0.00 <small>km</small></b>
               </div>
               <div class="ad-box ad-box-accent">
-                <span class="ad-label">Normalized Power</span>
+                <span class="ad-label">Normalizovaný výkon</span>
                 <b id="adNp" class="ad-val tabular">0 <small>W</small></b>
-                <span id="adNpWkg" class="ad-sub tabular">0.00 W/kg</span>
+              </div>
+              <div class="ad-box">
+                <span class="ad-label">Nastúpané</span>
+                <b id="adAscent" class="ad-val tabular">+0 <small>m</small></b>
               </div>
               <div class="ad-box ad-box-hr">
                 <span class="ad-label">Priemerný tep</span>
                 <b id="adAvgHr" class="ad-val tabular">--</b>
               </div>
               <div class="ad-box">
-                <span class="ad-label">Nastúpané</span>
-                <b id="adAscent" class="ad-val tabular">+0 <small>m</small></b>
-              </div>
-              <div class="ad-box">
                 <span class="ad-label">Energia</span>
                 <b id="adCalories" class="ad-val tabular">0 <small>kcal</small></b>
               </div>
               <div class="ad-box">
-                <span class="ad-label">Hmotnosť</span>
+                <span id="adParamsLabel" class="ad-label">Hmotnosť</span>
                 <b id="adWeight" class="ad-val tabular">-- <small>kg</small></b>
               </div>
             </div>
@@ -778,6 +776,6 @@
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.1/dist/maplibre-gl.js" integrity="sha384-nXMl9YiLoSG5KBPTFgvxVuIqQQcqIvo0bFrvoEaGJC6r7IibIzF1S36Zbf/sKBtL" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" integrity="sha384-JUh163oCRItcbPme8pYnROHQMC6fNKTBWtRG3I3I0erJkzNgL7uxKlNwcrcFKeqF" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js" integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ" crossorigin="anonymous"></script>
-<script src="app.js?v=20"></script>
+<script src="app.js?v=21"></script>
 </body>
 </html>
