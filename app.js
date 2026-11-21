@@ -771,8 +771,15 @@ const riderMarker = new maplibregl.Marker({
 }).setLngLat([19.6, 48.85]);
 
 let riderMarkerAdded = false;
+let lastRiderLat = null;
+let lastRiderLon = null;
 function setRiderPosition(lat, lon, ensureAdded = false) {
-  riderMarker.setLngLat([lon, lat]);
+  const moved = lat !== lastRiderLat || lon !== lastRiderLon;
+  if (moved) {
+    lastRiderLat = lat;
+    lastRiderLon = lon;
+    riderMarker.setLngLat([lon, lat]);
+  }
   if (ensureAdded && !riderMarkerAdded) {
     riderMarker.addTo(map);
     riderMarkerAdded = true;
@@ -4997,11 +5004,14 @@ function renderHUD(now = performance.now()) {
   updateGradeChip(state.route ? state.currentGrade : 0);
 }
 
+let lastChartKm = null;
 function updateChartMarker(force = false) {
   if (!profileChart) return;
+  if (!force && lastChartKm !== null && Math.abs(state.profileKm - lastChartKm) < 0.0005) return;
   const now = performance.now();
   if (!force && now - lastChartUpdateAt < 450) return;
   lastChartUpdateAt = now;
+  lastChartKm = state.profileKm;
   profileChart.update('none');
 }
 
@@ -5051,6 +5061,12 @@ function tick(now) {
   const speed = bikeAlive ? Math.max(0, state.speed) : 0;
   const power = bikeAlive ? Math.max(0, state.power) : 0;
   const moving = bikeAlive && (speed > 0.8 || power > 10);
+
+  if (!moving && !trainer && !heartRateSensor && !state.workoutActive) {
+    if (Math.abs((state.currentGrade || 0) - (state.targetGrade || 0)) < 0.01) {
+      return;
+    }
+  }
 
   if (state.hr !== null && Number.isFinite(state.hr) && state.hr > 0) {
     state.hrAllSum += state.hr * dt;
