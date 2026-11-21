@@ -1641,29 +1641,35 @@ function resetRideStats(fitMap = true) {
 function setRouteStart(distanceM) {
   if (!state.route) return;
   if (state.workoutActive) {
-    showToast('Počas tréningu sa štart nedá meniť.', 'info', 3500);
+    showToast('Počas tréningu sa poloha na trase nedá meniť.', 'info', 3500);
     return;
   }
 
   const maxStart = Math.max(0, state.route.totalM - 50);
-  const startM = clamp(distanceM, 0, maxStart);
-  const startKm = startM / 1000;
+  const targetM = clamp(distanceM, 0, maxStart);
+  const targetKm = targetM / 1000;
+  const hasRideProgress = state.rideM > 0 || state.rideSeconds > 0;
 
-  if (state.rideM > 20) {
-    const answer = window.confirm(
-      `Presunúť štart na ${formatKm(startKm, 2)} km?\n\nAktuálna jazda (${formatKm(state.rideM / 1000, 2)} km) sa vynuluje a kilometre sa budú počítať od nového bodu.`
-    );
-    if (!answer) return;
-  }
+  state.startM = targetM;
+  state.routeTravelBaseM = state.rideM;
+  state.routeFinished = false;
+  state.profileKm = targetKm;
 
-  state.startM = startM;
-  resetRideStats(false);
+  const sample = sampleRoute(targetM);
+  const targetGrade = clamp(sample ? sample.grade : 0, GRADE_MIN, GRADE_MAX);
+  state.lastEle = sample && Number.isFinite(sample.ele) ? sample.ele : null;
+  state.currentGrade = targetGrade;
+  state.targetGrade = targetGrade;
 
-  const sample = sampleRoute(startM);
   if (sample) {
     setRiderPosition(sample.lat, sample.lon, true);
     flyToRider([sample.lat, sample.lon]);
+    lastFollowAt = Date.now();
   }
+
+  updateGradeChip(state.currentGrade);
+  renderHUD();
+  updateChartMarker(true);
 
   if (trainer) {
     lastSimGrade = null;
@@ -1672,9 +1678,11 @@ function setRouteStart(distanceM) {
   }
 
   showToast(
-    `Štart presunutý na ${formatKm(startKm, 2)} km. Prejdené km a štatistiky sa počítajú až od tohto bodu.`,
+    hasRideProgress
+      ? `Poloha presunutá na ${formatKm(targetKm, 2)} km · štatistiky jazdy pokračujú.`
+      : `Štart presunutý na ${formatKm(targetKm, 2)} km.`,
     'success',
-    5200
+    4200
   );
 }
 
