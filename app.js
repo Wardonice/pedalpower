@@ -599,9 +599,15 @@ let lastFollowAt = 0;
 let lastUserInteractAt = 0;
 
 try {
-  map3dEnabled = localStorage.getItem(MAP_3D_KEY) === '1';
-  mapHeadingEnabled = localStorage.getItem(MAP_HEADING_KEY) === '1';
-} catch (_) {}
+  // Predvolene (pri prvej návšteve) je mapa 3D v režime Smer; neskôr platí posledná voľba.
+  const stored3d = localStorage.getItem(MAP_3D_KEY);
+  const storedHeading = localStorage.getItem(MAP_HEADING_KEY);
+  map3dEnabled = stored3d === null ? true : stored3d === '1';
+  mapHeadingEnabled = storedHeading === null ? true : storedHeading === '1';
+} catch (_) {
+  map3dEnabled = true;
+  mapHeadingEnabled = true;
+}
 
 const map = new maplibregl.Map({
   container: 'map',
@@ -1695,9 +1701,10 @@ function openGpxPicker() {
 
 /* Ukážková trasa uložená v externom súbore demo.gpx – načíta sa tlačidlom „Nahrať ukážkové GPX“. */
 let demoRouteCache = '';
-async function loadDemoRoute() {
+async function loadDemoRoute(options) {
+  const silent = Boolean(options && options.silent === true);
   if (state.workoutActive) {
-    showToast('Počas tréningu sa trasa nedá meniť. Najprv tréning ukonči.', 'info', 4000);
+    if (!silent) showToast('Počas tréningu sa trasa nedá meniť. Najprv tréning ukonči.', 'info', 4000);
     return false;
   }
 
@@ -1707,7 +1714,7 @@ async function loadDemoRoute() {
 
     let gpxText = demoRouteCache;
     if (!gpxText) {
-      const response = await fetch('demo.gpx');
+      const response = await fetch('demo.gpx', { cache: 'no-cache' });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status} pri načítaní demo.gpx`);
       }
@@ -1719,11 +1726,13 @@ async function loadDemoRoute() {
     route.name = 'Ukážková trasa';
     route.isDemo = true;
     applyRoute(route, gpxText, 'demo.gpx');
-    showToast(
-      `Ukážková trasa načítaná · ${formatKm(route.totalM / 1000, 1)} km · +${Math.round(route.ascentM)} m. Kliknutím na profil zvolíš iný štart.`,
-      'success',
-      6000
-    );
+    if (!silent) {
+      showToast(
+        `Ukážková trasa načítaná · ${formatKm(route.totalM / 1000, 1)} km · +${Math.round(route.ascentM)} m. Kliknutím na profil zvolíš iný štart.`,
+        'success',
+        6000
+      );
+    }
     return true;
   } catch (error) {
     console.error('Demo GPX:', error);
@@ -5128,6 +5137,8 @@ updateGradeChip(0);
 updateAuthLocks();
 initAccount();
 
+// Pri načítaní stránky sa hneď nahrá ukážková trasa (mapa je 3D / satelitná / Smer).
+loadDemoRoute({ silent: true });
 setTimeout(() => {
   map.resize();
   if (!state.route) fitSlovakiaOnMap();
