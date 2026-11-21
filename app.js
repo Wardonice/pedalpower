@@ -1854,6 +1854,54 @@ function applyRiderWeight(weight) {
   renderHUD();
 }
 
+let profileSyncTimer = null;
+let profilePendingWeightAt = 0;
+let profilePendingFtpAt = 0;
+
+function cancelProfileAccountSync() {
+  if (profileSyncTimer) {
+    clearTimeout(profileSyncTimer);
+    profileSyncTimer = null;
+  }
+  profilePendingWeightAt = 0;
+  profilePendingFtpAt = 0;
+}
+
+function scheduleProfileAccountSync(kind, updatedAt) {
+  if (!supa || !accountUser) return;
+  if (kind === 'weight') profilePendingWeightAt = updatedAt;
+  if (kind === 'ftp') profilePendingFtpAt = updatedAt;
+
+  if (profileSyncTimer) clearTimeout(profileSyncTimer);
+  profileSyncTimer = setTimeout(async () => {
+    profileSyncTimer = null;
+    if (!supa || !accountUser) return;
+    const weightAt = profilePendingWeightAt;
+    const ftpAt = profilePendingFtpAt;
+    profilePendingWeightAt = 0;
+    profilePendingFtpAt = 0;
+
+    try {
+      const meta = accountUser && accountUser.user_metadata ? accountUser.user_metadata : {};
+      const nextData = { ...meta };
+      if (weightAt) {
+        nextData[RIDER_WEIGHT_META_KEY] = state.weight;
+        nextData[RIDER_WEIGHT_META_UPDATED_KEY] = new Date(weightAt).toISOString();
+      }
+      if (ftpAt) {
+        nextData[FTP_META_KEY] = state.ftp;
+        nextData[FTP_META_UPDATED_KEY] = new Date(ftpAt).toISOString();
+      }
+      const { data, error } = await supa.auth.updateUser({ data: nextData });
+      if (error) throw error;
+      if (data && data.user) accountUser = data.user;
+    } catch (error) {
+      console.error('Uloženie profilu do účtu:', error);
+      showToast(`Profil sa nepodarilo uložiť do účtu: ${accountErrorMessage(error)}`, 'error', 6500);
+    }
+  }, 1200);
+}
+
 function setRiderWeight(value, save = true) {
   const normalized = normalizeRiderWeight(value);
   if (normalized === null) return false;
@@ -1866,7 +1914,7 @@ function setRiderWeight(value, save = true) {
   if (save) {
     const now = Date.now();
     storeRiderWeightLocally(normalized, now);
-    if (supa && accountUser) saveRiderWeightToAccount(normalized, now);
+    scheduleProfileAccountSync('weight', now);
   }
   return true;
 }
@@ -1980,7 +2028,7 @@ function setFtp(value, save = true) {
   if (save) {
     const now = Date.now();
     storeFtpLocally(normalized, now);
-    if (supa && accountUser) saveFtpToAccount(normalized, now);
+    scheduleProfileAccountSync('ftp', now);
   }
   return true;
 }
@@ -2511,6 +2559,7 @@ function setAccountUser(user) {
     state.routeSavedId = null;
   }
   if (!accountUser) {
+    cancelProfileAccountSync();
     if (wasViewingActivity && el.finishModal.classList.contains('open')) {
       closeFinishModal();
     }
@@ -5150,7 +5199,7 @@ function saveProfileWeightInput() {
   syncProfileInputs();
   renderHUD();
   showToast(`Hmotnosť jazdca: ${value} kg`, 'info', 2200);
-  if (supa && accountUser) saveRiderWeightToAccount(value, now);
+  scheduleProfileAccountSync('weight', now);
 }
 
 function saveProfileFtpInput() {
