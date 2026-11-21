@@ -744,7 +744,7 @@ const map = new maplibregl.Map({
           'circle-radius': 5.5,
           'circle-stroke-color': '#081017',
           'circle-stroke-width': 2,
-          'circle-color': ['match', ['get', 'kind'], 'end', '#c6f432', '#ffffff']
+          'circle-color': ['match', ['get', 'kind'], 'end', '#ef4444', '#ffffff']
         }
       }
     ]
