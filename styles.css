@@ -255,8 +255,13 @@ img,svg,canvas{ display:block; }
 @media (min-width:1280px){ .tool-label{ display:inline; } }
 
 /* ---------- MAP SWITCH ---------- */
-.map-switch{
+.map-controls{
   position:fixed; right:14px; bottom:calc(var(--profile-h) + 34px); z-index:950;
+  display:flex; flex-direction:column; align-items:flex-end; gap:8px;
+}
+.map-view-row{ display:flex; align-items:center; gap:8px; }
+.map-switch{
+  position:relative;
   display:flex; align-items:center; gap:2px; height:40px; padding:4px;
   background:rgba(11,15,21,.34); border:1px solid rgba(255,255,255,.14);
   border-radius:13px;
@@ -264,6 +269,27 @@ img,svg,canvas{ display:block; }
   -webkit-backdrop-filter:blur(22px) saturate(155%);
   backdrop-filter:blur(22px) saturate(155%);
 }
+.map-pill{
+  display:inline-flex; align-items:center; gap:7px;
+  height:36px; padding:0 13px; border-radius:12px; cursor:pointer;
+  background:rgba(11,15,21,.34); border:1px solid rgba(255,255,255,.14);
+  color:rgba(255,255,255,.82); font-size:10px; font-weight:600;
+  letter-spacing:.08em; text-transform:uppercase;
+  text-shadow:0 1px 6px rgba(0,0,0,.45);
+  box-shadow:0 6px 20px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.1);
+  -webkit-backdrop-filter:blur(22px) saturate(155%);
+  backdrop-filter:blur(22px) saturate(155%);
+  transition:background .2s, border-color .2s, color .2s, transform .12s;
+}
+.map-pill svg{ width:14px; height:14px; flex:0 0 auto; }
+.map-pill:hover{ background:rgba(22,28,36,.50); border-color:rgba(255,255,255,.26); color:#fff; }
+.map-pill:active{ transform:translateY(1px); }
+.map-pill.active{
+  background:rgba(198,244,50,.18); border-color:rgba(198,244,50,.42); color:#dcff79;
+}
+body.map-tourist .map-pill{ background:rgba(11,15,21,.76); }
+body.map-tourist .map-pill:hover{ background:rgba(22,28,36,.88); }
+body.map-tourist .map-pill.active{ background:rgba(40,56,18,.86); }
 .map-btn{
   display:inline-flex; align-items:center; gap:6px;
   height:30px; padding:0 10px; border:0; border-radius:9px;
@@ -1261,7 +1287,7 @@ body.map-tourist .workout-panel{
   :root{ --profile-h:156px; }
   #hud{ top:60px; width:calc(100vw - 24px); }
   .workout-panel{ left:12px; bottom:calc(var(--profile-h) + 12px); width:min(336px, calc(100vw - 24px)); }
-  .map-switch{ right:12px; bottom:calc(var(--profile-h) + 34px); }
+  .map-controls{ right:12px; bottom:calc(var(--profile-h) + 34px); }
   #btnHelp{ left:12px; right:auto; }
   .toolbar{ top:12px; right:12px; flex-direction:row; gap:7px; }
   .account-btn{ order:10; }
@@ -1287,7 +1313,9 @@ body.map-tourist .workout-panel{
   #btnHelp{ left:10px; right:auto; }
   .side-actions{ right:10px; gap:6px; }
   .side-actions .help-btn{ left:auto; right:auto; bottom:auto; }
-  .map-switch{ right:10px; bottom:calc(var(--profile-h) + 32px); height:38px; }
+  .map-controls{ right:10px; bottom:calc(var(--profile-h) + 32px); }
+  .map-switch{ height:38px; }
+  .map-pill{ height:34px; padding:0 11px; }
   .map-btn{ height:28px; padding:0 8px; }
   .help-card{ max-height:calc(100vh - 24px); padding:18px 18px 15px; }
   .account-card{ max-height:calc(100vh - 24px); padding:18px 18px 15px; }
