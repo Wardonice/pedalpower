@@ -278,14 +278,8 @@ const el = {
   activitiesModal: $('activitiesModal'),
   btnCloseActivities: $('btnCloseActivities'),
   btnCloseActivitiesAction: $('btnCloseActivitiesAction'),
-  activitySummary: $('activitySummary'),
-  activityTotalCount: $('activityTotalCount'),
-  activityTotalKm: $('activityTotalKm'),
-  activityTotalAscent: $('activityTotalAscent'),
   activityDetailEmpty: $('activityDetailEmpty'),
   activityDetailContent: $('activityDetailContent'),
-  adName: $('adName'),
-  adDate: $('adDate'),
   adTime: $('adTime'),
   adDistance: $('adDistance'),
   adAvgPower: $('adAvgPower'),
@@ -2245,8 +2239,13 @@ function formatActivityDate(iso) {
 
 function buildActivityItem(item) {
   const row = document.createElement('div');
-  row.className = 'account-item';
+  row.className = 'account-item activity-item';
+  row.tabIndex = 0;
+  row.setAttribute('role', 'button');
+  row.setAttribute('aria-pressed', String(item.id === selectedActivityId));
   if (item.id === selectedActivityId) row.classList.add('is-selected');
+
+  const weight = Number(item.weight_kg) > 0 ? Number(item.weight_kg) : (state.weight || 75);
 
   const main = document.createElement('div');
   main.className = 'account-item-main';
@@ -2254,19 +2253,18 @@ function buildActivityItem(item) {
   const top = document.createElement('div');
   top.className = 'activity-row-top';
 
-  const name = document.createElement('div');
-  name.className = 'account-item-name';
-  name.textContent = item.name || 'Jazda';
-
   const dateText = formatActivityDate(item.created_at);
   if (dateText) {
     const dateEl = document.createElement('span');
     dateEl.className = 'activity-row-date';
     dateEl.textContent = dateText;
-    top.append(name, dateEl);
-  } else {
-    top.append(name);
+    top.append(dateEl);
   }
+
+  const name = document.createElement('div');
+  name.className = 'account-item-name';
+  name.textContent = item.name || 'Jazda';
+  top.append(name);
 
   const metrics = document.createElement('div');
   metrics.className = 'activity-row-metrics';
@@ -2274,7 +2272,7 @@ function buildActivityItem(item) {
   const avgPower = Math.round(Number(item.avg_power_w) || 0);
   const wSpan = document.createElement('span');
   wSpan.className = avgPower > 0 ? 'activity-metric-w' : 'activity-metric-muted';
-  wSpan.textContent = `${avgPower} W`;
+  wSpan.textContent = `${avgPower} W · ${(avgPower / weight).toFixed(2)} W/kg`;
 
   const hasHr = item.avg_hr !== null && item.avg_hr !== undefined && Number(item.avg_hr) > 0;
   const hrSpan = document.createElement('span');
@@ -2283,13 +2281,6 @@ function buildActivityItem(item) {
 
   metrics.append(wSpan, hrSpan);
   main.append(top, metrics);
-
-  const detail = document.createElement('button');
-  detail.type = 'button';
-  detail.className = 'account-item-btn';
-  detail.textContent = 'Detail';
-  detail.setAttribute('aria-pressed', String(item.id === selectedActivityId));
-  detail.addEventListener('click', () => selectActivityDetail(item.id));
 
   const rename = createRenameButton(
     'Premenovať jazdu',
@@ -2305,7 +2296,19 @@ function buildActivityItem(item) {
   remove.textContent = '×';
   remove.addEventListener('click', () => deleteSavedActivity(item.id));
 
-  row.append(main, detail, rename, remove);
+  row.addEventListener('click', (event) => {
+    if (event.target.closest('button')) return;
+    selectActivityDetail(item.id);
+  });
+  row.addEventListener('keydown', (event) => {
+    if (event.target !== row) return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      selectActivityDetail(item.id);
+    }
+  });
+
+  row.append(main, rename, remove);
   return row;
 }
 
@@ -2327,8 +2330,6 @@ function renderActivityDetail() {
   const weight = Number(item.weight_kg) > 0 ? Number(item.weight_kg) : (state.weight || 75);
   const hasHr = item.avg_hr !== null && item.avg_hr !== undefined && Number(item.avg_hr) > 0;
 
-  el.adName.textContent = item.name || 'Jazda';
-  el.adDate.textContent = formatActivityDate(item.created_at) || 'Uložená jazda';
   el.adTime.textContent = formatTime(item.duration_s || 0);
   el.adDistance.innerHTML = `${formatKm((item.distance_m || 0) / 1000, 2)} <small>km</small>`;
   el.adAvgPower.innerHTML = `${avgPower} <small>W</small>`;
@@ -2355,22 +2356,6 @@ function renderSavedActivities() {
 
   if (selectedActivityId && !savedActivities.some((item) => item.id === selectedActivityId)) {
     selectedActivityId = null;
-  }
-
-  if (el.activitySummary) {
-    const hasItems = savedActivities.length > 0;
-    el.activitySummary.hidden = !hasItems;
-    if (hasItems) {
-      let totalM = 0;
-      let totalAscent = 0;
-      for (const item of savedActivities) {
-        totalM += Number(item.distance_m) || 0;
-        totalAscent += Number(item.ascent_m) || 0;
-      }
-      el.activityTotalCount.textContent = String(savedActivities.length);
-      el.activityTotalKm.textContent = formatKm(totalM / 1000, 1);
-      el.activityTotalAscent.textContent = `+${Math.round(totalAscent)} m`;
-    }
   }
 
   el.activityError.hidden = !savedActivitiesError;
