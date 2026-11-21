@@ -257,9 +257,12 @@ img,svg,canvas{ display:block; }
 /* ---------- MAP SWITCH ---------- */
 .map-controls{
   position:fixed; right:14px; bottom:calc(var(--profile-h) + 34px); z-index:950;
-  display:flex; flex-direction:column; align-items:flex-end; gap:8px;
+  display:flex; flex-direction:column; align-items:stretch; gap:8px;
 }
-.map-view-row{ display:flex; align-items:center; gap:8px; }
+.map-view-row{ display:flex; align-items:stretch; gap:8px; }
+.map-view-row .map-pill{ flex:0 0 auto; justify-content:center; height:40px; }
+.map-view-row .map-switch{ flex:1 1 auto; }
+.map-switch .map-btn{ flex:1 1 0; justify-content:center; }
 .map-switch{
   position:relative;
   display:flex; align-items:center; gap:2px; height:40px; padding:4px;
@@ -1315,7 +1318,7 @@ body.map-tourist .workout-panel{
   .side-actions .help-btn{ left:auto; right:auto; bottom:auto; }
   .map-controls{ right:10px; bottom:calc(var(--profile-h) + 32px); }
   .map-switch{ height:38px; }
-  .map-pill{ height:34px; padding:0 11px; }
+  .map-view-row .map-pill{ height:38px; padding:0 11px; }
   .map-btn{ height:28px; padding:0 8px; }
   .help-card{ max-height:calc(100vh - 24px); padding:18px 18px 15px; }
   .account-card{ max-height:calc(100vh - 24px); padding:18px 18px 15px; }
