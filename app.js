@@ -25,6 +25,38 @@ const SIM_INTERVAL_MS = 650;
 const CP_TIMEOUT_MS = 6000;
 const CYCLING_EFFICIENCY = 0.24;
 const KJ_PER_KCAL = 4.184;
+const BIKE_WEIGHT_KG = 8.5;
+const DRIVETRAIN_EFFICIENCY = 0.975;
+const ROLLING_CRR = 0.004;
+const AIR_RHO = 1.225;
+const RIDER_CDA = 0.32;
+const VIRTUAL_SPEED_TAU_S = 2.0;
+const VIRTUAL_SPEED_MAX_MPS = 23.6; // ~85 km/h
+
+function solveCyclingSpeedMps(powerW, gradePct, riderWeightKg) {
+  const wheelPower = Math.max(0, powerW) * DRIVETRAIN_EFFICIENCY;
+  if (wheelPower <= 0.1) return 0;
+
+  const totalMass = Math.max(35, (Number(riderWeightKg) || 75) + BIKE_WEIGHT_KG);
+  const slope = clamp(Number(gradePct) || 0, GRADE_MIN, GRADE_MAX) / 100;
+  const hyp = Math.hypot(1, slope);
+  const sinT = slope / hyp;
+  const cosT = 1 / hyp;
+
+  const a = 0.5 * AIR_RHO * RIDER_CDA;
+  const b = totalMass * 9.80665 * (sinT + ROLLING_CRR * cosT);
+
+  // Riešime a*v^3 + b*v - wheelPower = 0 na [0, VIRTUAL_SPEED_MAX_MPS].
+  let lo = 0;
+  let hi = VIRTUAL_SPEED_MAX_MPS;
+  for (let i = 0; i < 30; i++) {
+    const mid = (lo + hi) * 0.5;
+    const f = a * mid * mid * mid + b * mid - wheelPower;
+    if (f < 0) lo = mid;
+    else hi = mid;
+  }
+  return (lo + hi) * 0.5;
+}
 
 /* -------------------------------------------------------------------------
    SUPABASE – KONTO A ULOŽENÉ TRASY
@@ -415,6 +447,7 @@ const state = {
   lastTotalDelta: 0,
   lastDistChangeAt: 0,
   distanceFallback: false,
+  virtualSpeedMps: 0,
   connectingTrainer: false,
   connectingHr: false,
 
@@ -1554,6 +1587,7 @@ function resetRideStats(fitMap = true) {
   state.lastTotalDelta = 0;
   state.lastDistChangeAt = 0;
   state.distanceFallback = false;
+  state.virtualSpeedMps = 0;
   state.ridePaused = false;
   state.lastSavedRideSeconds = null;
   state.lastSavedRideM = null;
@@ -3327,43 +3361,58 @@ function onIndoorBikeData(event) {
       const nowMs = performance.now();
       const prevTotal = state.lastTotalM;
 
-      if (state.trainerBaseM === null) {
-        state.trainerBaseM = totalDistanceM;
-        state.lastTotalM = totalDistanceM;
-        state.lastTotalAt = nowMs;
-      }
-
-      let delta = totalDistanceM - state.trainerBaseM;
-      if (delta < 0) {
-        state.trainerBaseM = totalDistanceM;
-        delta = 0;
-      } else if (state.lastTotalM !== null && totalDistanceM > state.lastTotalM) {
-        const dtSec = Math.max(0.05, (nowMs - state.lastTotalAt) / 1000);
-        const jump = totalDistanceM - state.lastTotalM;
-        const speedMps = Math.max(0, state.speed) / 3.6;
-        const maxJump = Math.max(20, speedMps * dtSec * 4 + 12);
-        if (jump > maxJump) {
-          state.trainerBaseM = totalDistanceM - (state.rideM - state.trainerDistOffset);
-          delta = state.rideM - state.trainerDistOffset;
-        }
-      }
-      state.lastTotalM = totalDistanceM;
-      state.lastTotalAt = nowMs;
-      state.lastTotalDistance = totalDistanceM;
-      state.lastTotalDelta = prevTotal !== null ? totalDistanceM - prevTotal : 0;
-      if (prevTotal === null || totalDistanceM !== prevTotal) {
-        state.lastDistChangeAt = nowMs;
-      }
-
-      if (state.distanceFallback) {
-        state.distanceFallback = false;
+      // Počas workoutu (ERG/Manuál) sa vzdialenosť počíta fyzikálne z výkonu a sklonu
+      // GPX trasy, nie z rýchlosti zotrvačníka – offset trenažéra iba priebežne držíme
+      // zosynchronizovaný pre prípadné plynulé pokračovanie vo voľnej jazde.
+      if (state.workoutActive) {
         state.trainerBaseM = totalDistanceM;
         state.trainerDistOffset = state.rideM;
-        delta = 0;
-      }
+        state.lastTotalM = totalDistanceM;
+        state.lastTotalAt = nowMs;
+        state.lastTotalDistance = totalDistanceM;
+        state.lastTotalDelta = prevTotal !== null ? totalDistanceM - prevTotal : 0;
+        if (prevTotal === null || totalDistanceM !== prevTotal) {
+          state.lastDistChangeAt = nowMs;
+        }
+      } else {
+        if (state.trainerBaseM === null) {
+          state.trainerBaseM = totalDistanceM;
+          state.lastTotalM = totalDistanceM;
+          state.lastTotalAt = nowMs;
+        }
 
-      const totalRideM = state.trainerDistOffset + delta;
-      if (totalRideM > state.rideM) state.rideM = totalRideM;
+        let delta = totalDistanceM - state.trainerBaseM;
+        if (delta < 0) {
+          state.trainerBaseM = totalDistanceM;
+          delta = 0;
+        } else if (state.lastTotalM !== null && totalDistanceM > state.lastTotalM) {
+          const dtSec = Math.max(0.05, (nowMs - state.lastTotalAt) / 1000);
+          const jump = totalDistanceM - state.lastTotalM;
+          const speedMps = Math.max(0, state.speed) / 3.6;
+          const maxJump = Math.max(20, speedMps * dtSec * 4 + 12);
+          if (jump > maxJump) {
+            state.trainerBaseM = totalDistanceM - (state.rideM - state.trainerDistOffset);
+            delta = state.rideM - state.trainerDistOffset;
+          }
+        }
+        state.lastTotalM = totalDistanceM;
+        state.lastTotalAt = nowMs;
+        state.lastTotalDistance = totalDistanceM;
+        state.lastTotalDelta = prevTotal !== null ? totalDistanceM - prevTotal : 0;
+        if (prevTotal === null || totalDistanceM !== prevTotal) {
+          state.lastDistChangeAt = nowMs;
+        }
+
+        if (state.distanceFallback) {
+          state.distanceFallback = false;
+          state.trainerBaseM = totalDistanceM;
+          state.trainerDistOffset = state.rideM;
+          delta = 0;
+        }
+
+        const totalRideM = state.trainerDistOffset + delta;
+        if (totalRideM > state.rideM) state.rideM = totalRideM;
+      }
     }
 
     const tickNow = performance.now();
@@ -4135,6 +4184,9 @@ function finishWorkout(reason = 'manual') {
   state.workoutPhaseElapsed = 0;
   state.workoutElapsed = 0;
   state.workoutLastBeepSecond = null;
+  state.virtualSpeedMps = 0;
+  state.trainerDistOffset = state.rideM;
+  if (state.lastTotalM !== null) state.trainerBaseM = state.lastTotalM;
 
   if (trainer) {
     if (wasErg) sendErgTargetOnce(0);
@@ -4807,7 +4859,7 @@ function updateDebugPanel() {
     `POS   ${(clampedM / 1000).toFixed(3)} km (${pct.toFixed(1)} %) · prejdené ${(state.rideM / 1000).toFixed(3)} km · štart ${(state.startM / 1000).toFixed(3)} km`,
     `SKLON trasa ${formatGrade(sample ? sample.grade : 0)} · filter ${formatGrade(state.currentGrade)}`,
     `CP    0x11 → ${cpText} (${cpAge})`,
-    `DIST  ${state.lastTotalDistance === null ? '--' : state.lastTotalDistance} m · Δ ${Math.round(state.lastTotalDelta)} m · ${state.hasTotalDistance ? 'total' : 'speed'}`,
+    `DIST  ${state.lastTotalDistance === null ? '--' : state.lastTotalDistance} m · Δ ${Math.round(state.lastTotalDelta)} m · ${state.workoutActive ? `fyzika ${(state.virtualSpeedMps * 3.6).toFixed(1)} km/h` : (state.hasTotalDistance ? 'total' : 'speed')}`,
     `BIKE  ${state.speed.toFixed(1)} km/h · ${Math.round(state.power)} W · ${Math.round(state.cadence)} rpm · HR ${state.hr === null ? '--' : Math.round(state.hr)}`
   ].join('\n');
 }
@@ -4858,7 +4910,22 @@ function tick(now) {
       state.hrMovingTime += dt;
     }
   }
-  if (integrateSpeed) {
+  if (state.workoutActive) {
+    if (moving) {
+      const routeSample = state.route ? sampleRoute(routeProgressM()) : null;
+      const routeGrade = routeSample ? routeSample.grade : 0;
+      const targetV = solveCyclingSpeedMps(power, routeGrade, state.weight);
+      if (state.virtualSpeedMps <= 0.05) {
+        state.virtualSpeedMps = targetV;
+      } else {
+        const vAlpha = 1 - Math.exp(-dt / VIRTUAL_SPEED_TAU_S);
+        state.virtualSpeedMps += (targetV - state.virtualSpeedMps) * vAlpha;
+      }
+      state.rideM += state.virtualSpeedMps * dt;
+    } else {
+      state.virtualSpeedMps = 0;
+    }
+  } else if (integrateSpeed) {
     state.distanceFallback = state.hasTotalDistance;
     state.rideM += (speed / 3.6) * dt;
   }
