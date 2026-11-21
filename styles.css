@@ -45,16 +45,12 @@ img,svg,canvas{ display:block; }
 
 /* ---------- RIDER MARKER ---------- */
 .rider-marker-wrap{ background:none; border:none; pointer-events:none; opacity:1 !important; z-index:20; }
-.rider-marker{ position:relative; width:34px; height:34px; display:grid; place-items:center; }
-.rider-pulse{
-  position:absolute; inset:0; border-radius:50%;
-  background:rgba(198,244,50,.28);
-  border:2px solid rgba(198,244,50,.75);
-}
+.rider-marker{ position:relative; width:20px; height:20px; display:grid; place-items:center; }
+.rider-pulse{ display:none; }
 .rider-core{
-  width:16px; height:16px; border-radius:50%; background:var(--accent);
-  border:3px solid #081017;
-  box-shadow:0 0 0 2px #fff, 0 0 16px rgba(198,244,50,.95);
+  width:18px; height:18px; border-radius:50%; background:var(--accent);
+  border:3px solid #fff;
+  box-shadow:0 2px 10px rgba(0,0,0,.6);
 }
 
 /* ---------- HUD (JEDNA LIŠTA O 50% VÄČŠIA) ---------- */
