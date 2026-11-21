@@ -1772,7 +1772,7 @@ async function loadDemoRoute(options) {
     }
 
     const route = parseGPX(gpxText, 'demo.gpx');
-    route.name = 'Liptovská Osada - Srekovica';
+    route.name = 'Liptovská Osada - Smrekovica';
     route.isDemo = true;
     applyRoute(route, gpxText, 'demo.gpx');
     if (!silent) {
@@ -3837,7 +3837,7 @@ function refreshWorkoutRouteNote() {
 
     const demoOpt = document.createElement('option');
     demoOpt.value = '__demo__';
-    demoOpt.textContent = 'Liptovská Osada - Srekovica (ukážková)';
+    demoOpt.textContent = 'Liptovská Osada - Smrekovica (ukážková)';
     select.appendChild(demoOpt);
 
     for (const item of savedRoutes) {
