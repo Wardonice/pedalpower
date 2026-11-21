@@ -325,8 +325,8 @@ const el = {
   adAvgHr: $('adAvgHr'),
   adAscent: $('adAscent'),
   adCalories: $('adCalories'),
-  adParamsLabel: $('adParamsLabel'),
   adWeight: $('adWeight'),
+  adFtp: $('adFtp'),
 
   btnAccount: $('btnAccount'),
   accountDot: $('accountDot'),
@@ -386,8 +386,8 @@ const el = {
   statAvgWkg: $('statAvgWkg'),
   statAvgHr: $('statAvgHr'),
   statAvgHrUnit: $('statAvgHrUnit'),
-  statParamsLabel: $('statParamsLabel'),
   statWeight: $('statWeight'),
+  statFtp: $('statFtp'),
   btnCloseModal: $('btnCloseModal'),
   btnResetRide: $('btnResetRide'),
   btnResumeRide: $('btnResumeRide'),
@@ -2419,14 +2419,12 @@ function renderActivityDetail() {
   const weightText = Number(item.weight_kg) > 0
     ? Number(item.weight_kg).toFixed(1).replace(/\.0$/, '')
     : '--';
+  el.adWeight.innerHTML = weightText === '--' ? '--' : `${weightText} <small>kg</small>`;
   const ftpVal = Number(item.ftp_w);
   const hasFtp = Number.isFinite(ftpVal) && ftpVal > 0;
-  if (el.adParamsLabel) {
-    el.adParamsLabel.textContent = hasFtp ? 'Hmotnosť · FTP' : 'Hmotnosť';
+  if (el.adFtp) {
+    el.adFtp.innerHTML = hasFtp ? `${Math.round(ftpVal)} <small>W</small>` : '--';
   }
-  el.adWeight.innerHTML = hasFtp
-    ? `${weightText} <small>kg</small><span class="ad-inline-sub">·</span> ${Math.round(ftpVal)} <small>W</small>`
-    : (weightText === '--' ? '--' : `${weightText} <small>kg</small>`);
 }
 
 function selectActivityDetail(id) {
@@ -2745,7 +2743,7 @@ async function saveCurrentActivity() {
       np_w: Math.max(0, Math.round(summary.npW)),
       avg_hr: summary.avgHr === null || summary.avgHr === undefined ? null : Math.round(summary.avgHr),
       weight_kg: summary.weightKg || null,
-      ftp_w: state.workoutSummaryName ? Math.round(state.ftp) : null
+      ftp_w: summary.ftpW ? Math.round(summary.ftpW) : Math.round(state.ftp)
     };
 
     let { error } = await supa.from(ACTIVITIES_TABLE).insert(payload);
@@ -4464,7 +4462,7 @@ function currentRideSummary() {
     npW: computeNormalizedPower(avgPowerW),
     avgHr,
     weightKg: state.weight || 75,
-    ftpW: workoutName ? Math.round(state.ftp) : null
+    ftpW: Math.round(state.ftp || FTP_DEFAULT)
   };
 }
 
@@ -4508,14 +4506,12 @@ function fillStatsView(summary) {
   const weightText = Number(summary.weightKg) > 0
     ? Number(summary.weightKg).toFixed(1).replace(/\.0$/, '')
     : '--';
-  const hasFtp = Number.isFinite(summary.ftpW) && summary.ftpW > 0;
-  if (el.statParamsLabel) {
-    el.statParamsLabel.textContent = hasFtp ? 'Hmotnosť · FTP' : 'Hmotnosť';
-  }
   if (el.statWeight) {
-    el.statWeight.innerHTML = hasFtp
-      ? `${weightText} <small>kg</small><span class="ad-inline-sub">·</span> ${Math.round(summary.ftpW)} <small>W</small>`
-      : (weightText === '--' ? '--' : `${weightText} <small>kg</small>`);
+    el.statWeight.innerHTML = weightText === '--' ? '--' : `${weightText} <small>kg</small>`;
+  }
+  const hasFtp = Number.isFinite(summary.ftpW) && summary.ftpW > 0;
+  if (el.statFtp) {
+    el.statFtp.innerHTML = hasFtp ? `${Math.round(summary.ftpW)} <small>W</small>` : '--';
   }
 }
 
