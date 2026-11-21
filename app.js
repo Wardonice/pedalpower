@@ -282,6 +282,20 @@ const el = {
   activityTotalCount: $('activityTotalCount'),
   activityTotalKm: $('activityTotalKm'),
   activityTotalAscent: $('activityTotalAscent'),
+  activityDetailEmpty: $('activityDetailEmpty'),
+  activityDetailContent: $('activityDetailContent'),
+  adName: $('adName'),
+  adDate: $('adDate'),
+  adTime: $('adTime'),
+  adDistance: $('adDistance'),
+  adAvgPower: $('adAvgPower'),
+  adAvgWkg: $('adAvgWkg'),
+  adNp: $('adNp'),
+  adNpWkg: $('adNpWkg'),
+  adAvgHr: $('adAvgHr'),
+  adAscent: $('adAscent'),
+  adCalories: $('adCalories'),
+  adWeight: $('adWeight'),
 
   btnAccount: $('btnAccount'),
   accountDot: $('accountDot'),
@@ -1741,6 +1755,7 @@ let savedActivitiesLoading = false;
 let savedActivitiesError = '';
 let activityBusy = false;
 let viewingActivityId = null;
+let selectedActivityId = null;
 let accountBusy = false;
 
 function normalizeRiderWeight(value) {
@@ -2221,37 +2236,60 @@ function renderSavedRoutes() {
   }
 }
 
+function formatActivityDate(iso) {
+  if (!iso) return '';
+  const date = new Date(iso);
+  if (!Number.isFinite(date.getTime())) return '';
+  return `${date.toLocaleDateString('sk-SK')} ${date.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}`;
+}
+
 function buildActivityItem(item) {
   const row = document.createElement('div');
   row.className = 'account-item';
+  if (item.id === selectedActivityId) row.classList.add('is-selected');
 
   const main = document.createElement('div');
   main.className = 'account-item-main';
+
+  const top = document.createElement('div');
+  top.className = 'activity-row-top';
 
   const name = document.createElement('div');
   name.className = 'account-item-name';
   name.textContent = item.name || 'Jazda';
 
-  const meta = document.createElement('div');
-  meta.className = 'account-item-meta';
-  const date = item.created_at ? new Date(item.created_at) : null;
-  const dateText = date && Number.isFinite(date.getTime())
-    ? `${date.toLocaleDateString('sk-SK')} ${date.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}`
-    : '';
-  meta.textContent = [
-    formatTime(item.duration_s || 0),
-    `${formatKm((item.distance_m || 0) / 1000, 1)} km`,
-    `+${Math.round(item.ascent_m || 0)} m`,
-    dateText
-  ].filter(Boolean).join(' · ');
+  const dateText = formatActivityDate(item.created_at);
+  if (dateText) {
+    const dateEl = document.createElement('span');
+    dateEl.className = 'activity-row-date';
+    dateEl.textContent = dateText;
+    top.append(name, dateEl);
+  } else {
+    top.append(name);
+  }
 
-  main.append(name, meta);
+  const metrics = document.createElement('div');
+  metrics.className = 'activity-row-metrics';
 
-  const stats = document.createElement('button');
-  stats.type = 'button';
-  stats.className = 'account-item-btn';
-  stats.textContent = 'Štatistika';
-  stats.addEventListener('click', () => openActivityStats(item.id));
+  const avgPower = Math.round(Number(item.avg_power_w) || 0);
+  const wSpan = document.createElement('span');
+  wSpan.className = avgPower > 0 ? 'activity-metric-w' : 'activity-metric-muted';
+  wSpan.textContent = `${avgPower} W`;
+
+  const hasHr = item.avg_hr !== null && item.avg_hr !== undefined && Number(item.avg_hr) > 0;
+  const hrSpan = document.createElement('span');
+  hrSpan.className = hasHr ? 'activity-metric-hr' : 'activity-metric-muted';
+  hrSpan.textContent = hasHr ? `${Math.round(Number(item.avg_hr))} bpm` : '-- bpm';
+
+  metrics.append(wSpan, hrSpan);
+  main.append(top, metrics);
+
+  const detail = document.createElement('button');
+  detail.type = 'button';
+  detail.className = 'account-item-btn';
+  detail.textContent = 'Detail';
+  detail.setAttribute('aria-pressed', String(item.id === selectedActivityId));
+  detail.addEventListener('click', () => selectActivityDetail(item.id));
 
   const rename = createRenameButton(
     'Premenovať jazdu',
@@ -2267,14 +2305,57 @@ function buildActivityItem(item) {
   remove.textContent = '×';
   remove.addEventListener('click', () => deleteSavedActivity(item.id));
 
-  row.append(main, stats, rename, remove);
+  row.append(main, detail, rename, remove);
   return row;
+}
+
+function renderActivityDetail() {
+  if (!el.activityDetailEmpty || !el.activityDetailContent) return;
+
+  const item = savedActivities.find((activity) => activity.id === selectedActivityId);
+  if (!item) {
+    el.activityDetailEmpty.hidden = false;
+    el.activityDetailContent.hidden = true;
+    return;
+  }
+
+  el.activityDetailEmpty.hidden = true;
+  el.activityDetailContent.hidden = false;
+
+  const avgPower = Math.round(Number(item.avg_power_w) || 0);
+  const npPower = Math.round(Number(item.np_w) || 0);
+  const weight = Number(item.weight_kg) > 0 ? Number(item.weight_kg) : (state.weight || 75);
+  const hasHr = item.avg_hr !== null && item.avg_hr !== undefined && Number(item.avg_hr) > 0;
+
+  el.adName.textContent = item.name || 'Jazda';
+  el.adDate.textContent = formatActivityDate(item.created_at) || 'Uložená jazda';
+  el.adTime.textContent = formatTime(item.duration_s || 0);
+  el.adDistance.innerHTML = `${formatKm((item.distance_m || 0) / 1000, 2)} <small>km</small>`;
+  el.adAvgPower.innerHTML = `${avgPower} <small>W</small>`;
+  el.adAvgWkg.textContent = `${(avgPower / weight).toFixed(2)} W/kg`;
+  el.adNp.innerHTML = `${npPower} <small>W</small>`;
+  el.adNpWkg.textContent = `${(npPower / weight).toFixed(2)} W/kg`;
+  el.adAvgHr.innerHTML = hasHr ? `${Math.round(Number(item.avg_hr))} <small>bpm</small>` : '--';
+  el.adAscent.innerHTML = `+${Math.round(item.ascent_m || 0)} <small>m</small>`;
+  el.adCalories.innerHTML = `${Math.round(item.calories || 0)} <small>kcal</small>`;
+  el.adWeight.innerHTML = Number(item.weight_kg) > 0
+    ? `${Number(item.weight_kg).toFixed(1).replace(/\.0$/, '')} <small>kg</small>`
+    : '--';
+}
+
+function selectActivityDetail(id) {
+  selectedActivityId = id;
+  renderSavedActivities();
 }
 
 function renderSavedActivities() {
   if (!el.activityList) return;
   el.activityList.textContent = '';
   el.activityCount.textContent = String(savedActivities.length);
+
+  if (selectedActivityId && !savedActivities.some((item) => item.id === selectedActivityId)) {
+    selectedActivityId = null;
+  }
 
   if (el.activitySummary) {
     const hasItems = savedActivities.length > 0;
@@ -2306,6 +2387,8 @@ function renderSavedActivities() {
   for (const item of savedActivities) {
     el.activityList.appendChild(buildActivityItem(item));
   }
+
+  renderActivityDetail();
 }
 
 function renderAccount() {
@@ -2376,6 +2459,7 @@ function setAccountUser(user) {
     savedActivitiesError = '';
     savedActivitiesLoading = false;
     viewingActivityId = null;
+    selectedActivityId = null;
     activityBusy = false;
     accountBusy = false;
   }

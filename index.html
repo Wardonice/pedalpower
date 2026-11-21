@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.1/dist/maplibre-gl.css" integrity="sha384-uTttxo/aOKbdE5RlD/SPzSDoDmNvGlUYPjONi2MN/b7c9HPSvW07OIuyP7uL6jxK" crossorigin="anonymous">
 
-<link rel="stylesheet" href="styles.css?v=10">
+<link rel="stylesheet" href="styles.css?v=11">
 </head>
 
 <body>
@@ -611,7 +611,7 @@
 
 <!-- ================= MOJE JAZDY ================= -->
 <div id="activitiesModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="activitiesModalTitle">
-  <div class="modal-card account-card">
+  <div class="modal-card account-card activities-card">
     <div class="modal-head">
       <div>
         <div class="modal-badge"><span class="modal-badge-dot"></span>Jazdy</div>
@@ -621,7 +621,7 @@
       <button id="btnCloseActivities" class="modal-close" type="button" aria-label="Zavrieť">×</button>
     </div>
 
-    <div class="account-body">
+    <div class="activities-body">
       <div id="activitySummary" class="activity-summary" hidden>
         <div class="activity-stat">
           <div class="activity-stat-label">Spolu jázd</div>
@@ -637,15 +637,72 @@
         </div>
       </div>
 
-      <div class="account-list-head">
-        <span>Uložené jazdy</span>
-        <span id="activityCount" class="account-count">0</span>
+      <div class="activities-split">
+        <div class="activities-list-col">
+          <div class="account-list-head">
+            <span>Uložené jazdy</span>
+            <span id="activityCount" class="account-count">0</span>
+          </div>
+          <div id="activityError" class="account-error" hidden></div>
+          <div id="activityEmpty" class="account-empty">
+            Zatiaľ nemáš uložené jazdy. Ukonči jazdu tlačidlom <strong>Ukončiť</strong> a klikni na <strong>Uložiť aktivitu</strong>.
+          </div>
+          <div id="activityList" class="account-list activities-list"></div>
+        </div>
+
+        <div class="activities-detail-col">
+          <div id="activityDetailEmpty" class="activity-detail-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 12h4l3-7 4 14 3-7h4"/>
+            </svg>
+            <div class="ad-empty-title">Detail jazdy</div>
+            <p>Klikni na <strong>Detail</strong> pri ľubovoľnej jazde vľavo a zobrazia sa tu jej kompletné štatistiky.</p>
+          </div>
+
+          <div id="activityDetailContent" class="activity-detail-content" hidden>
+            <div class="ad-head">
+              <div id="adName" class="ad-name">Jazda</div>
+              <div id="adDate" class="ad-date"></div>
+            </div>
+            <div class="ad-grid">
+              <div class="ad-box">
+                <span class="ad-label">Čas jazdy</span>
+                <b id="adTime" class="ad-val tabular">00:00</b>
+              </div>
+              <div class="ad-box">
+                <span class="ad-label">Vzdialenosť</span>
+                <b id="adDistance" class="ad-val tabular">0.0 <small>km</small></b>
+              </div>
+              <div class="ad-box ad-box-accent">
+                <span class="ad-label">Priemerný výkon</span>
+                <b id="adAvgPower" class="ad-val tabular">0 <small>W</small></b>
+                <span id="adAvgWkg" class="ad-sub tabular">0.00 W/kg</span>
+              </div>
+              <div class="ad-box ad-box-accent">
+                <span class="ad-label">Normalized Power</span>
+                <b id="adNp" class="ad-val tabular">0 <small>W</small></b>
+                <span id="adNpWkg" class="ad-sub tabular">0.00 W/kg</span>
+              </div>
+              <div class="ad-box ad-box-hr">
+                <span class="ad-label">Priemerný tep</span>
+                <b id="adAvgHr" class="ad-val tabular">--</b>
+              </div>
+              <div class="ad-box">
+                <span class="ad-label">Nastúpané</span>
+                <b id="adAscent" class="ad-val tabular">+0 <small>m</small></b>
+              </div>
+              <div class="ad-box">
+                <span class="ad-label">Energia</span>
+                <b id="adCalories" class="ad-val tabular">0 <small>kcal</small></b>
+              </div>
+              <div class="ad-box">
+                <span class="ad-label">Hmotnosť</span>
+                <b id="adWeight" class="ad-val tabular">-- <small>kg</small></b>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div id="activityError" class="account-error" hidden></div>
-      <div id="activityEmpty" class="account-empty">
-        Zatiaľ nemáš uložené jazdy. Ukonči jazdu tlačidlom <strong>Ukončiť</strong> a klikni na <strong>Uložiť aktivitu</strong>.
-      </div>
-      <div id="activityList" class="account-list"></div>
     </div>
 
     <div class="modal-actions">
@@ -713,6 +770,6 @@
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.1/dist/maplibre-gl.js" integrity="sha384-nXMl9YiLoSG5KBPTFgvxVuIqQQcqIvo0bFrvoEaGJC6r7IibIzF1S36Zbf/sKBtL" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" integrity="sha384-JUh163oCRItcbPme8pYnROHQMC6fNKTBWtRG3I3I0erJkzNgL7uxKlNwcrcFKeqF" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js" integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ" crossorigin="anonymous"></script>
-<script src="app.js?v=12"></script>
+<script src="app.js?v=13"></script>
 </body>
 </html>
