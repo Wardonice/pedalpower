@@ -662,6 +662,8 @@ const map = new maplibregl.Map({
   minZoom: 2,
   maxZoom: 18,
   maxPitch: 75,
+  pixelRatio: Math.min(window.devicePixelRatio || 1, 1.25),
+  antialias: false,
   attributionControl: false,
   dragRotate: true,
   pitchWithRotate: true,
