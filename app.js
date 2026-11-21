@@ -9,11 +9,16 @@ const UUID_FTMS = '00001826-0000-1000-8000-00805f9b34fb';
 const UUID_IBD  = '00002ad2-0000-1000-8000-00805f9b34fb';
 const UUID_CP   = '00002ad9-0000-1000-8000-00805f9b34fb';
 const UUID_FMS  = '00002ada-0000-1000-8000-00805f9b34fb';
+const UUID_INCL = '00002ad5-0000-1000-8000-00805f9b34fb';
 const UUID_HRS  = '0000180d-0000-1000-8000-00805f9b34fb';
 const UUID_HRM  = '00002a37-0000-1000-8000-00805f9b34fb';
 
 const GRADE_MIN = -30;
 const GRADE_MAX = 30;
+const SIM_GRADE_MIN_DEFAULT = -10;
+const SIM_GRADE_MAX_DEFAULT = 20;
+const SIM_MAX_FALLBACKS = [18, 16, 15, 12, 10, 8, 6];
+const SIM_MIN_FALLBACKS = [-8, -6, -5, -3, 0];
 const ELE_SMOOTH_HALF_M = 20;
 const GRADE_WINDOW_HALF_M = 40;
 const GRADE_AVG_HALF_M = 20;
@@ -3067,6 +3072,8 @@ let lastSimGrade = null;
 let lastSimSentAt = 0;
 let simBusy = false;
 let simNoAck = false;
+let trainerMinGrade = SIM_GRADE_MIN_DEFAULT;
+let trainerMaxGrade = SIM_GRADE_MAX_DEFAULT;
 let lastCpResult = null;
 let lastCpAt = 0;
 
@@ -3199,6 +3206,8 @@ async function connectTrainer() {
     lastSimGrade = null;
     lastSimSentAt = 0;
     simNoAck = false;
+    trainerMinGrade = SIM_GRADE_MIN_DEFAULT;
+    trainerMaxGrade = SIM_GRADE_MAX_DEFAULT;
     lastCpResult = null;
     lastCpAt = 0;
     state.simErrorShown = false;
@@ -3233,6 +3242,19 @@ async function connectTrainer() {
           showToast('Trenažér odobral kontrolu inej aplikácii. Zatvor Zwift / Decathlon app a pripoj sa znova.', 'warning', 8000);
         }
       });
+    } catch (_) {}
+
+    try {
+      const inclChar = await service.getCharacteristic(UUID_INCL);
+      const dv = await inclChar.readValue();
+      if (dv.byteLength >= 4) {
+        const minG = dv.getInt16(0, true) / 10;
+        const maxG = dv.getInt16(2, true) / 10;
+        if (Number.isFinite(minG) && Number.isFinite(maxG) && maxG > minG && maxG >= 3 && maxG <= 30) {
+          trainerMinGrade = clamp(minG, -20, 0);
+          trainerMaxGrade = clamp(maxG, 5, 25);
+        }
+      }
     } catch (_) {}
 
     setTrainerUI('connected');
@@ -3275,6 +3297,8 @@ function onTrainerDisconnected() {
   lastSimSentAt = 0;
   simBusy = false;
   simNoAck = false;
+  trainerMinGrade = SIM_GRADE_MIN_DEFAULT;
+  trainerMaxGrade = SIM_GRADE_MAX_DEFAULT;
   lastErgPower = null;
   lastErgSentAt = 0;
   ergBusy = false;
@@ -3558,10 +3582,11 @@ async function ensureControl() {
 function simulationParameters(grade) {
   const payload = new Uint8Array(6);
   const dv = new DataView(payload.buffer);
+  const safeGrade = clamp(grade, trainerMinGrade, trainerMaxGrade);
   dv.setInt16(0, 0, true);
-  dv.setInt16(2, Math.round(clamp(grade, GRADE_MIN, GRADE_MAX) * 100), true);
-  dv.setUint8(4, 40);
-  dv.setUint8(5, 25);
+  dv.setInt16(2, Math.round(safeGrade * 100), true);
+  dv.setUint8(4, 40); // Crr = 0.0040
+  dv.setUint8(5, 40); // Cw  = 0.40 kg/m (cestný bicykel na pákach)
   return payload;
 }
 
@@ -3572,7 +3597,7 @@ function queueSimulation() {
   (async () => {
     try {
       while (trainer && !state.workoutActive) {
-        const target = clamp(state.currentGrade || 0, GRADE_MIN, GRADE_MAX);
+        const target = clamp(state.currentGrade || 0, trainerMinGrade, trainerMaxGrade);
 
         if (lastSimGrade !== null && Math.abs(target - lastSimGrade) < 0.25) break;
 
@@ -3580,7 +3605,7 @@ function queueSimulation() {
         if (waitFor > 0) await delay(waitFor);
         if (!trainer || state.workoutActive) break;
 
-        const latest = clamp(state.currentGrade || 0, GRADE_MIN, GRADE_MAX);
+        const latest = clamp(state.currentGrade || 0, trainerMinGrade, trainerMaxGrade);
         if (lastSimGrade !== null && Math.abs(latest - lastSimGrade) < 0.25) break;
 
         if (!await ensureControl()) break;
@@ -3595,6 +3620,31 @@ function queueSimulation() {
           lastSimGrade = latest;
           lastSimSentAt = performance.now();
           state.simErrorShown = false;
+        } else if (result === 0x03) {
+          // Trenažér odmietol sklon nad svojím limitom – automaticky znížime strop a skúsime znova.
+          let lowered = false;
+          if (latest > 6) {
+            const nextMax = SIM_MAX_FALLBACKS.find((v) => v < latest - 0.1);
+            if (nextMax !== undefined && nextMax < trainerMaxGrade) {
+              trainerMaxGrade = nextMax;
+              lowered = true;
+            }
+          } else if (latest < -3) {
+            const nextMin = SIM_MIN_FALLBACKS.find((v) => v > latest + 0.1);
+            if (nextMin !== undefined && nextMin > trainerMinGrade) {
+              trainerMinGrade = nextMin;
+              lowered = true;
+            }
+          }
+          if (lowered) {
+            lastSimSentAt = performance.now() - SIM_INTERVAL_MS + 120;
+            continue;
+          }
+          if (!state.simErrorShown) {
+            state.simErrorShown = true;
+            showToast(`Sklon sa nepodarilo nastaviť: ${cpResultText(result)}.`, 'error', 8000);
+          }
+          break;
         } else if (result !== 0x01) {
           if (!state.simErrorShown) {
             state.simErrorShown = true;
@@ -3607,7 +3657,8 @@ function queueSimulation() {
           state.simErrorShown = false;
         }
 
-        if (Math.abs((state.currentGrade || 0) - latest) < 0.25) break;
+        const clampedNow = clamp(state.currentGrade || 0, trainerMinGrade, trainerMaxGrade);
+        if (Math.abs(clampedNow - latest) < 0.25) break;
       }
     } catch (error) {
       console.error('Simulácia sklonu:', error);
@@ -4925,7 +4976,7 @@ function updateDebugPanel() {
     `GPX   ${(state.route.totalM / 1000).toFixed(2)} km · ${state.route.points.length} b · +${Math.round(state.route.ascentM)} m`,
     `POS   ${(clampedM / 1000).toFixed(3)} km (${pct.toFixed(1)} %) · prejdené ${(state.rideM / 1000).toFixed(3)} km · štart ${(state.startM / 1000).toFixed(3)} km`,
     `SKLON trasa ${formatGrade(sample ? sample.grade : 0)} · filter ${formatGrade(state.currentGrade)}`,
-    `CP    0x11 → ${cpText} (${cpAge})`,
+    `CP    0x11 → ${cpText} (${cpAge}) · limit ${trainerMinGrade}..+${trainerMaxGrade} %`,
     `DIST  ${state.lastTotalDistance === null ? '--' : state.lastTotalDistance} m · Δ ${Math.round(state.lastTotalDelta)} m · ${state.workoutActive ? `fyzika ${(state.virtualSpeedMps * 3.6).toFixed(1)} km/h` : (state.hasTotalDistance ? 'total' : 'speed')}`,
     `BIKE  ${state.speed.toFixed(1)} km/h · ${Math.round(state.power)} W · ${Math.round(state.cadence)} rpm · HR ${state.hr === null ? '--' : Math.round(state.hr)}`
   ].join('\n');
