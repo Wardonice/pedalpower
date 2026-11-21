@@ -967,16 +967,18 @@ function trainerInMotion() {
   return state.speed > 0.8 || state.power > 10;
 }
 
-function flyToRider(latlng, zoom) {
-  const targetZoom = Math.min(zoom, MAP_TYPES[activeMapType].maxZoom);
-  map.flyTo({
+function flyToRider(latlng, zoom = null) {
+  const opts = {
     center: [latlng[1], latlng[0]],
-    zoom: targetZoom,
     pitch: map3dEnabled ? MAP_3D_PITCH : 0,
     bearing: currentTargetBearing(),
     padding: riderCameraPadding(),
     duration: 1100
-  });
+  };
+  if (typeof zoom === 'number' && Number.isFinite(zoom)) {
+    opts.zoom = Math.min(zoom, MAP_TYPES[activeMapType].maxZoom);
+  }
+  map.flyTo(opts);
 }
 
 function updateMapPosition(sample, force = false) {
@@ -995,7 +997,7 @@ function updateMapPosition(sample, force = false) {
   if (!state.mapRideStarted) {
     if (state.rideM > 20) {
       state.mapRideStarted = true;
-      flyToRider(latlng, map3dEnabled ? 15 : 14.5);
+      flyToRider(latlng);
       lastFollowAt = now;
     }
     return;
@@ -1648,7 +1650,7 @@ function setRouteStart(distanceM) {
   const sample = sampleRoute(startM);
   if (sample) {
     setRiderPosition(sample.lat, sample.lon, true);
-    flyToRider([sample.lat, sample.lon], Math.max(map.getZoom(), 13));
+    flyToRider([sample.lat, sample.lon]);
   }
 
   if (trainer) {
@@ -4197,7 +4199,7 @@ function startWorkout() {
   if (startSample) {
     // Kamera je už na štarte – nech ju tick po 20 m nepresúva znova.
     state.mapRideStarted = true;
-    flyToRider([startSample.lat, startSample.lon], Math.max(map.getZoom(), 13));
+    flyToRider([startSample.lat, startSample.lon]);
   }
 
   lastErgPower = null;
