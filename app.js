@@ -778,21 +778,23 @@ function setRiderPosition(lat, lon, ensureAdded = false) {
 }
 
 function getProfilePanelHeight() {
-  return parseFloat(getComputedStyle(document.body).getPropertyValue('--profile-h')) || 168;
+  const val = parseFloat(getComputedStyle(document.body).getPropertyValue('--profile-h'));
+  return Number.isFinite(val) ? val : 168;
 }
 
 function riderCameraPadding() {
   const panelH = getProfilePanelHeight();
+  const topBase = state.workoutActive ? 255 : 96;
   if (map3dEnabled && mapHeadingEnabled) {
     return {
-      top: Math.round(window.innerHeight * 0.28),
-      bottom: panelH + 12,
+      top: Math.max(topBase, Math.round(window.innerHeight * 0.30)),
+      bottom: panelH + 16,
       left: 20,
       right: 20
     };
   }
   return {
-    top: 96,
+    top: topBase,
     bottom: panelH + 16,
     left: 20,
     right: 20
