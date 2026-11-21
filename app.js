@@ -372,9 +372,13 @@ const el = {
   statAscent: $('statAscent'),
   statAvgPower: $('statAvgPower'),
   statNp: $('statNp'),
+  statNpWkg: $('statNpWkg'),
   statCalories: $('statCalories'),
   statAvgWkg: $('statAvgWkg'),
   statAvgHr: $('statAvgHr'),
+  statAvgHrUnit: $('statAvgHrUnit'),
+  statParamsLabel: $('statParamsLabel'),
+  statWeight: $('statWeight'),
   btnCloseModal: $('btnCloseModal'),
   btnResetRide: $('btnResetRide'),
   btnResumeRide: $('btnResumeRide'),
@@ -2730,7 +2734,7 @@ async function saveCurrentActivity() {
     await refreshSavedActivities();
   } catch (error) {
     console.error('Uloženie jazdy:', error);
-    el.btnSaveActivity.textContent = 'Uložiť aktivitu';
+    el.btnSaveActivity.textContent = 'Uložiť jazdu';
     el.btnSaveActivity.disabled = false;
     showToast(`Jazdu sa nepodarilo uložiť: ${accountErrorMessage(error)}`, 'error', 8500);
   } finally {
@@ -4384,7 +4388,8 @@ function currentRideSummary() {
     avgPowerW,
     npW: computeNormalizedPower(avgPowerW),
     avgHr,
-    weightKg: state.weight || 75
+    weightKg: state.weight || 75,
+    ftpW: workoutName ? Math.round(state.ftp) : null
   };
 }
 
@@ -4398,17 +4403,24 @@ function fillStatsView(summary) {
   el.statAvgPower.textContent = String(Math.round(summary.avgPowerW || 0));
   setLockableValue(
     el.statAvgWkg,
-    `${((summary.avgPowerW || 0) / weight).toFixed(2)} W/kg`,
+    `· ${((summary.avgPowerW || 0) / weight).toFixed(2)} W/kg`,
     locked,
-    '🔒 Po prihlásení',
+    '· 🔒',
     'W/kg je dostupné po prihlásení'
   );
   el.statNp.textContent = String(Math.round(summary.npW || 0));
+  if (el.statNpWkg) {
+    setLockableValue(
+      el.statNpWkg,
+      `· ${((summary.npW || 0) / weight).toFixed(2)} W/kg`,
+      locked,
+      '· 🔒',
+      'W/kg je dostupné po prihlásení'
+    );
+  }
   el.statCalories.textContent = String(Math.round(summary.calories || 0));
-  const avgHrText = summary.avgHr === null || summary.avgHr === undefined ||
-    !Number.isFinite(summary.avgHr)
-    ? '--'
-    : String(Math.round(summary.avgHr));
+  const hasHr = summary.avgHr !== null && summary.avgHr !== undefined && Number.isFinite(summary.avgHr);
+  const avgHrText = hasHr ? String(Math.round(summary.avgHr)) : '--';
   setLockableValue(
     el.statAvgHr,
     avgHrText,
@@ -4416,6 +4428,20 @@ function fillStatsView(summary) {
     '🔒',
     'Priemerný tep je dostupný po prihlásení'
   );
+  if (el.statAvgHrUnit) el.statAvgHrUnit.hidden = locked || !hasHr;
+
+  const weightText = Number(summary.weightKg) > 0
+    ? Number(summary.weightKg).toFixed(1).replace(/\.0$/, '')
+    : '--';
+  const hasFtp = Number.isFinite(summary.ftpW) && summary.ftpW > 0;
+  if (el.statParamsLabel) {
+    el.statParamsLabel.textContent = hasFtp ? 'Hmotnosť · FTP' : 'Hmotnosť';
+  }
+  if (el.statWeight) {
+    el.statWeight.innerHTML = hasFtp
+      ? `${weightText} <small>kg</small><span class="ad-inline-sub">·</span> ${Math.round(summary.ftpW)} <small>W</small>`
+      : (weightText === '--' ? '--' : `${weightText} <small>kg</small>`);
+  }
 }
 
 /* =========================================================================
@@ -4629,7 +4655,7 @@ function openFinishModal() {
     summary.distanceM <= state.lastSavedRideM;
 
   el.btnSaveActivity.disabled = !canSave || alreadySaved;
-  el.btnSaveActivity.textContent = alreadySaved ? 'Uložené ✓' : 'Uložiť aktivitu';
+  el.btnSaveActivity.textContent = alreadySaved ? 'Uložené ✓' : 'Uložiť jazdu';
   el.btnSaveActivity.title = !canSave
     ? 'Najprv sa prihlás v okne Konto'
     : (alreadySaved

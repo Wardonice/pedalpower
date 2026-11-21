@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.1/dist/maplibre-gl.css" integrity="sha384-uTttxo/aOKbdE5RlD/SPzSDoDmNvGlUYPjONi2MN/b7c9HPSvW07OIuyP7uL6jxK" crossorigin="anonymous">
 
-<link rel="stylesheet" href="styles.css?v=19">
+<link rel="stylesheet" href="styles.css?v=20">
 </head>
 
 <body>
@@ -307,84 +307,49 @@
       <button id="btnCloseModal" class="modal-close" type="button" aria-label="Zavrieť">×</button>
     </div>
 
-    <div class="stats-rows">
-      <!-- 2-stĺpcová prémiová mriežka -->
-      <div class="stats-row-2">
-        <div class="stat-box">
-          <div class="stat-label">Čas jazdy</div>
-          <div class="stat-val-line">
-            <span id="statTime" class="stat-val tabular">00:00</span>
-          </div>
-        </div>
-
-        <div class="stat-box">
-          <div class="stat-label">Prejdené km</div>
-          <div class="stat-val-line">
-            <span id="statDist" class="stat-val tabular">0.00</span>
-            <span class="stat-unit">km</span>
-          </div>
-        </div>
+    <div class="ad-grid finish-stats-grid">
+      <div class="ad-box">
+        <span class="ad-label">Čas jazdy</span>
+        <b id="statTime" class="ad-val tabular">00:00</b>
       </div>
-
-      <div class="stats-row-2">
-        <div class="stat-box">
-          <div class="stat-label">Nastúpané metre</div>
-          <div class="stat-val-line">
-            <span id="statAscent" class="stat-val tabular">0</span>
-            <span class="stat-unit">m</span>
-          </div>
-        </div>
-
-        <div class="stat-box">
-          <div class="stat-label">Spálené kalórie</div>
-          <div class="stat-val-line">
-            <span id="statCalories" class="stat-val tabular">0</span>
-            <span class="stat-unit">kcal</span>
-          </div>
-        </div>
+      <div class="ad-box ad-box-accent">
+        <span class="ad-label">Priemerný výkon</span>
+        <b class="ad-val tabular"><span id="statAvgPower">0</span> <small>W</small><span id="statAvgWkg" class="ad-inline-sub">· 0.00 W/kg</span></b>
       </div>
-
-      <div class="stats-row-2">
-        <div class="stat-box highlight">
-          <div class="stat-label">Priemerný výkon</div>
-          <div class="stat-val-line">
-            <span id="statAvgPower" class="stat-val tabular">0</span>
-            <span class="stat-unit">W</span>
-          </div>
-          <div id="statAvgWkg" class="stat-sub">0.00 W/kg</div>
-        </div>
-
-        <div class="stat-box highlight">
-          <div class="stat-label">Normalizovaný výkon</div>
-          <div class="stat-val-line">
-            <span id="statNp" class="stat-val tabular">0</span>
-            <span class="stat-unit">W</span>
-          </div>
-          <div class="stat-sub">NP (30s kĺzavý)</div>
-        </div>
+      <div class="ad-box">
+        <span class="ad-label">Vzdialenosť</span>
+        <b class="ad-val tabular"><span id="statDist">0.00</span> <small>km</small></b>
       </div>
-
-      <!-- Celorozmerová spodná karta pre priemerný tep -->
-      <div class="stat-box hr-accent">
-        <div class="stat-label">Priemerný tep</div>
-        <div class="stat-val-line" style="justify-content:space-between; align-items:center;">
-          <div style="display:flex; align-items:baseline; gap:6px;">
-            <span id="statAvgHr" class="stat-val tabular">--</span>
-            <span class="stat-unit">bpm</span>
-          </div>
-          <div class="stat-sub" style="font-size:12px; opacity:.8;">Srdcová frekvencia počas záťaže</div>
-        </div>
+      <div class="ad-box ad-box-accent">
+        <span class="ad-label">Normalizovaný výkon</span>
+        <b class="ad-val tabular"><span id="statNp">0</span> <small>W</small><span id="statNpWkg" class="ad-inline-sub">· 0.00 W/kg</span></b>
+      </div>
+      <div class="ad-box">
+        <span class="ad-label">Nastúpané</span>
+        <b class="ad-val tabular">+<span id="statAscent">0</span> <small>m</small></b>
+      </div>
+      <div class="ad-box ad-box-hr">
+        <span class="ad-label">Priemerný tep</span>
+        <b class="ad-val tabular"><span id="statAvgHr">--</span> <small id="statAvgHrUnit">bpm</small></b>
+      </div>
+      <div class="ad-box">
+        <span class="ad-label">Energia</span>
+        <b class="ad-val tabular"><span id="statCalories">0</span> <small>kcal</small></b>
+      </div>
+      <div class="ad-box">
+        <span id="statParamsLabel" class="ad-label">Hmotnosť</span>
+        <b id="statWeight" class="ad-val tabular">-- <small>kg</small></b>
       </div>
     </div>
 
     <div class="modal-actions finish-actions">
-      <div class="actions-group">
-        <button id="btnExportStrava" class="modal-btn modal-btn-ghost" type="button">Export do Stravy</button>
-        <button id="btnSaveActivity" class="modal-btn modal-btn-accent" type="button">Uložiť aktivitu</button>
+      <div class="finish-actions-row">
+        <button id="btnExportStrava" class="modal-btn modal-btn-ghost finish-btn-left" type="button">Export do Stravy</button>
+        <button id="btnSaveActivity" class="modal-btn modal-btn-primary finish-btn-center" type="button">Uložiť jazdu</button>
+        <button id="btnResetRide" class="modal-btn modal-btn-ghost finish-btn-right" type="button">Nová jazda (Reset)</button>
       </div>
-      <div class="actions-group">
-        <button id="btnResetRide" class="modal-btn modal-btn-ghost" type="button">Nová jazda (Reset)</button>
-        <button id="btnResumeRide" class="modal-btn modal-btn-primary" type="button">Pokračovať v jazde</button>
+      <div class="finish-actions-sub">
+        <button id="btnResumeRide" class="modal-btn modal-btn-accent" type="button">Pokračovať v jazde</button>
         <button id="btnActivityClose" class="modal-btn modal-btn-primary" type="button" hidden>Zavrieť</button>
         <button id="btnActivityDelete" class="modal-btn modal-btn-danger" type="button" hidden>Vymazať jazdu</button>
       </div>
@@ -776,6 +741,6 @@
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.1/dist/maplibre-gl.js" integrity="sha384-nXMl9YiLoSG5KBPTFgvxVuIqQQcqIvo0bFrvoEaGJC6r7IibIzF1S36Zbf/sKBtL" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" integrity="sha384-JUh163oCRItcbPme8pYnROHQMC6fNKTBWtRG3I3I0erJkzNgL7uxKlNwcrcFKeqF" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js" integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ" crossorigin="anonymous"></script>
-<script src="app.js?v=21"></script>
+<script src="app.js?v=22"></script>
 </body>
 </html>
