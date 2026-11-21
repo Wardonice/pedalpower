@@ -767,7 +767,8 @@ riderMarkerEl.innerHTML = '<div class="rider-marker"><span class="rider-pulse"><
 
 const riderMarker = new maplibregl.Marker({
   element: riderMarkerEl,
-  anchor: 'center'
+  anchor: 'center',
+  opacityWhenCovered: '1'
 }).setLngLat([19.6, 48.85]);
 
 let riderMarkerAdded = false;

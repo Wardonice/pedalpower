@@ -44,17 +44,17 @@ img,svg,canvas{ display:block; }
 .mapy-logo img{ height:28px; width:auto; display:block; }
 
 /* ---------- RIDER MARKER ---------- */
-.rider-marker-wrap{ background:none; border:none; pointer-events:none; }
-.rider-marker{ position:relative; width:28px; height:28px; display:grid; place-items:center; }
+.rider-marker-wrap{ background:none; border:none; pointer-events:none; opacity:1 !important; z-index:20; }
+.rider-marker{ position:relative; width:34px; height:34px; display:grid; place-items:center; }
 .rider-pulse{
   position:absolute; inset:0; border-radius:50%;
-  background:rgba(198,244,50,.18);
-  border:1.5px solid rgba(198,244,50,.48);
+  background:rgba(198,244,50,.28);
+  border:2px solid rgba(198,244,50,.75);
 }
 .rider-core{
-  width:14px; height:14px; border-radius:50%; background:var(--accent);
-  border:3px solid #0a1016;
-  box-shadow:0 0 0 1px rgba(198,244,50,.9), 0 0 14px rgba(198,244,50,.85);
+  width:16px; height:16px; border-radius:50%; background:var(--accent);
+  border:3px solid #081017;
+  box-shadow:0 0 0 2px #fff, 0 0 16px rgba(198,244,50,.95);
 }
 
 /* ---------- HUD (JEDNA LIŠTA O 50% VÄČŠIA) ---------- */
