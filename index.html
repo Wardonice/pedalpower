@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.1/dist/maplibre-gl.css" integrity="sha384-uTttxo/aOKbdE5RlD/SPzSDoDmNvGlUYPjONi2MN/b7c9HPSvW07OIuyP7uL6jxK" crossorigin="anonymous">
 
-<link rel="stylesheet" href="styles.css?v=21">
+<link rel="stylesheet" href="styles.css?v=22">
 </head>
 
 <body>
@@ -525,14 +525,22 @@
             <span id="profileFtpWkg" class="account-profile-wkg tabular">2.67 W/kg</span>
           </div>
           <div class="account-profile-grid">
-            <label class="workout-field" for="profileWeight">
-              <span>Hmotnosť (kg)</span>
-              <input id="profileWeight" type="number" min="30" max="250" step="0.5" value="75" inputmode="decimal">
-            </label>
-            <label class="workout-field" for="profileFtp">
-              <span>FTP (W)</span>
-              <input id="profileFtp" type="number" min="50" max="600" step="1" value="200" inputmode="numeric">
-            </label>
+            <div class="workout-field profile-field">
+              <label for="profileWeight">Hmotnosť (kg)</label>
+              <div class="ftp-stepper profile-stepper">
+                <button id="btnProfileWeightMinus" class="ftp-step-btn" type="button" aria-label="Znížiť hmotnosť o 1 kg">−</button>
+                <input id="profileWeight" class="ftp-step-input tabular" type="number" min="30" max="250" step="0.5" value="75" inputmode="decimal">
+                <button id="btnProfileWeightPlus" class="ftp-step-btn" type="button" aria-label="Zvýšiť hmotnosť o 1 kg">+</button>
+              </div>
+            </div>
+            <div class="workout-field profile-field">
+              <label for="profileFtp">FTP (W)</label>
+              <div class="ftp-stepper profile-stepper">
+                <button id="btnProfileFtpMinus" class="ftp-step-btn" type="button" aria-label="Znížiť FTP o 5 W">−</button>
+                <input id="profileFtp" class="ftp-step-input tabular" type="number" min="50" max="600" step="1" value="200" inputmode="numeric">
+                <button id="btnProfileFtpPlus" class="ftp-step-btn" type="button" aria-label="Zvýšiť FTP o 5 W">+</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -741,6 +749,6 @@
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.1/dist/maplibre-gl.js" integrity="sha384-nXMl9YiLoSG5KBPTFgvxVuIqQQcqIvo0bFrvoEaGJC6r7IibIzF1S36Zbf/sKBtL" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" integrity="sha384-JUh163oCRItcbPme8pYnROHQMC6fNKTBWtRG3I3I0erJkzNgL7uxKlNwcrcFKeqF" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js" integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ" crossorigin="anonymous"></script>
-<script src="app.js?v=22"></script>
+<script src="app.js?v=23"></script>
 </body>
 </html>

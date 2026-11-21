@@ -345,7 +345,11 @@ const el = {
   accountCount: $('accountCount'),
   accountError: $('accountError'),
   profileWeight: $('profileWeight'),
+  btnProfileWeightMinus: $('btnProfileWeightMinus'),
+  btnProfileWeightPlus: $('btnProfileWeightPlus'),
   profileFtp: $('profileFtp'),
+  btnProfileFtpMinus: $('btnProfileFtpMinus'),
+  btnProfileFtpPlus: $('btnProfileFtpPlus'),
   profileFtpWkg: $('profileFtpWkg'),
   btnMapTourist: $('btnMapTourist'),
   btnMapSatellite: $('btnMapSatellite'),
@@ -5117,7 +5121,31 @@ el.gpxInput.addEventListener('change', () => {
 });
 
 if (el.profileWeight) el.profileWeight.addEventListener('change', saveProfileWeightInput);
+if (el.btnProfileWeightMinus) {
+  el.btnProfileWeightMinus.addEventListener('click', () => {
+    const next = clamp(Math.round((state.weight - 1) * 10) / 10, RIDER_WEIGHT_MIN, RIDER_WEIGHT_MAX);
+    setRiderWeight(next);
+  });
+}
+if (el.btnProfileWeightPlus) {
+  el.btnProfileWeightPlus.addEventListener('click', () => {
+    const next = clamp(Math.round((state.weight + 1) * 10) / 10, RIDER_WEIGHT_MIN, RIDER_WEIGHT_MAX);
+    setRiderWeight(next);
+  });
+}
 if (el.profileFtp) el.profileFtp.addEventListener('change', saveProfileFtpInput);
+if (el.btnProfileFtpMinus) {
+  el.btnProfileFtpMinus.addEventListener('click', () => {
+    const next = clamp(Math.round(state.ftp - 5), FTP_MIN, FTP_MAX);
+    setFtp(next);
+  });
+}
+if (el.btnProfileFtpPlus) {
+  el.btnProfileFtpPlus.addEventListener('click', () => {
+    const next = clamp(Math.round(state.ftp + 5), FTP_MIN, FTP_MAX);
+    setFtp(next);
+  });
+}
 el.btnFinish.addEventListener('click', () => {
   if (state.workoutActive) finishWorkout('manual');
   else openFinishModal();
