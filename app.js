@@ -641,6 +641,7 @@ let mapReady = false;
 let routeBounds = null;
 let pendingRouteLine = EMPTY_FC;
 let pendingRouteEndpoints = EMPTY_FC;
+let pendingRiderPoint = EMPTY_FC;
 let lastFollowAt = 0;
 let lastUserInteractAt = 0;
 
@@ -699,6 +700,10 @@ const map = new maplibregl.Map({
       'route-endpoints': {
         type: 'geojson',
         data: EMPTY_FC
+      },
+      'rider-point': {
+        type: 'geojson',
+        data: EMPTY_FC
       }
     },
     layers: [
@@ -746,6 +751,17 @@ const map = new maplibregl.Map({
           'circle-stroke-width': 2,
           'circle-color': ['match', ['get', 'kind'], 'end', '#ef4444', '#ffffff']
         }
+      },
+      {
+        id: 'rider-point-layer',
+        type: 'circle',
+        source: 'rider-point',
+        paint: {
+          'circle-radius': 5.5,
+          'circle-stroke-color': '#081017',
+          'circle-stroke-width': 2,
+          'circle-color': '#c6f432'
+        }
       }
     ]
   }
@@ -761,29 +777,25 @@ map.on('rotatestart', markUserMapInteraction);
 map.on('pitchstart', markUserMapInteraction);
 map.on('wheel', markUserMapInteraction);
 
-const riderMarkerEl = document.createElement('div');
-riderMarkerEl.className = 'rider-marker-wrap';
-riderMarkerEl.innerHTML = '<div class="rider-marker"><span class="rider-pulse"></span><span class="rider-core"></span></div>';
-
-const riderMarker = new maplibregl.Marker({
-  element: riderMarkerEl,
-  anchor: 'center',
-  opacityWhenCovered: '1'
-}).setLngLat([19.6, 48.85]);
-
-let riderMarkerAdded = false;
 let lastRiderLat = null;
 let lastRiderLon = null;
-function setRiderPosition(lat, lon, ensureAdded = false) {
+function setRiderPosition(lat, lon) {
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
   const moved = lat !== lastRiderLat || lon !== lastRiderLon;
-  if (moved) {
-    lastRiderLat = lat;
-    lastRiderLon = lon;
-    riderMarker.setLngLat([lon, lat]);
-  }
-  if (ensureAdded && !riderMarkerAdded) {
-    riderMarker.addTo(map);
-    riderMarkerAdded = true;
+  if (!moved) return;
+  lastRiderLat = lat;
+  lastRiderLon = lon;
+  pendingRiderPoint = {
+    type: 'FeatureCollection',
+    features: [{
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [lon, lat] },
+      properties: {}
+    }]
+  };
+  if (mapReady) {
+    const src = map.getSource('rider-point');
+    if (src) src.setData(pendingRiderPoint);
   }
 }
 
@@ -964,6 +976,7 @@ map.on('load', () => {
   map.setLayoutProperty('layer-satellite', 'visibility', activeMapType === 'satellite' ? 'visible' : 'none');
   map.getSource('route-line').setData(pendingRouteLine);
   map.getSource('route-endpoints').setData(pendingRouteEndpoints);
+  map.getSource('rider-point').setData(pendingRiderPoint);
   applyTerrainAndSky();
   if (routeBounds) {
     fitRouteOnMap(false);

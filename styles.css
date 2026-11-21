@@ -43,16 +43,6 @@ img,svg,canvas{ display:block; }
 }
 .mapy-logo img{ height:28px; width:auto; display:block; }
 
-/* ---------- RIDER MARKER ---------- */
-.rider-marker-wrap{ background:none; border:none; pointer-events:none; opacity:1 !important; z-index:20; }
-.rider-marker{ position:relative; width:16px; height:16px; display:grid; place-items:center; }
-.rider-pulse{ display:none; }
-.rider-core{
-  width:15px; height:15px; border-radius:50%; background:var(--accent);
-  border:2px solid #081017;
-  box-shadow:0 1px 6px rgba(0,0,0,.55);
-}
-
 /* ---------- HUD (JEDNA LIŠTA O 50% VÄČŠIA) ---------- */
 #hud{
   position:fixed; top:14px; left:50%; transform:translateX(-50%);
