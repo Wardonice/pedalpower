@@ -3549,7 +3549,7 @@ function queueTargetPower(force = false) {
           state.simErrorShown = false;
         } else if (result === 0x02) {
           state.workoutErg = false;
-          showToast('Trenažér nepodporuje ERG. Tréning pokračuje v guide režime.', 'warning', 8000);
+          showToast('Trenažér nepodporuje ERG. Tréning pokračuje v manuálnom režime.', 'warning', 8000);
           break;
         } else if (result !== 0x01) {
           if (!state.simErrorShown) {
@@ -3637,7 +3637,7 @@ function updateWorkoutModalState() {
   if (!hasTrainer) {
     el.workoutErg.checked = false;
     el.workoutErg.disabled = true;
-    el.workoutErgHint.textContent = 'Trenažér nie je pripojený – guide režim';
+    el.workoutErgHint.textContent = 'Trenažér nie je pripojený – manuálny režim';
   } else {
     el.workoutErg.disabled = false;
     el.workoutErg.checked = Boolean(state.workoutErgPreferred);
@@ -4016,7 +4016,7 @@ function startWorkout() {
   syncWakeLock();
 
   showToast(
-    `Tréning „${workout.name}“ spustený ${state.workoutErg ? 'v ERG režime' : 'v guide režime'}.`,
+    `Tréning „${workout.name}“ spustený ${state.workoutErg ? 'v ERG režime' : 'v manuálnom režime'}.`,
     'success',
     5000
   );
@@ -4620,7 +4620,7 @@ function updateGradeChip(grade) {
   }
   if (state.workoutActive) {
     const color = '#c6f432';
-    el.gradeChip.textContent = (state.workoutErg && trainer) ? 'ERG' : 'Guide';
+    el.gradeChip.textContent = (state.workoutErg && trainer) ? 'ERG' : 'Manuál';
     el.gradeChip.style.color = color;
     el.gradeChip.style.background = hexToRgba(color, 0.14);
     el.gradeChip.style.borderColor = hexToRgba(color, 0.36);
