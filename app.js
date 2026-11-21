@@ -1847,6 +1847,23 @@ function applyRiderWeight(weight) {
   renderHUD();
 }
 
+function setRiderWeight(value, save = true) {
+  const normalized = normalizeRiderWeight(value);
+  if (normalized === null) return false;
+
+  state.weight = normalized;
+  if (el.profileWeight) el.profileWeight.value = String(normalized);
+  syncProfileInputs();
+  renderHUD();
+
+  if (save) {
+    const now = Date.now();
+    storeRiderWeightLocally(normalized, now);
+    if (supa && accountUser) saveRiderWeightToAccount(normalized, now);
+  }
+  return true;
+}
+
 function readAccountRiderWeight(user) {
   const meta = user && user.user_metadata ? user.user_metadata : null;
   if (!meta) return { weight: null, updatedAt: 0 };
@@ -1949,6 +1966,7 @@ function setFtp(value, save = true) {
 
   state.ftp = normalized;
   if (el.workoutFtp) el.workoutFtp.value = String(normalized);
+  if (el.profileFtp) el.profileFtp.value = String(normalized);
   syncProfileInputs();
   renderHUD();
 
