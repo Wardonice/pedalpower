@@ -1723,12 +1723,12 @@ async function loadDemoRoute(options) {
     }
 
     const route = parseGPX(gpxText, 'demo.gpx');
-    route.name = 'Ukážková trasa';
+    route.name = 'Liptovská Osada - Srekovica';
     route.isDemo = true;
     applyRoute(route, gpxText, 'demo.gpx');
     if (!silent) {
       showToast(
-        `Ukážková trasa načítaná · ${formatKm(route.totalM / 1000, 1)} km · +${Math.round(route.ascentM)} m. Kliknutím na profil zvolíš iný štart.`,
+        `${route.name} načítaná · ${formatKm(route.totalM / 1000, 1)} km · +${Math.round(route.ascentM)} m. Kliknutím na profil zvolíš iný štart.`,
         'success',
         6000
       );

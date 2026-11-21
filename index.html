@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.1/dist/maplibre-gl.css" integrity="sha384-uTttxo/aOKbdE5RlD/SPzSDoDmNvGlUYPjONi2MN/b7c9HPSvW07OIuyP7uL6jxK" crossorigin="anonymous">
 
-<link rel="stylesheet" href="styles.css?v=16">
+<link rel="stylesheet" href="styles.css?v=17">
 </head>
 
 <body>
@@ -252,17 +252,17 @@
 <section id="profilePanel" class="profile-panel">
 
   <div class="profile-head">
+    <div class="profile-legend" aria-hidden="true">
+      <span class="legend-item"><i class="legend-dot" style="background:#38bdf8"></i>Klesanie <span class="legend-pct">&lt; -1 %</span></span>
+      <span class="legend-item"><i class="legend-dot" style="background:#34d399"></i>Rovina <span class="legend-pct">-1–2 %</span></span>
+      <span class="legend-item"><i class="legend-dot" style="background:#f59e0b"></i>Stúpanie <span class="legend-pct">2–10 %</span></span>
+      <span class="legend-item"><i class="legend-dot" style="background:#ef4444"></i>Prudké stúpanie <span class="legend-pct">≥ 10 %</span></span>
+    </div>
+
     <div class="route-block">
       <span class="route-dot"></span>
       <span id="routeName" class="route-name">Žiadna trasa</span>
       <span id="routeMeta" class="route-meta">Nahraj GPX a začni jazdiť</span>
-    </div>
-
-    <div class="profile-legend" aria-hidden="true">
-      <span class="legend-item"><i class="legend-dot" style="background:#38bdf8"></i>Klesanie</span>
-      <span class="legend-item"><i class="legend-dot" style="background:#34d399"></i>Rovina</span>
-      <span class="legend-item"><i class="legend-dot" style="background:#f59e0b"></i>Stúpanie</span>
-      <span class="legend-item"><i class="legend-dot" style="background:#ef4444"></i>Prudké</span>
     </div>
 
     <div class="profile-remain">
@@ -763,6 +763,6 @@
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.1/dist/maplibre-gl.js" integrity="sha384-nXMl9YiLoSG5KBPTFgvxVuIqQQcqIvo0bFrvoEaGJC6r7IibIzF1S36Zbf/sKBtL" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" integrity="sha384-JUh163oCRItcbPme8pYnROHQMC6fNKTBWtRG3I3I0erJkzNgL7uxKlNwcrcFKeqF" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js" integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ" crossorigin="anonymous"></script>
-<script src="app.js?v=17"></script>
+<script src="app.js?v=18"></script>
 </body>
 </html>
