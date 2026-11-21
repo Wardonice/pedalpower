@@ -318,8 +318,8 @@ const el = {
   btnMapTourist: $('btnMapTourist'),
   btnMapSatellite: $('btnMapSatellite'),
   btnMap3d: $('btnMap3d'),
+  btnMapNorth: $('btnMapNorth'),
   btnMapHeading: $('btnMapHeading'),
-  mapHeadingLabel: $('mapHeadingLabel'),
   trainerDot: $('trainerDot'),
   hrDot: $('hrDot'),
 
@@ -854,13 +854,11 @@ function setMap3d(enabled, animate = true) {
 }
 
 function syncMapHeadingUi() {
-  if (!el.btnMapHeading) return;
+  if (!el.btnMapHeading || !el.btnMapNorth) return;
   el.btnMapHeading.classList.toggle('active', mapHeadingEnabled);
+  el.btnMapNorth.classList.toggle('active', !mapHeadingEnabled);
   el.btnMapHeading.setAttribute('aria-pressed', String(mapHeadingEnabled));
-  if (el.mapHeadingLabel) el.mapHeadingLabel.textContent = mapHeadingEnabled ? 'Smer' : 'Sever';
-  el.btnMapHeading.title = mapHeadingEnabled
-    ? 'Orientácia mapy: v smere jazdy (kliknutím prepneš na pevný sever)'
-    : 'Orientácia mapy: pevný sever (kliknutím prepneš na smer jazdy)';
+  el.btnMapNorth.setAttribute('aria-pressed', String(!mapHeadingEnabled));
 }
 
 function setMapHeading(enabled, animate = true) {
@@ -883,7 +881,8 @@ syncMapHeadingUi();
 el.btnMapTourist.addEventListener('click', () => setMapType('tourist'));
 el.btnMapSatellite.addEventListener('click', () => setMapType('satellite'));
 if (el.btnMap3d) el.btnMap3d.addEventListener('click', () => setMap3d(!map3dEnabled));
-if (el.btnMapHeading) el.btnMapHeading.addEventListener('click', () => setMapHeading(!mapHeadingEnabled));
+if (el.btnMapHeading) el.btnMapHeading.addEventListener('click', () => setMapHeading(true));
+if (el.btnMapNorth) el.btnMapNorth.addEventListener('click', () => setMapHeading(false));
 
 function fitSlovakiaOnMap() {
   map.fitBounds(SLOVAKIA_BOUNDS, {
