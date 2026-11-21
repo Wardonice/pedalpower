@@ -648,9 +648,6 @@ body.map-tourist .map-pill.active{ background:rgba(40,56,18,.86); }
 .help-btn:hover{ background:rgba(22,28,36,.50); border-color:rgba(255,255,255,.26); color:#fff; }
 .help-btn:active{ transform:translateY(1px); }
 .help-btn svg{ width:16px; height:16px; flex:0 0 auto; filter:drop-shadow(0 1px 4px rgba(0,0,0,.4)); }
-/* Modifikátor musí byť až za základným .help-btn – inak ho prepíše
-   rovnakou špecificitou (jedna trieda) a tlačidlá sa prekryjú. */
-#btnHelp{ left:14px; right:auto; }
 .side-actions{
   position:fixed; right:14px; top:48%;
   transform:translateY(-50%); z-index:950;
@@ -1367,7 +1364,6 @@ body.map-tourist .workout-panel{
   #hud{ top:60px; width:calc(100vw - 24px); }
   .workout-panel{ top:170px; left:50%; transform:translateX(-50%); width:min(420px, calc(100vw - 24px)); }
   .map-controls{ right:12px; bottom:calc(var(--profile-h) + 34px); }
-  #btnHelp{ left:12px; right:auto; }
   .toolbar{ top:12px; right:12px; flex-direction:row; gap:7px; }
   .account-btn{ order:10; }
   .tool-btn{ width:40px; height:38px; padding:0; justify-content:center; }
@@ -1389,7 +1385,6 @@ body.map-tourist .workout-panel{
 @media (max-width:640px){
   :root{ --profile-h:146px; }
   .help-btn{ right:10px; bottom:calc(var(--profile-h) + 32px); width:38px; height:38px; }
-  #btnHelp{ left:10px; right:auto; }
   .side-actions{ right:10px; gap:6px; }
   .side-actions .help-btn{ left:auto; right:auto; bottom:auto; }
   .map-controls{ right:10px; bottom:calc(var(--profile-h) + 32px); }
@@ -1432,7 +1427,6 @@ body.map-tourist .workout-panel{
 /* ---------- WORKOUT – KARTA HORE POD HUD, SKRYTÝ SPODNÝ PROFIL ---------- */
 body.workout-active{ --profile-h:0px; }
 body.workout-active #profilePanel{ display:none; }
-body.workout-active #btnHelp{ display:none; }
 
 /* ---------- ZAMKNUTÉ FUNKCIE PRE NEPRIHLÁSENÝCH ---------- */
 .is-locked{ position:relative; opacity:.65; }
