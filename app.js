@@ -247,13 +247,14 @@ const el = {
   btnCloseWorkoutAction: $('btnCloseWorkoutAction'),
   workoutList: $('workoutList'),
   workoutFtp: $('workoutFtp'),
-  workoutErg: $('workoutErg'),
+  btnFtpMinus: $('btnFtpMinus'),
+  btnFtpPlus: $('btnFtpPlus'),
+  btnWorkoutErg: $('btnWorkoutErg'),
+  btnWorkoutManual: $('btnWorkoutManual'),
   workoutErgHint: $('workoutErgHint'),
-  workoutRouteNote: $('workoutRouteNote'),
+  workoutRouteSelect: $('workoutRouteSelect'),
   workoutRouteText: $('workoutRouteText'),
-  workoutRouteActions: $('workoutRouteActions'),
   wpRouteLoad: $('wpRouteLoad'),
-  wpRouteDemo: $('wpRouteDemo'),
   workoutPreview: $('workoutPreview'),
   btnStartWorkout: $('btnStartWorkout'),
 
@@ -2236,6 +2237,9 @@ function renderSavedRoutes() {
   for (const item of savedRoutes) {
     el.accountList.appendChild(buildAccountRouteItem(item));
   }
+  if (el.workoutModal && el.workoutModal.classList.contains('open')) {
+    refreshWorkoutRouteNote();
+  }
 }
 
 function formatActivityDate(iso) {
@@ -2834,7 +2838,9 @@ async function loadSavedRoute(id) {
     parsed.name = item.name || parsed.name;
     parsed.isDemo = false;
     applyRoute(parsed, data.gpx_text, `${parsed.name}.gpx`, id);
-    closeRoutesModal();
+    if (el.routesModal && el.routesModal.classList.contains('open')) {
+      closeRoutesModal();
+    }
 
     showToast(
       `Trasa „${parsed.name}“ načítaná z účtu · ${formatKm(parsed.totalM / 1000, 1)} km · +${Math.round(parsed.ascentM)} m.`,
@@ -3639,49 +3645,90 @@ function readWorkoutFtpInput() {
   return normalized === null ? state.ftp : normalized;
 }
 
-function updateWorkoutModalState() {
-  if (!el.workoutErg) return;
-  const hasTrainer = Boolean(trainer);
+function stepWorkoutFtp(delta) {
+  const current = readWorkoutFtpInput();
+  const next = clamp(Math.round(current + delta), FTP_MIN, FTP_MAX);
+  setFtp(next);
+  if (el.workoutFtp) el.workoutFtp.value = String(state.ftp);
+  renderWorkoutPreview();
+}
 
-  if (!hasTrainer) {
-    el.workoutErg.checked = false;
-    el.workoutErg.disabled = true;
-    el.workoutErgHint.textContent = 'Trenažér nie je pripojený – manuálny režim';
-  } else {
-    el.workoutErg.disabled = false;
-    el.workoutErg.checked = Boolean(state.workoutErgPreferred);
-    el.workoutErgHint.textContent = el.workoutErg.checked
-      ? 'Trenažér drží cieľový výkon'
-      : 'Odpor neovládam, zobrazujem len cieľ';
+function updateWorkoutModalState() {
+  if (!el.btnWorkoutErg || !el.btnWorkoutManual) return;
+  const hasTrainer = Boolean(trainer);
+  const ergOn = hasTrainer && Boolean(state.workoutErgPreferred);
+
+  el.btnWorkoutErg.disabled = !hasTrainer;
+  el.btnWorkoutErg.classList.toggle('active', ergOn);
+  el.btnWorkoutManual.classList.toggle('active', !ergOn);
+  el.btnWorkoutErg.setAttribute('aria-pressed', String(ergOn));
+  el.btnWorkoutManual.setAttribute('aria-pressed', String(!ergOn));
+
+  if (el.workoutErgHint) {
+    if (!hasTrainer) {
+      el.workoutErgHint.textContent = 'Trenažér nie je pripojený – manuálny režim';
+    } else {
+      el.workoutErgHint.textContent = ergOn
+        ? 'Trenažér automaticky drží cieľový výkon'
+        : 'Odpor neovládam, zobrazujem len cieľ';
+    }
   }
 }
 
 function refreshWorkoutRouteNote() {
-  if (!el.workoutRouteNote) return;
   const hasRoute = Boolean(state.route);
 
-  el.workoutRouteNote.classList.toggle('warn', !hasRoute);
-  if (hasRoute) {
-    const totalM = state.route.totalM;
-    const startM = clamp(state.startM, 0, totalM);
-    const loopM = Math.max(0, totalM - startM);
-    el.workoutRouteText.textContent =
-      `Trasa: ${state.route.name} · ${formatKm(totalM / 1000, 1)} km · ` +
-      `štart ${formatKm(startM / 1000, 2)} km · slučka ${formatKm(loopM / 1000, 2)} km. ` +
-      'Terén odpor neovláda, mapa sleduje tvoju polohu.';
-    el.workoutRouteActions.hidden = true;
-  } else {
-    el.workoutRouteText.textContent =
-      'Tréning potrebuje GPX trasu. Mapa bude sledovať tvoju polohu, terén však odpor neovláda.';
-    el.workoutRouteActions.hidden = false;
+  if (el.workoutRouteSelect) {
+    const select = el.workoutRouteSelect;
+    select.textContent = '';
+
+    const isCustomUnsaved = hasRoute && !state.route.isDemo && !state.routeSavedId;
+    if (isCustomUnsaved) {
+      const opt = document.createElement('option');
+      opt.value = '__current__';
+      opt.textContent = `${state.route.name} (${formatKm(state.route.totalM / 1000, 1)} km)`;
+      select.appendChild(opt);
+    }
+
+    const demoOpt = document.createElement('option');
+    demoOpt.value = '__demo__';
+    demoOpt.textContent = 'Liptovská Osada - Srekovica (ukážková)';
+    select.appendChild(demoOpt);
+
+    for (const item of savedRoutes) {
+      const opt = document.createElement('option');
+      opt.value = `saved:${item.id}`;
+      const km = formatKm((Number(item.distance_m) || 0) / 1000, 1);
+      opt.textContent = `${item.name || 'Trasa'} (${km} km)`;
+      select.appendChild(opt);
+    }
+
+    if (hasRoute && state.routeSavedId && savedRoutes.some((r) => r.id === state.routeSavedId)) {
+      select.value = `saved:${state.routeSavedId}`;
+    } else if (hasRoute && state.route.isDemo) {
+      select.value = '__demo__';
+    } else if (isCustomUnsaved) {
+      select.value = '__current__';
+    }
   }
 
-  // Bez trasy sa tréning nespustí – tlačidlo to musí dávať najavo.
+  if (el.workoutRouteText) {
+    el.workoutRouteText.classList.toggle('warn', !hasRoute);
+    if (hasRoute) {
+      const totalM = state.route.totalM;
+      el.workoutRouteText.textContent =
+        `${formatKm(totalM / 1000, 1)} km · +${Math.round(state.route.ascentM)} m · Mapa sleduje polohu, odpor riadi tréning`;
+    } else {
+      el.workoutRouteText.textContent =
+        'Vyber trasu zo zoznamu alebo nahraj vlastný GPX súbor.';
+    }
+  }
+
   if (el.btnStartWorkout) {
     el.btnStartWorkout.disabled = !hasRoute;
     el.btnStartWorkout.title = hasRoute
       ? ''
-      : 'Najprv načítaj GPX trasu alebo ukážkové GPX.';
+      : 'Najprv vyber trasu alebo nahraj GPX súbor.';
   }
 }
 
@@ -3833,6 +3880,9 @@ function openWorkoutModal() {
   renderWorkoutPreview();
   el.workoutModal.classList.add('open');
   el.btnCloseWorkout.focus({ preventScroll: true });
+  if (supa && accountUser && savedRoutes.length === 0 && !savedRoutesLoading) {
+    refreshSavedRoutes();
+  }
 }
 
 function closeWorkoutModal() {
@@ -3990,7 +4040,7 @@ function startWorkout() {
   state.workoutLoopIndex = 0;
   state.workoutLastBeepSecond = null;
   state.workoutSummaryName = workout.name;
-  state.workoutErg = Boolean(trainer) && Boolean(el.workoutErg.checked);
+  state.workoutErg = Boolean(trainer) && Boolean(state.workoutErgPreferred);
 
   resetRideStats(false);
   state.workoutSummaryName = workout.name;
@@ -5021,19 +5071,37 @@ el.workoutFtp.addEventListener('change', () => {
   }
   renderWorkoutPreview();
 });
-el.workoutErg.addEventListener('change', () => {
-  state.workoutErgPreferred = el.workoutErg.checked;
-  updateWorkoutModalState();
-});
+el.workoutFtp.addEventListener('input', renderWorkoutPreview);
+if (el.btnFtpMinus) el.btnFtpMinus.addEventListener('click', () => stepWorkoutFtp(-5));
+if (el.btnFtpPlus) el.btnFtpPlus.addEventListener('click', () => stepWorkoutFtp(5));
+if (el.btnWorkoutErg) {
+  el.btnWorkoutErg.addEventListener('click', () => {
+    state.workoutErgPreferred = true;
+    updateWorkoutModalState();
+  });
+}
+if (el.btnWorkoutManual) {
+  el.btnWorkoutManual.addEventListener('click', () => {
+    state.workoutErgPreferred = false;
+    updateWorkoutModalState();
+  });
+}
+if (el.workoutRouteSelect) {
+  el.workoutRouteSelect.addEventListener('change', async () => {
+    const val = el.workoutRouteSelect.value;
+    if (val === '__demo__') {
+      await loadDemoRoute({ silent: true });
+      refreshWorkoutRouteNote();
+    } else if (val.startsWith('saved:')) {
+      await loadSavedRoute(val.slice(6));
+      refreshWorkoutRouteNote();
+    }
+  });
+}
 el.btnStartWorkout.addEventListener('click', startWorkout);
 el.wpSkip.addEventListener('click', skipWorkoutPhase);
 el.wpStop.addEventListener('click', () => finishWorkout('manual'));
 el.wpRouteLoad.addEventListener('click', openGpxPicker);
-el.wpRouteDemo.addEventListener('click', async () => {
-  await loadDemoRoute();
-  refreshWorkoutRouteNote();
-  renderWorkoutPreview();
-});
 
 let dragDepth = 0;
 window.addEventListener('dragenter', (event) => {

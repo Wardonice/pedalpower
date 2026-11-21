@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.1/dist/maplibre-gl.css" integrity="sha384-uTttxo/aOKbdE5RlD/SPzSDoDmNvGlUYPjONi2MN/b7c9HPSvW07OIuyP7uL6jxK" crossorigin="anonymous">
 
-<link rel="stylesheet" href="styles.css?v=17">
+<link rel="stylesheet" href="styles.css?v=18">
 </head>
 
 <body>
@@ -711,38 +711,53 @@
       <div>
         <div class="modal-badge"><span class="modal-badge-dot"></span>Workout</div>
         <h2 id="workoutModalTitle" class="modal-title">Intervalový tréning</h2>
-        <div class="modal-route">Vyber tréning, nastav FTP a spusti ERG</div>
+        <div class="modal-route">Vyber tréning, nastav FTP a režim jazdy</div>
       </div>
       <button id="btnCloseWorkout" class="modal-close" type="button" aria-label="Zavrieť">×</button>
     </div>
 
     <div class="workout-body">
-      <div id="workoutList" class="workout-list"></div>
+      <div class="workout-split">
+        <div class="workout-list-col">
+          <div id="workoutList" class="workout-list"></div>
+        </div>
 
-      <div class="workout-settings">
-        <label class="workout-field">
-          <span>FTP (W)</span>
-          <input id="workoutFtp" type="number" min="50" max="600" step="1" value="200" inputmode="numeric">
-        </label>
-        <label class="workout-toggle">
-          <input id="workoutErg" type="checkbox" checked>
-          <span class="workout-toggle-track"><span class="workout-toggle-thumb"></span></span>
-          <span class="workout-toggle-text">
-            <b>ERG režim</b>
-            <small id="workoutErgHint">Trenažér drží cieľový výkon</small>
-          </span>
-        </label>
-      </div>
+        <div class="workout-config-col">
+          <div class="workout-block">
+            <span class="workout-block-label">Intenzita · FTP (W)</span>
+            <div class="ftp-stepper">
+              <button id="btnFtpMinus" class="ftp-step-btn" type="button" aria-label="Znížiť FTP o 5 W">−</button>
+              <input id="workoutFtp" class="ftp-step-input tabular" type="number" min="50" max="600" step="1" value="200" inputmode="numeric" aria-label="FTP vo wattoch">
+              <button id="btnFtpPlus" class="ftp-step-btn" type="button" aria-label="Zvýšiť FTP o 5 W">+</button>
+            </div>
+          </div>
 
-      <div id="workoutRouteNote" class="workout-route-note">
-        <span id="workoutRouteText">Tréning potrebuje GPX trasu.</span>
-        <div id="workoutRouteActions" class="workout-route-actions" hidden>
-          <button id="wpRouteLoad" class="workout-mini-btn" type="button">Načítať GPX</button>
-          <button id="wpRouteDemo" class="workout-mini-btn" type="button">Ukážkové GPX</button>
+          <div class="workout-block">
+            <span class="workout-block-label">Režim trenažéra</span>
+            <div class="map-switch workout-mode-switch" role="group" aria-label="Režim tréningu">
+              <button id="btnWorkoutErg" class="map-btn active" type="button" aria-pressed="true">ERG</button>
+              <button id="btnWorkoutManual" class="map-btn" type="button" aria-pressed="false">Manuál</button>
+            </div>
+            <div id="workoutErgHint" class="workout-hint">Trenažér drží cieľový výkon</div>
+          </div>
+
+          <div class="workout-block workout-route-block">
+            <span class="workout-block-label">Trasa</span>
+            <div class="workout-route-controls">
+              <select id="workoutRouteSelect" class="workout-route-select" aria-label="Výber trasy"></select>
+              <button id="wpRouteLoad" class="workout-upload-btn" type="button" title="Nahrať vlastný GPX súbor z PC">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/>
+                </svg>
+                <span>GPX z PC</span>
+              </button>
+            </div>
+            <div id="workoutRouteText" class="workout-hint">Vyber uloženú trasu alebo nahraj vlastné GPX.</div>
+          </div>
+
+          <div id="workoutPreview" class="workout-preview"></div>
         </div>
       </div>
-
-      <div id="workoutPreview" class="workout-preview"></div>
     </div>
 
     <div class="modal-actions">
@@ -763,6 +778,6 @@
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.1/dist/maplibre-gl.js" integrity="sha384-nXMl9YiLoSG5KBPTFgvxVuIqQQcqIvo0bFrvoEaGJC6r7IibIzF1S36Zbf/sKBtL" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" integrity="sha384-JUh163oCRItcbPme8pYnROHQMC6fNKTBWtRG3I3I0erJkzNgL7uxKlNwcrcFKeqF" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js" integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ" crossorigin="anonymous"></script>
-<script src="app.js?v=18"></script>
+<script src="app.js?v=19"></script>
 </body>
 </html>
